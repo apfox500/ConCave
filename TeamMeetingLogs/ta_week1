@@ -1,0 +1,12 @@
+Leon: Worked on database diagram, looking into the APIs, created a database diagram, barebones framework on what we may need
+Have a quick discussion with the team, every functionality is supported by the database
+Send it to her as a review
+Andrew: created the github repo, started making empty files and folders, next week get started on how the DMs will look like 
+Daniel: adding that, and making the status like a settings page, so that they can see their past conventions, reviews, and their background 
+Liam: Looking into the UI and the main part of the page, looking into similar websites, looking into login/logout stuff
+Tucker: Going to work on the two home pages for our websites, mostly the main form page for now for replies and comments
+Michael: Setup the wireframe, upcoming week, will help leon with integrating the API and being able to search up specific conventions
+Billy: Got the docker and package running, added a simple home page, but with no functionality, looks like the wireframe. Will try to tackle the wireframe. 
+Merch Page: Could just have something that the conventions post for their merch, could just be dummy data in order to add the merch functionality, or use the idea that we have as of now.
+Ensure that the database is up to date and working with each functionality
+https://github.com/public-apis/public-apis
