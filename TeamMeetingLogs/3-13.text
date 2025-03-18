@@ -1,0 +1,80 @@
+Meeting notes 3/13
+
+Team number: 015-3
+Team name: 
+Team Members: Andrew Fox, Daniel Park, Michael Wallace, Leon Vayedjian, Billy Daves, Tucker Banks
+
+Name
+Andrew Fox
+Leon Vayedjian
+Billy
+Daves
+Michael Wallace
+Tucker Banks
+Daniel Park
+Liam Ford
+Github 
+apfox500
+leva5149
+wida4809
+mjwallace41
+TuBanks
+dapa9788
+liamford1
+Discord 
+apfox500
+ledjian
+.heaven
+fatmike0927
+tropguyz
+fishieboi1
+liam7ford11
+Email
+anfo5924@colorado.edu
+leva5149@colorado.edu
+wida4809@colorado.edu
+miwa9283@colorado.edu
+tuba6925@colorado.edu
+dapa9788@colorado.edu
+lifo1715@colorado.edu
+
+
+Application name: ConCave
+Application Description: 
+Convention website features:
+Pages for merch store(ebay/etsy style?)
+convention logistics (TODO: Find an api) with reviews? Maybe add a filter?
+Discussion forum(polls, posts, theories)
+chat to contact people to go with,  carpool / rooming?(group finder)
+Registration/Login  and Statuses?(how much have they interacted with the community, akin to facebook/twitter verified) Maybe a trusted user, ranks, or a points/miles system?
+Daniel
+Cosplay page - people post their costumes for conventions w/ ranking, comments
+Pictures of the convention
+
+Audience: People who want to find conventions and other convention-minded people.
+
+Vision Statement: For convention attendees, who want to find information, people to go with, or discuss everything conventions. ConCave is a website that lets users share their experiences and let the world know how amazing conventions can be. Unlike FanCons.com, our product is more focused on the people going to the conventions rather than the logistics. We provide group finders to know who to go with, a forum to post photos, review the convention you went to, or comment on others’ posts, and a status system to showcase your convention attending dominance. 
+
+Version Control: https://github.com/apfox500/ConCave 
+Development Methodology: We will use github projects to keep track of everything.
+Communication Plan: Use discord and github for communication.
+Meeting Plan: https://www.when2meet.com/?29547514-gY6iQ 
+	Going forward we will meet: Fri @ 2
+	TA meeting: 1:30-1:45 Monday, March 17
+Use Case Diagram: Assigned to daniel - finish by tues
+Login
+Profile page
+Forum/comments
+DMs
+Group finder system
+Cosplay ranking page
+List of conventions
+Wireframes: Assigned to Michael - finish by tues
+
+Billy and Liam will be in charge of ensuring uniform theme and style across website UI
+Leon will make an ER diagram for us
+
+—- side notes—-
+Breakdown of project:
+Make database schema
+Everyone is in charge of one feature
