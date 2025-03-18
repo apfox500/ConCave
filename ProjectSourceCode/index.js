@@ -55,6 +55,11 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'src/views'));
 app.use(bodyParser.json()); // specify the usage of JSON for parsing request body.
 
+
+//set up styles
+app.use(express.static(path.join(__dirname, 'src', 'resources')));
+
+
 // initialize session variables
 app.use(
   session({
@@ -80,6 +85,35 @@ app.get('/', (req, res) => {
     message: 'Welcome to ConCave!'
   });
 });
+
+app.get('/im', (req, res) => {
+  //TODO: figure out how to make sure that there is a user right now
+
+  //TODO: query messages from database and load them in
+  res.render('pages/im', { //Just dummy data for now
+    other_user: "Other User",
+    messages: [
+      {
+        date: "3-17-2025",
+        time: "17:00",
+        message: "Hey, How are you?",
+        recieved: true
+      },
+      {
+        date: "3-18-2025",
+        time: "8:00",
+        message: "I'm good",
+        recieved: false
+      },
+      {
+        date: "3-18-2025",
+        time: "8:01",
+        message: "How are you?",
+        recieved: false
+      }
+    ]
+  });
+})
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->

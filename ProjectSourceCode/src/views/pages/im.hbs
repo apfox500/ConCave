@@ -1,0 +1,19 @@
+<div class="container" style="padding: 5%">
+    <h4>Chat with {{other_user}}</h4>
+    <div class="container border" style="height: 75vh; overflow-y: auto;">
+        {{#each messages}}
+
+        <div class="message d-inline-block {{#if recieved}} received{{else}} sent{{/if}}">
+            <p class="date">{{date}} {{time}}</p>
+            <p>{{message}}</p>
+
+        </div>
+        {{/each}}
+    </div>
+    <form action="/im" method="POST" class="mt-3">
+        <div class="form-group d-flex">
+            <input type="text" name="message" class="form-control me-2" placeholder="Type here" required>
+            <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+    </form>
+</div>

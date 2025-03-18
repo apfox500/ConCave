@@ -1,0 +1,41 @@
+.input-group-text {
+    border-radius: 20px 0 0 20px;
+}
+
+.form-control {
+    border-radius: 0 20px 20px 0;
+}
+
+.input-group {
+    border-radius: 20px;
+}
+
+.message {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 5px 0;
+    max-width: 60%;
+    word-wrap: break-word;
+}
+
+.received {
+    background-color: #aed0f6;
+    text-align: left;
+    float: left;
+    clear: both;
+    margin-left: 10px;
+}
+
+.sent {
+    background-color: #a9fad6;
+    text-align: right;
+    float: right;
+    clear: both;
+    margin-right: 10px;
+}
+
+.date {
+    font-size: 0.8em;
+    color: grey;
+}
