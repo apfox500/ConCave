@@ -90,28 +90,37 @@ app.get('/im', (req, res) => {
   //TODO: figure out how to make sure that there is a user right now
 
   //TODO: query messages from database and load them in
+
+  let messages = [
+    {
+      date: "3-17-2025",
+      time: "17:00",
+      message: "Hey, How are you?",
+      recieved: true
+    },
+    {
+      date: "3-18-2025",
+      time: "8:00",
+      message: "I'm good",
+      recieved: false
+    },
+    {
+      date: "3-18-2025",
+      time: "8:01",
+      message: "How are you?",
+      recieved: false
+    }
+  ];
+  messages.forEach((message, index) => {
+    if (index === 0 || message.date !== messages[index - 1].date) {
+      message.new_date = true; // Mark as a new date
+    } else {
+      message.new_date = false; // Same date as the previous message
+    }
+  });
   res.render('pages/im', { //Just dummy data for now
     other_user: "Other User",
-    messages: [
-      {
-        date: "3-17-2025",
-        time: "17:00",
-        message: "Hey, How are you?",
-        recieved: true
-      },
-      {
-        date: "3-18-2025",
-        time: "8:00",
-        message: "I'm good",
-        recieved: false
-      },
-      {
-        date: "3-18-2025",
-        time: "8:01",
-        message: "How are you?",
-        recieved: false
-      }
-    ]
+    messages: messages
   });
 })
 

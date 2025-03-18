@@ -39,3 +39,14 @@
     font-size: 0.8em;
     color: grey;
 }
+
+.date-separator {
+    font-size: 0.8em;
+    color: gray;
+    text-align: center;
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    clear: both;
+    /* Ensure it starts on a new row */
+}

@@ -2,11 +2,12 @@
     <h4>Chat with {{other_user}}</h4>
     <div class="container border" style="height: 75vh; overflow-y: auto;">
         {{#each messages}}
-
+        {{#if new_date}}
+        <p class="date-separator text-center">{{date}}</p>
+        {{/if}}
         <div class="message d-inline-block {{#if recieved}} received{{else}} sent{{/if}}">
-            <p class="date">{{date}} {{time}}</p>
+            <p class="date">{{time}}</p>
             <p>{{message}}</p>
-
         </div>
         {{/each}}
     </div>
