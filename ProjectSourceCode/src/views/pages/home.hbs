@@ -1,42 +1,45 @@
-<div class="container mt-4">
+<div class="container mt-4 text-center">
     <h2>Upcoming Conventions</h2>
-    {{!-- placeholder cards from wireframe --}}
-    <div class="row mt-4">
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Convention 1</h5>
-                    <a href="#" class="btn btn-primary">Learn More</a>
+    <div class="d-flex justify-content-center">
+        <div id="eventsCarousel" class="carousel slide" data-bs-ride="carousel" style="width: 900px;">
+            <div class="carousel-inner">
+                {{#each events}}
+                    <div class="carousel-item {{#if @first}}active{{/if}}">
+                        <div class="d-flex justify-content-center align-items-center" style="height: 300px; background-color: #ddd; border-radius: 10px;">
+                            <h5>{{title}}</h5>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{link}}" class="btn btn-dark">Learn More</a>
+                        </div>
+                    </div>
+                {{/each}}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#eventsCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#eventsCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Other Events</h2>
+    <div class="row">
+        {{#each events}}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{title}}</h5>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{link}}" class="btn btn-dark">Learn More</a>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Convention 2</h5>
-                    <a href="#" class="btn btn-primary">Learn More</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Convention 3</h5>
-                    <a href="#" class="btn btn-primary">Learn More</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Convention 4</h5>
-                    <a href="#" class="btn btn-primary">Learn More</a>
-                </div>
-            </div>
-        </div>
+        {{/each}}
     </div>
 </div>

@@ -75,11 +75,23 @@ app.use(
 // *****************************************************
 
 app.get('/', (req, res) => {
-  res.render('pages/home', {
-    title: 'ConCave',
-    message: 'Welcome to ConCave!'
+  const events = [
+    { title: "Comic-Con 2024", link: "https://www.comic-con.org/" },
+    { title: "Anime Expo", link: "https://www.anime-expo.org/" },
+    { title: "PAX West", link: "https://west.paxsite.com/" },
+    { title: "GDC 2024", link: "https://gdconf.com/" },
+    { title: "E3 Expo", link: "https://www.e3expo.com/" }
+  ];
+
+  res.render('pages/home', { title: 'ConCave', events });
+});
+
+app.get('/login', (req, res) => {
+  res.render('pages/login', {
+    title: 'Login',
   });
 });
+
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
