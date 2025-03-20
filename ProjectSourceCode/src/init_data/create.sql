@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+/*
 CREATE TABLE IF NOT EXISTS badges (
     trophy_id SERIAL PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
@@ -29,6 +30,7 @@ CREATE TABLE IF NOT EXISTS users_to_badges (
     trophy_id INT REFERENCES trophies(trophy_id) ON DELETE CASCADE,
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+*/
 
 -- Potentially only for Dummy Data if we use an API
 CREATE TABLE IF NOT EXISTS conventions (
