@@ -81,6 +81,25 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get("/search", (req, res) => {
+  const searchQuery = req.query.q;
+  
+  if (!searchQuery) {
+      return res.json([]);
+  }
+
+  const query = `SELECT * FROM conventions WHERE name LIKE ? OR location LIKE ?`;
+  const values = [`%${searchQuery}%`, `%${searchQuery}%`];
+
+  db.query(query, values, (err, results) => {
+      if (err) {
+          console.error("Error executing query:", err);
+          return res.status(500).json({ error: "Internal Server Error" });
+      }
+      res.json(results);
+  });
+});
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
