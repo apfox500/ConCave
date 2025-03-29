@@ -1,4 +1,4 @@
-<div class="container mt-4 text-center">
+<div class="container mt-4 text-center position-relative">
     <h2>Upcoming Conventions</h2>
     <div class="d-flex justify-content-center">
         <div id="eventsCarousel" class="carousel slide" data-bs-ride="carousel" style="width: 900px;">
@@ -14,16 +14,26 @@
                     </div>
                 {{/each}}
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#eventsCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#eventsCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
         </div>
     </div>
+    
+    <!-- Repositioned carousel controls -->
+    <button class="carousel-control-prev position-absolute top-50 start-0 translate-middle-y" 
+            type="button" 
+            data-bs-target="#eventsCarousel" 
+            data-bs-slide="prev"
+            style="left: -50px; width: 40px; height: 40px; background-color: rgba(0,0,0,0.5); border-radius: 50%;">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next position-absolute top-50 end-0 translate-middle-y" 
+            type="button" 
+            data-bs-target="#eventsCarousel" 
+            data-bs-slide="next"
+            style="right: -50px; width: 40px; height: 40px; background-color: rgba(0,0,0,0.5); border-radius: 50%;">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
 </div>
 
 <div class="container mt-5">
