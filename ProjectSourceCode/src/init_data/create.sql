@@ -35,8 +35,10 @@ CREATE TABLE IF NOT EXISTS users_to_badges (
 -- Potentially only for Dummy Data if we use an API
 CREATE TABLE IF NOT EXISTS conventions (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL UNIQUE,
     location TEXT NOT NULL,
+    convention_center TEXT,
+    convention_bio TEXT,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL
 );

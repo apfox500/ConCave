@@ -1,42 +1,18 @@
 <div class="container mt-4">
     <h2>Upcoming Conventions</h2>
-    {{!-- placeholder cards from wireframe --}}
+    {{!-- Loop through the conventions and display them dynamically --}}
     <div class="row mt-4">
+        {{#each conventions}}
         <div class="col-md-3 mb-4">
             <div class="card">
                 <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
                 <div class="card-body">
-                    <h5 class="card-title">Convention 1</h5>
-                    <a href="#" class="btn btn-primary">Learn More</a>
+                    <h5 class="card-title">{{this.name}}</h5>
+                    <!-- Dynamic link to the convention's detail page -->
+                    <a href="/conventions/{{this.id}}" class="btn btn-primary">Learn More</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Convention 2</h5>
-                    <a href="#" class="btn btn-primary">Learn More</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Convention 3</h5>
-                    <a href="#" class="btn btn-primary">Learn More</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Convention 4</h5>
-                    <a href="#" class="btn btn-primary">Learn More</a>
-                </div>
-            </div>
-        </div>
+        {{/each}}
     </div>
 </div>

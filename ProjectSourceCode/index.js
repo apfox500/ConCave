@@ -81,6 +81,22 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get('/conventions/:id', async (req, res) => {
+  const conventionId = req.params.id;
+  
+  try {
+    const convention = await db.one(`SELECT * FROM conventions WHERE id = ${conventionId}`);
+    
+    res.render('pages/conventionDetails', {
+      title: convention.name,
+      convention: convention,
+    });
+  } catch (error) {
+    console.log('ERROR:', error.message || error);
+    res.status(500).send('Error fetching convention details.');
+  }
+});
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
