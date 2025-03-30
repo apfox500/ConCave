@@ -74,11 +74,19 @@ app.use(
 // <!-- Section 4 : API Routes -->
 // *****************************************************
 
-app.get('/', (req, res) => {
-  res.render('pages/home', {
-    title: 'ConCave',
-    message: 'Welcome to ConCave!'
-  });
+app.get('/', async (req, res) => {
+  try {
+    const conventions = await db.any('SELECT * FROM conventions ORDER BY start_date ASC');
+    
+    res.render('pages/home', {
+      title: 'ConCave',
+      message: 'Welcome to ConCave!',
+      conventions,
+    });
+  } catch (error) {
+    console.error('Error fetching conventions:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 app.get('/conventions/:id', async (req, res) => {
