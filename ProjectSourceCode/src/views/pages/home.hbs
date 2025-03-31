@@ -106,19 +106,34 @@
                 //const responseData = await response.json().catch(() => null);
                 //console.log('Response Data:', responseData);
                 //alert(response.ok)
-                const responseData = await response.json();
                 if (response.ok) {
                     alert('Convention added successfully!');
+                    const conventionCard = document.createElement('div');
+                    conventionCard.classList.add('col-md-3', 'mb-4');
+                    conventionCard.innerHTML = `
+                        <div class="card">
+                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
+                            <div class="card-body">
+                                <h5 class="card-title">${name}</h5>
+                                <a href="#" class="btn btn-primary">Learn More</a>
+                            </div>
+                        </div>
+                    `;
+
+                    // Add it to the convention list
+                    document.getElementById('conventions-list').appendChild(conventionCard);
+
+                    // Hide the form and clear input fields
+                    document.getElementById('addConventionFormCard').style.display = 'none';
+                    document.getElementById('addConventionForm').reset();
                 } else {
                     alert('Error adding convention: ' + data.message);
                 }
             } catch (error) {
-                console.error('Error:', error);
                 alert('There was an error adding the convention.');
             }
         });
 
-
+        
     </script>
 </body>
-</html>
