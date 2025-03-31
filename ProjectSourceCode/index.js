@@ -81,6 +81,12 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get('/merch', (req,res) => {
+  res.render('pages/merch',{
+    title: 'Merchandise',
+    message: ''
+  });
+});
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
