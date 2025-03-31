@@ -92,9 +92,8 @@ CREATE TABLE IF NOT EXISTS tunnels (
 
 CREATE TABLE IF NOT EXISTS replies (
   id SERIAL PRIMARY KEY,
-  tunnel_id, INTEGER,
-  parent_reply_id INTEGER,
-  FOREIGN KEY (tunnel_id) INTEGER REFERENCES tunnels(id) ON DELETE CASCADE,
+  tunnel_id INTEGER,
+  FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
   parent_reply_id INTEGER REFERENCES replies(id) ON DELETE CASCADE,
   message TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
