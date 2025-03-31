@@ -81,6 +81,39 @@ app.get('/', (req, res) => {
   });
 });
 
+//Check if the user is a convention host
+/*const authorizeConventionHost = (req, res, next) => {
+  if (req.user.rank !== "convention_host") {
+      return res.status(403).json({ message: "Forbidden: Only Convention Hosts can add conventions." });
+  }
+  next();
+};*/
+
+app.post("/conventions/add", async (req, res) => {
+    try {
+        const { name, location, convention_center, convention_bio, start_date, end_date } = req.body;
+
+        if (!name || !location || !convention_center || !convention_bio || !start_date || !end_date) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+
+        const result = await db.task(async t => {
+            // Insert convention
+            const conventionQuery = `
+                INSERT INTO conventions (name, location, convention_center, convention_bio, start_date, end_date)
+                VALUES ($1, $2, $3, $4, $5, $6)
+                RETURNING id;`;
+            const conventionResult = await t.one(conventionQuery, [name, location, convention_center, convention_bio, start_date, end_date]);
+            return conventionResult;
+        });
+
+        res.status(201).json({ message: "Convention added successfully!", convention: result });
+    } catch (error) {
+        res.status(500).json({ message: "An error occurred", error: error.message });
+    }
+});
+
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
