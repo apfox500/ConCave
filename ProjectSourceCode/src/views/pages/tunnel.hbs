@@ -1,0 +1,18 @@
+<h2>{{tunnel.title}}</h2>
+<p>{{tunnel.message}}</p>
+<hr>
+
+<h4>Tunnel Notes</h4>
+{{#each replies}}
+  <div class="mb-3 ps-3 border-start border-secondary">
+    <p>{{this.message}}</p>
+  </div>
+{{/each}}
+
+<!-- Tunnel Reply Form -->
+<form action="/cave/{{tunnel.id}}/reply" method="POST">
+  <div class="mb-3">
+    <textarea class="form-control" name="message" rows="3" placeholder="Write your note here." required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Leave a Note</button>
+</form>

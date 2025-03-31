@@ -78,3 +78,24 @@ CREATE TABLE IF NOT EXISTS messages (
     user_read BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 );
+
+/* Tunnels Table */
+
+CREATE TABLE IF NOT EXISTS tunnels (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+/* Replies Table */
+
+CREATE TABLE IF NOT EXISTS replies (
+  id SERIAL PRIMARY KEY,
+  tunnel_id, INTEGER,
+  parent_reply_id INTEGER,
+  FOREIGN KEY (tunnel_id) INTEGER REFERENCES tunnels(id) ON DELETE CASCADE,
+  parent_reply_id INTEGER REFERENCES replies(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

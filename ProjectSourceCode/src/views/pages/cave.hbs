@@ -1,0 +1,53 @@
+<div class="container mt-4">
+
+    <h1 class="mb-4" style="text-align: left;">The Cave</h1>
+
+    <!-- Create Tunnel Button -->
+    <div class="mb-3">
+        <button class="btn btn-primary" id="create-tunnel">Dig a Tunnel</button>
+    </div>
+
+    <!-- Create Tunnel Form -->
+    <div id="tunnel-form" class="border rounded p-4 d-none">
+        <h4>Dig your Tunnel</h4>
+        <form action="/cave" method="POST">
+            <div class="mb-3">
+                <label for="tunnel-title" class="form-label">Tunnel Name</label>
+                <input type="text" class="form-control" id="tunnel-title" name="title" placeholder="Enter a tunnel name">
+            </div>
+            <div class="mb-3">
+                <label for="tunnel-message" class="form-label">Message</label>
+                <textarea class="form-control" id="tunnel-message" rows="5" name="message" placeholder="Write your message..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-success me-2">Create</button>
+            <button type="button" class="btn btn-secondary" id="cancel">Cancel</button>
+        </form>
+    </div>
+
+
+    <!-- Tunnel Board -->
+
+    <div id="tunnel-board" class="border rounded p-3" style="height: 70vh; overflow-y: auto;">
+
+        {{#each tunnels}}
+        <div class="mb-3 p-3 border-bottom">
+            <h5> <a href="/cave/{{this.id}}" class="text-decoration-none"> {{this.title}} </a> </h5>
+            <p>{{this.message}}</p>
+        </div>
+        {{/each}}
+
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('create-tunnel').addEventListener('click', function ()  {
+        document.getElementById('tunnel-board').classList.add('d-none');
+        document.getElementById('tunnel-form').classList.remove('d-none');
+    });
+
+    document.getElementById('cancel').addEventListener('click', function ()  {
+        document.getElementById('tunnel-form').classList.add('d-none');
+        document.getElementById('tunnel-board').classList.remove('d-none');
+    });
+</script>

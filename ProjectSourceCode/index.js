@@ -81,6 +81,72 @@ app.get('/', (req, res) => {
   });
 });
 
+// Cave route
+app.get('/cave', async (req, res) => {
+  try {
+    const tunnels = await db.any('SELECT * FROM tunnels ORDER BY created_at DESC');
+    res.render('pages/cave', {
+      title: 'ConCave',
+      tunnels: tunnels,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error loading the cave.');
+  }
+});
+
+// Cave Tunnel Post
+app.post('/cave', async (req, res) => {
+  const { title, message } = req.body;
+  try {
+    await db.none('INSERT INTO tunnels (title, message) VALUES ($1, $2)', [title, message]);
+    res.redirect('/cave');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error digging your tunnel.');
+  }
+});
+
+// Cave Tunnel Page Get
+app.get('/cave/:id', async (req, res) => {
+  const tunnelId = req.params.id;
+
+  try {
+    const tunnel = await db.one('SELECT * FROM tunnels WHERE id = $1', [tunnelId]);
+    const replies = await db.any(
+      'SELECT * FROM replies WHERE tunnel_id = $1 ORDER BY created_at ASC',
+      [tunnelId]
+    );
+
+    res.render('pages/tunnel', {
+      tunnel,
+      replies,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error loading tunnel.');
+  }
+});
+
+// Cave Tunnel Reply Post
+app.post('/cave/:id/reply', async (req, res) => {
+  const tunnelId = req.params.id;
+  const { message } = req.body;
+
+  try {
+    await db.none(
+      'INSERT INTO replies (tunnel_id, message) VALUES ($1, $2)',
+      [tunnelId, message]
+    );
+    res.redirect(`/cave/${tunnelId}`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error posting reply.');
+  }
+});
+
+
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
