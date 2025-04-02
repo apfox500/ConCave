@@ -79,12 +79,73 @@ app.use(
 // <!-- Section 4 : API Routes -->
 // *****************************************************
 
-app.get('/', (req, res) => {
-  res.render('pages/home', {
-    title: 'ConCave',
-    message: 'Welcome to ConCave!'
-  });
+app.get("/", (req, res) => {
+  const events = [
+    { title: "Comic-Con 2024", link: "https://www.comic-con.org/" },
+    { title: "Anime Expo", link: "https://www.anime-expo.org/" },
+    { title: "PAX West", link: "https://west.paxsite.com/" },
+    { title: "GDC 2024", link: "https://gdconf.com/" },
+    { title: "E3 Expo", link: "https://www.e3expo.com/" }
+  ];
+  res.render("pages/home", { title: "ConCave", events });
 });
+
+app.get("/register", (req, res) => {
+  res.render("pages/register");
+});
+
+app.post("/register", async (req, res) => {
+  try {
+    if (req.body.password !== req.body.confirmPassword) {
+      return res.render("pages/register", {
+        error: "Passwords do not match.",
+        formData: req.body
+      });
+    }
+    const hash = await bcrypt.hash(req.body.password, 10);
+    await db.none(
+      "INSERT INTO users (first_name, last_name, username, email, rank, password) VALUES ($1, $2, $3, $4, $5, $6)",
+      [req.body.firstName, req.body.lastName, req.body.username, req.body.email, "user", hash]
+    );
+    res.redirect("/login");
+  } catch (error) {
+    console.log(error);
+    res.render("pages/register", {
+      error: "Could not create user. Maybe username or email is taken?",
+      formData: req.body
+    });
+  }
+});
+
+app.get("/login", (req, res) => {
+  res.render("pages/login");
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const user = await db.oneOrNone(
+      "SELECT * FROM users WHERE username = $1",
+      [req.body.username]
+    );
+    if (user && (await bcrypt.compare(req.body.password, user.password))) {
+      req.session.user = user;
+      req.session.save();
+      res.redirect("/");
+    } else {
+      res.render("pages/login", { error: "Incorrect username or password." });
+    }
+  } catch (error) {
+    console.log(error);
+    res.render("pages/login", { error: "Error logging in." });
+  }
+});
+
+const auth = (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  next();
+};
 
 app.get('/im', (req, res) => {
   //TODO: figure out how to make sure that there is a user right now
