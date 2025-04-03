@@ -17,7 +17,7 @@
         }
         .search-results-container {
     position: absolute;
-    top: 60px; /* Adjust this value based on navbar height */
+    top: 60px; 
     left: 50%;
     transform: translateX(-50%);
     width: 300px;
@@ -27,7 +27,7 @@
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     padding: 10px;
     z-index: 1000;
-    display: none; /* Initially hidden */
+    display: none; 
 }
 .result-item {
     padding: 8px;
@@ -48,15 +48,13 @@
 
             searchInput.addEventListener('input', async (event) => {
                 const query = event.target.value;
-                resultsContainer.innerHTML = ''; // Clear previous results
+                resultsContainer.innerHTML = '';
 
                 if (query.length > 0) {
-                    // Update the URL with the search query (optional)
                     const newUrl = `/search?q=${encodeURIComponent(query)}`;
                     history.pushState({ path: newUrl }, '', newUrl);
 
                     try {
-                        // Fetch search results from the server
                         const response = await fetch(newUrl);
                         const results = await response.json();
 
@@ -64,7 +62,7 @@
                             results.forEach(convention => {
                                 const resultItem = document.createElement('div');
                                 resultItem.className = 'result-item';
-                                resultItem.innerHTML = `<strong>${convention.name}</strong> - ${convention.location} (${convention.start_date} to ${convention.end_date})`;
+                                resultItem.innerHTML = `<strong>${convention.name}</strong>`;
                                 resultsContainer.appendChild(resultItem);
                             });
                         } else {
@@ -75,7 +73,6 @@
                         resultsContainer.innerHTML = '<p class="p-2">Error loading search results</p>';
                     }
                 } else {
-                    // If no query, clear results and reset URL
                     history.pushState({ path: '/' }, '', '/');
                     resultsContainer.innerHTML = '';
                 }

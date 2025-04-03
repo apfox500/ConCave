@@ -70,6 +70,12 @@ app.use(
   })
 );
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 // *****************************************************
 // <!-- Section 4 : API Routes -->
 // *****************************************************
@@ -81,24 +87,21 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get("/search", (req, res) => {
+app.get('/search', (req, res) => {
   const searchQuery = req.query.q;
+  const query = `SELECT * FROM conventions WHERE name LIKE $1;`;
+  const values = [`%${searchQuery}%`];
   
-  if (!searchQuery) {
-      return res.json([]);
-  }
-
-  const query = `SELECT * FROM conventions WHERE name LIKE ? OR location LIKE ?`;
-  const values = [`%${searchQuery}%`, `%${searchQuery}%`];
-
-  db.query(query, values, (err, results) => {
-      if (err) {
-          console.error("Error executing query:", err);
-          return res.status(500).json({ error: "Internal Server Error" });
-      }
-      res.json(results);
-  });
+  db.any(query, values)
+   .then(results => {
+       res.json(results);
+   })
+   .catch(err => {
+       console.error('Error executing query:', err);
+       res.status(500).json({ error: 'Internal Server Error' });
+   });
 });
+
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
