@@ -70,6 +70,11 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  res.locals.user = req.session.user;
+  next();
+});
+
 // *****************************************************
 // <!-- Section 4 : API Routes -->
 // *****************************************************
@@ -133,6 +138,12 @@ app.post("/login", async (req, res) => {
     console.log(error);
     res.render("pages/login", { error: "Error logging in." });
   }
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
 });
 
 const auth = (req, res, next) => {
