@@ -55,6 +55,11 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'src/views'));
 app.use(bodyParser.json()); // specify the usage of JSON for parsing request body.
 
+
+//set up styles
+app.use(express.static(path.join(__dirname, 'src', 'resources')));
+
+
 // initialize session variables
 app.use(
   session({
@@ -125,7 +130,8 @@ app.post("/login", async (req, res) => {
     if (user && (await bcrypt.compare(req.body.password, user.password))) {
       req.session.user = user;
       req.session.save();
-      res.redirect("/");
+      console.log("Logged in ", user);
+      res.redirect("/im");
     } else {
       res.render("pages/login", { error: "Incorrect username or password." });
     }
@@ -141,6 +147,108 @@ const auth = (req, res, next) => {
   }
   next();
 };
+
+app.use(auth);
+
+// Function to fetch messages and user info for a conversation
+async function fetchMessagesAndUserInfo(conv_id, user_id) {
+  try {
+    const messages = await db.any(`SELECT * FROM messages WHERE conversation_id=$1;`, [conv_id]);
+
+    const otherUser = await db.one(
+      `SELECT u.username, u.first_name, u.last_name, u.rank, u.id
+       FROM users u 
+       JOIN conversations c ON (u.id = c.user1_id OR u.id = c.user2_id) 
+       WHERE c.id = $1 AND u.id != $2`,
+      [conv_id, user_id]
+    );
+
+    messages.forEach((message, index) => {
+      message.date = new Date(message.time_sent).toLocaleDateString("en-US", { timeZone: "America/Denver" });
+      message.time = new Date(message.time_sent).toLocaleTimeString("en-US", { timeZone: "America/Denver" });
+      message.recieved = message.user_id == otherUser.id;
+      message.new_date = index === 0 || message.date !== messages[index - 1].date;
+    });
+
+    return { messages, otherUser };
+  } catch (error) {
+    console.error("Error fetching messages or user info:", error);
+    throw error;
+  }
+}
+
+app.get('/im', async (req, res) => {
+  console.log("Handling IM request for:", req.session.user);
+
+  if (req.query.conv_id) {
+    try {
+      const { messages, otherUser } = await fetchMessagesAndUserInfo(req.query.conv_id, req.session.user.id);
+      res.render('pages/im', {
+        other_user: otherUser,
+        messages: messages,
+        conv_id: req.query.conv_id
+      });
+    } catch (error) {
+      res.render('pages/im', {
+        message: "Could not load messages or user info.",
+        error: true
+      });
+    }
+  } else {
+    console.log("Finding conversations for user:", req.session.user.username);
+
+    db.any(
+      `SELECT c.id AS conversation_id, u.id AS user_id, u.first_name, u.last_name, u.username
+       FROM conversations c
+       JOIN users u ON (u.id = c.user1_id OR u.id = c.user2_id)
+       WHERE (c.user1_id = $1 OR c.user2_id = $1) AND u.id != $1`,
+      [req.session.user.id]
+    )
+      .then(conversations => {
+        res.render('pages/im', {
+          conversations: conversations
+        });
+      })
+      .catch(error => {
+        console.log("Error fetching conversations:", error);
+        res.render('pages/im', {
+          message: "Could not load conversations.",
+          error: true
+        });
+      });
+  }
+});
+
+app.post('/im', async (req, res) => {
+  //TODO:  everytime I reload the page it resends the text
+  try {
+    const { message, conv_id } = req.body;
+    const user_id = req.session.user.id;
+
+    // Insert the new message into the database
+    await db.none(
+      `INSERT INTO messages (conversation_id, user_id, message_text, time_sent, user_read) 
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP, FALSE)`,
+      [conv_id, user_id, message]
+    );
+
+    // Fetch updated messages and user info
+    const { messages, otherUser } = await fetchMessagesAndUserInfo(conv_id, user_id);
+
+    // Render the updated conversation
+    res.render('pages/im', {
+      other_user: otherUser,
+      messages: messages,
+      conv_id: conv_id
+    });
+  } catch (error) {
+    console.log("Error adding message:", error);
+    res.render('pages/im', {
+      message: "Could not send message.",
+      error: true
+    });
+  }
+});
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
