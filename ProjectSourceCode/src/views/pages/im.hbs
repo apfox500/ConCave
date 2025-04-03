@@ -1,10 +1,10 @@
-<div class="container" style="padding: 5%">
+<div class="container" style="padding: 3%">
     {{> message}}
 
     {{#if messages}}
     {{!-- loading in a specific conversation --}}
     <h4>Chat with {{other_user.first_name}} {{other_user.last_name}} ({{other_user.username}})</h4>
-    <div class="container border" style="height: 75vh; overflow-y: auto;">
+    <div class="container border" id="messages-container" style="height: 70vh; overflow-y: auto;">
         {{#each messages}}
         {{#if new_date}}
         <p class="date-separator text-center">{{date}}</p>
@@ -22,6 +22,13 @@
             <button type="submit" class="btn btn-primary">Send</button>
         </div>
     </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const container = document.getElementById("messages-container");
+            container.scrollTop = container.scrollHeight;
+        });
+    </script>
 
     {{else}}
     {{#if conversations}}
@@ -44,5 +51,7 @@
     {{!-- they have no conversations --}}
     <p>No conversations, Go make some!</p>
     {{/if}}
+
+    {{!-- TODO: add in a way to start a new chat based on username --}}
     {{/if}}
 </div>

@@ -220,6 +220,7 @@ app.get('/im', async (req, res) => {
 });
 
 app.post('/im', async (req, res) => {
+  //TODO:  everytime I reload the page it resends the text
   try {
     const { message, conv_id } = req.body;
     const user_id = req.session.user.id;
