@@ -186,7 +186,8 @@ app.get('/im', (req, res) => {
             console.log("Message data to be sent:", messages);
             res.render('pages/im', {
               other_user: otherUser,
-              messages: messages
+              messages: messages,
+              conv_id: req.query.conv_id
             });
           })
           .catch(error => {
@@ -227,6 +228,29 @@ app.get('/im', (req, res) => {
           error: true
         });
       });
+  }
+});
+
+app.post('/im', async (req, res) => {
+  try {
+    const { message, conv_id } = req.body;
+    const user_id = req.session.user.id;
+
+    // Insert the new message into the database
+    await db.none(
+      `INSERT INTO messages (conversation_id, user_id, message_text, time_sent, user_read) 
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP, FALSE)`,
+      [conv_id, user_id, message]
+    );
+
+    // Redirect back to the same conversation
+    res.redirect(`/im?conv_id=${conv_id}`);
+  } catch (error) {
+    console.log("Error adding message:", error);
+    res.render('pages/im', {
+      message: "Could not send message.",
+      error: true
+    });
   }
 });
 
