@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS conventions (
     location TEXT NOT NULL,
     convention_center TEXT,
     convention_bio TEXT,
+    convention_image TEXT,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL
 );
