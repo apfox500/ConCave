@@ -5,7 +5,7 @@
         {{#each conventions}}
         <div class="col-md-3 mb-4">
             <div class="card">
-                <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
+                <img src="{{this.convention_image}}" class="card-img-top" alt="{{this.name}}">
                 <div class="card-body">
                     <h5 class="card-title">{{this.name}}</h5>
                     <!-- Dynamic link to the convention's detail page -->
