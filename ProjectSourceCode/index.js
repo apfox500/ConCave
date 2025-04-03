@@ -150,63 +150,51 @@ const auth = (req, res, next) => {
 
 app.use(auth);
 
-app.get('/im', (req, res) => {
+// Function to fetch messages and user info for a conversation
+async function fetchMessagesAndUserInfo(conv_id, user_id) {
+  try {
+    const messages = await db.any(`SELECT * FROM messages WHERE conversation_id=$1;`, [conv_id]);
+
+    const otherUser = await db.one(
+      `SELECT u.username, u.first_name, u.last_name, u.rank, u.id
+       FROM users u 
+       JOIN conversations c ON (u.id = c.user1_id OR u.id = c.user2_id) 
+       WHERE c.id = $1 AND u.id != $2`,
+      [conv_id, user_id]
+    );
+
+    messages.forEach((message, index) => {
+      message.date = new Date(message.time_sent).toLocaleDateString("en-US", { timeZone: "America/Denver" });
+      message.time = new Date(message.time_sent).toLocaleTimeString("en-US", { timeZone: "America/Denver" });
+      message.recieved = message.user_id == otherUser.id;
+      message.new_date = index === 0 || message.date !== messages[index - 1].date;
+    });
+
+    return { messages, otherUser };
+  } catch (error) {
+    console.error("Error fetching messages or user info:", error);
+    throw error;
+  }
+}
+
+app.get('/im', async (req, res) => {
   console.log("Handling IM request for:", req.session.user);
 
   if (req.query.conv_id) {
-    // load in all messages from conv_id
-    db.any(`SELECT * FROM messages WHERE conversation_id=${req.query.conv_id};`)
-      .then(messages => {
-        // get the other user's basic info (username, first_name, last_name, rank)
-        db.one(
-          `SELECT u.username, u.first_name, u.last_name, u.rank, u.id
-           FROM users u 
-           JOIN conversations c ON (u.id = c.user1_id OR u.id = c.user2_id) 
-           WHERE c.id = $1 AND u.id != $2`,
-          [req.query.conv_id, req.session.user.id]
-        )
-          .then(otherUser => {
-            console.log("Finding conversation with user:", otherUser);
-            messages.forEach((message, index) => {
-              // console.log("Current message:", message);
-              // extract date and time
-              message.date = new Date(message.time_sent).toLocaleDateString();
-              message.time = new Date(message.time_sent).toLocaleTimeString();
-              //check who sent it
-              message.recieved = message.user_id == otherUser.id;
-              // determine if it is a new date or not
-              if (index === 0 || message.date !== messages[index - 1].date) {
-                message.new_date = true; // Mark as a new date
-              } else {
-                message.new_date = false; // Same date as the previous message
-              }
-            });
-
-            // render page with all messages and other user's info
-            console.log("Message data to be sent:", messages);
-            res.render('pages/im', {
-              other_user: otherUser,
-              messages: messages,
-              conv_id: req.query.conv_id
-            });
-          })
-          .catch(error => {
-            console.log("Error fetching other user's info:", error);
-            res.render('pages/im', {
-              message: "Could not load other user's info.",
-              error: true
-            });
-          });
-      })
-      .catch(error => {
-        console.log("Error fetching messages:", error);
-        res.render('pages/im', {
-          message: "Could not load messages.",
-          error: true
-        });
+    try {
+      const { messages, otherUser } = await fetchMessagesAndUserInfo(req.query.conv_id, req.session.user.id);
+      res.render('pages/im', {
+        other_user: otherUser,
+        messages: messages,
+        conv_id: req.query.conv_id
       });
+    } catch (error) {
+      res.render('pages/im', {
+        message: "Could not load messages or user info.",
+        error: true
+      });
+    }
   } else {
-    // they haven't selected a conversation yet, send conversation data to let them select
     console.log("Finding conversations for user:", req.session.user.username);
 
     db.any(
@@ -243,8 +231,15 @@ app.post('/im', async (req, res) => {
       [conv_id, user_id, message]
     );
 
-    // Redirect back to the same conversation
-    res.redirect(`/im?conv_id=${conv_id}`);
+    // Fetch updated messages and user info
+    const { messages, otherUser } = await fetchMessagesAndUserInfo(conv_id, user_id);
+
+    // Render the updated conversation
+    res.render('pages/im', {
+      other_user: otherUser,
+      messages: messages,
+      conv_id: conv_id
+    });
   } catch (error) {
     console.log("Error adding message:", error);
     res.render('pages/im', {
