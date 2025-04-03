@@ -6,7 +6,7 @@ VALUES
 
 INSERT INTO conversations (id, user1_id, user2_id, created_at)
 VALUES
-    (1, 'apfox500', 'aknight', '2025-04-03 00:00:45.455904');
+    (1, 1, 2, '2025-04-03 00:00:45.455904');
 
 INSERT INTO messages (id, conversation_id, user_id, message_text, time_sent, user_read)
 VALUES
