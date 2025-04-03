@@ -25,11 +25,23 @@
     {{else}}
     {{#if conversations}}
     {{!-- we load in conversations for them to select --}}
-    <p>Select from some conversations!</p>
+    <h4>Select a Conversation</h4>
+    <table class="table">
+        <tbody>
+            {{#each conversations}}
+            <tr>
+                <td>{{first_name}} {{last_name}} ({{username}})</td>
+                <td>
+                    <a href="/im?conv_id={{conversation_id}}" class="btn btn-primary">Chat</a>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
 
     {{else}}
     {{!-- they have no conversations --}}
-    <p> No conversations, Go make some!</p>
+    <p>No conversations, Go make some!</p>
     {{/if}}
     {{/if}}
 </div>

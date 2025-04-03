@@ -151,7 +151,8 @@ const auth = (req, res, next) => {
 app.use(auth);
 
 app.get('/im', (req, res) => {
-  console.log(req.session.user);
+  console.log("Handling IM request for:", req.session.user);
+
   if (req.query.conv_id) {
     // load in all messages from conv_id
     db.any(`SELECT * FROM messages WHERE conversation_id=${req.query.conv_id};`)
@@ -165,10 +166,9 @@ app.get('/im', (req, res) => {
           [req.query.conv_id, req.session.user.id]
         )
           .then(otherUser => {
-            console.log("Other user:", otherUser);
+            console.log("Finding conversation with user:", otherUser);
             messages.forEach((message, index) => {
-              console.log("Current message:", message);
-
+              // console.log("Current message:", message);
               // extract date and time
               message.date = new Date(message.time_sent).toLocaleDateString();
               message.time = new Date(message.time_sent).toLocaleTimeString();
@@ -181,6 +181,7 @@ app.get('/im', (req, res) => {
                 message.new_date = false; // Same date as the previous message
               }
             });
+
             // render page with all messages and other user's info
             console.log("Message data to be sent:", messages);
             res.render('pages/im', {
@@ -205,10 +206,27 @@ app.get('/im', (req, res) => {
       });
   } else {
     // they haven't selected a conversation yet, send conversation data to let them select
-    res.render('pages/im', {
-      // message: "Logged in, viewing im page",
-      // error: false
-    });
+    console.log("Finding conversations for user:", req.session.user.username);
+
+    db.any(
+      `SELECT c.id AS conversation_id, u.id AS user_id, u.first_name, u.last_name, u.username
+       FROM conversations c
+       JOIN users u ON (u.id = c.user1_id OR u.id = c.user2_id)
+       WHERE (c.user1_id = $1 OR c.user2_id = $1) AND u.id != $1`,
+      [req.session.user.id]
+    )
+      .then(conversations => {
+        res.render('pages/im', {
+          conversations: conversations
+        });
+      })
+      .catch(error => {
+        console.log("Error fetching conversations:", error);
+        res.render('pages/im', {
+          message: "Could not load conversations.",
+          error: true
+        });
+      });
   }
 });
 
