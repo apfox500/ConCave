@@ -1,7 +1,9 @@
-<div class="container" style="padding: 3%">
+<div class="container">
     {{> message}}
 
+
     {{#if messages}}
+    <a href="/im" class="btn btn-primary">Back</a>
     {{!-- loading in a specific conversation --}}
     <h4>Chat with {{other_user.first_name}} {{other_user.last_name}} ({{other_user.username}})</h4>
     <div class="container border" id="messages-container" style="height: 70vh; overflow-y: auto;">
