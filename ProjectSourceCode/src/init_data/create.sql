@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS conversations (
 CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,
     conversation_id INT NOT NULL,
+    user_id INT NOT NULL,
     message_text TEXT NOT NULL,
     time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     user_read BOOLEAN DEFAULT FALSE,
