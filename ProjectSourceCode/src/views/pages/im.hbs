@@ -1,5 +1,9 @@
 <div class="container" style="padding: 5%">
-    <h4>Chat with {{other_user}}</h4>
+    {{> message}}
+
+    {{#if messages}}
+    {{!-- loading in a specific conversation --}}
+    <h4>Chat with {{other_user.first_name}} {{other_user.last_name}} ({{other_user.username}})</h4>
     <div class="container border" style="height: 75vh; overflow-y: auto;">
         {{#each messages}}
         {{#if new_date}}
@@ -7,7 +11,7 @@
         {{/if}}
         <div class="message d-inline-block {{#if recieved}} received{{else}} sent{{/if}}">
             <p class="date">{{time}}</p>
-            <p>{{message}}</p>
+            <p>{{message_text}}</p>
         </div>
         {{/each}}
     </div>
@@ -17,4 +21,15 @@
             <button type="submit" class="btn btn-primary">Send</button>
         </div>
     </form>
+
+    {{else}}
+    {{#if conversations}}
+    {{!-- we load in conversations for them to select --}}
+    <p>Select from some conversations!</p>
+
+    {{else}}
+    {{!-- they have no conversations --}}
+    <p> No conversations, Go make some!</p>
+    {{/if}}
+    {{/if}}
 </div>

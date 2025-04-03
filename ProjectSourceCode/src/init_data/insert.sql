@@ -8,9 +8,9 @@ INSERT INTO conversations (id, user1_id, user2_id, created_at)
 VALUES
     (1, 1, 2, '2025-04-03 00:00:45.455904');
 
-INSERT INTO messages (id, conversation_id, user_id, message_text, time_sent, user_read)
+INSERT INTO messages (conversation_id, user_id, message_text, time_sent, user_read)
 VALUES
-    (1, 1, 2, "Hey, How are you?", '2025-04-03 00:00:45.455904', TRUE),
-    (2, 1, 1, "I'm good", '2025-04-03 00:01:45.455904', FALSE),
-    (2, 1, 1, "How are you?", '2025-04-03 00:01:46.455904', FALSE);
+    (1, 2, 'Hey, How are you?', '2025-04-03 00:00:45.455904', TRUE),
+    (1, 1, 'Im good', '2025-04-03 00:01:45.455904', FALSE),
+    (1, 1, 'How are you?', '2025-04-03 00:01:46.455904', FALSE);
 

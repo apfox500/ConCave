@@ -130,7 +130,8 @@ app.post("/login", async (req, res) => {
     if (user && (await bcrypt.compare(req.body.password, user.password))) {
       req.session.user = user;
       req.session.save();
-      res.redirect("/");
+      console.log("Logged in ", user);
+      res.redirect("/im");
     } else {
       res.render("pages/login", { error: "Incorrect username or password." });
     }
@@ -147,43 +148,69 @@ const auth = (req, res, next) => {
   next();
 };
 
+app.use(auth);
+
 app.get('/im', (req, res) => {
-  //TODO: figure out how to make sure that there is a user right now
+  console.log(req.session.user);
+  if (req.query.conv_id) {
+    // load in all messages from conv_id
+    db.any(`SELECT * FROM messages WHERE conversation_id=${req.query.conv_id};`)
+      .then(messages => {
+        // get the other user's basic info (username, first_name, last_name, rank)
+        db.one(
+          `SELECT u.username, u.first_name, u.last_name, u.rank, u.id
+           FROM users u 
+           JOIN conversations c ON (u.id = c.user1_id OR u.id = c.user2_id) 
+           WHERE c.id = $1 AND u.id != $2`,
+          [req.query.conv_id, req.session.user.id]
+        )
+          .then(otherUser => {
+            console.log("Other user:", otherUser);
+            messages.forEach((message, index) => {
+              console.log("Current message:", message);
 
-  //TODO: query messages from database and load them in
-
-  let messages = [
-    {
-      date: "3-17-2025",
-      time: "17:00",
-      message: "Hey, How are you?",
-      recieved: true
-    },
-    {
-      date: "3-18-2025",
-      time: "8:00",
-      message: "I'm good",
-      recieved: false
-    },
-    {
-      date: "3-18-2025",
-      time: "8:01",
-      message: "How are you?",
-      recieved: false
-    }
-  ];
-  messages.forEach((message, index) => {
-    if (index === 0 || message.date !== messages[index - 1].date) {
-      message.new_date = true; // Mark as a new date
-    } else {
-      message.new_date = false; // Same date as the previous message
-    }
-  });
-  res.render('pages/im', { //Just dummy data for now
-    other_user: "Other User",
-    messages: messages
-  });
-})
+              // extract date and time
+              message.date = new Date(message.time_sent).toLocaleDateString();
+              message.time = new Date(message.time_sent).toLocaleTimeString();
+              //check who sent it
+              message.recieved = message.user_id == otherUser.id;
+              // determine if it is a new date or not
+              if (index === 0 || message.date !== messages[index - 1].date) {
+                message.new_date = true; // Mark as a new date
+              } else {
+                message.new_date = false; // Same date as the previous message
+              }
+            });
+            // render page with all messages and other user's info
+            console.log("Message data to be sent:", messages);
+            res.render('pages/im', {
+              other_user: otherUser,
+              messages: messages
+            });
+          })
+          .catch(error => {
+            console.log("Error fetching other user's info:", error);
+            res.render('pages/im', {
+              message: "Could not load other user's info.",
+              error: true
+            });
+          });
+      })
+      .catch(error => {
+        console.log("Error fetching messages:", error);
+        res.render('pages/im', {
+          message: "Could not load messages.",
+          error: true
+        });
+      });
+  } else {
+    // they haven't selected a conversation yet, send conversation data to let them select
+    res.render('pages/im', {
+      // message: "Logged in, viewing im page",
+      // error: false
+    });
+  }
+});
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
