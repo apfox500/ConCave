@@ -70,6 +70,11 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  res.locals.user = req.session.user;
+  next();
+});
+
 // *****************************************************
 // <!-- Section 4 : API Routes -->
 // *****************************************************
@@ -104,6 +109,69 @@ app.get('/conventions/:id', async (req, res) => {
     res.status(500).send('Error fetching convention details.');
   }
 });
+
+app.get("/register", (req, res) => {
+  res.render("pages/register");
+});
+
+app.post("/register", async (req, res) => {
+  try {
+    if (req.body.password !== req.body.confirmPassword) {
+      return res.render("pages/register", {
+        error: "Passwords do not match.",
+        formData: req.body
+      });
+    }
+    const hash = await bcrypt.hash(req.body.password, 10);
+    await db.none(
+      "INSERT INTO users (first_name, last_name, username, email, rank, password) VALUES ($1, $2, $3, $4, $5, $6)",
+      [req.body.firstName, req.body.lastName, req.body.username, req.body.email, "user", hash]
+    );
+    res.redirect("/login");
+  } catch (error) {
+    console.log(error);
+    res.render("pages/register", {
+      error: "Could not create user. Maybe username or email is taken?",
+      formData: req.body
+    });
+  }
+});
+
+app.get("/login", (req, res) => {
+  res.render("pages/login");
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const user = await db.oneOrNone(
+      "SELECT * FROM users WHERE username = $1",
+      [req.body.username]
+    );
+    if (user && (await bcrypt.compare(req.body.password, user.password))) {
+      req.session.user = user;
+      req.session.save();
+      res.redirect("/");
+    } else {
+      res.render("pages/login", { error: "Incorrect username or password." });
+    }
+  } catch (error) {
+    console.log(error);
+    res.render("pages/login", { error: "Error logging in." });
+  }
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
+});
+
+const auth = (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  next();
+};
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
