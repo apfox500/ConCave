@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS users_to_badges (
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 */
-
 -- Potentially only for Dummy Data if we use an API
 CREATE TABLE IF NOT EXISTS conventions (
     id SERIAL PRIMARY KEY,
@@ -39,7 +38,6 @@ CREATE TABLE IF NOT EXISTS conventions (
     location TEXT NOT NULL,
     convention_center TEXT,
     convention_bio TEXT,
-    convention_image TEXT,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL
 );
@@ -80,4 +78,20 @@ CREATE TABLE IF NOT EXISTS messages (
     time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     user_read BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS tunnels (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS replies (
+  id SERIAL PRIMARY KEY,
+  tunnel_id INT,
+  FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
+  parent_reply_id INT REFERENCES replies(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
