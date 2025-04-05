@@ -153,7 +153,7 @@ app.use(auth);
 // Function to fetch messages and user info for a conversation
 async function fetchMessagesAndUserInfo(conv_id, user_id) {
   try {
-    const messages = await db.any(`SELECT * FROM messages WHERE conversation_id=$1;`, [conv_id]);
+    const messages = await db.any(`SELECT * FROM messages WHERE conversation_id=$1 ORDER BY time_sent ASC;`, [conv_id]);
 
     const otherUser = await db.one(
       `SELECT u.username, u.first_name, u.last_name, u.rank, u.id
@@ -164,11 +164,31 @@ async function fetchMessagesAndUserInfo(conv_id, user_id) {
     );
 
     messages.forEach((message, index) => {
-      message.date = new Date(message.time_sent).toLocaleDateString("en-US", { timeZone: "America/Denver" });
-      message.time = new Date(message.time_sent).toLocaleTimeString("en-US", { timeZone: "America/Denver" });
+      const now = new Date();
+      const messageTime = new Date(message.time_sent);
+      const timeDifference = now - messageTime;
+
+      if (timeDifference < 5000) { // Less than 5 seconds ago
+        message.time = "now";
+      } else if (timeDifference > 24 * 60 * 60 * 1000) { // More than 24 hours ago
+        message.time = messageTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+      } else if (timeDifference > 60 * 60 * 1000) { // Within 24 hours but more than an hour
+        const hoursAgo = Math.round(timeDifference / (60 * 60 * 1000));
+        message.time = `${hoursAgo} hours ago`;
+      } else if (timeDifference > 60 * 1000) { // Within the last hour but more than a minute
+        const minutesAgo = Math.round(timeDifference / (60 * 1000));
+        message.time = `${minutesAgo} minutes ago`;
+      } else { // Within the last minute
+        const secondsAgo = Math.round(timeDifference / 1000);
+        message.time = `${secondsAgo} seconds ago`;
+      }
+
+      message.date = messageTime.toLocaleDateString("en-US", { timeZone: "America/Denver" });
       message.recieved = message.user_id == otherUser.id;
       message.new_date = index === 0 || message.date !== messages[index - 1].date;
     });
+
+
 
     return { messages, otherUser };
   } catch (error) {
@@ -177,16 +197,46 @@ async function fetchMessagesAndUserInfo(conv_id, user_id) {
   }
 }
 
-app.get('/im', async (req, res) => {
-  console.log("Handling IM request for:", req.session.user);
+async function isUser1(user_id, conv_id) {
+  const ret = await db.one(
+    `SELECT CASE WHEN user1_id = $1 THEN true ELSE false END AS is_user1
+   FROM conversations WHERE id = $2`,
+    [user_id, conv_id]
+  );
+  console.log("INSIDE isUser1 returning:", ret.is_user1);
+  return ret.is_user1;
+}
 
-  if (req.query.conv_id) {
+app.get('/im', async (req, res) => {
+  console.log("Handling IM request for:", req.session.user.username);
+
+  const conv_id = req.query.conv_id;
+  if (conv_id) { //They have selected a specific conversation
+
+    console.log("Pulling messages in conversation:", conv_id);
     try {
-      const { messages, otherUser } = await fetchMessagesAndUserInfo(req.query.conv_id, req.session.user.id);
+      const { messages, otherUser } = await fetchMessagesAndUserInfo(conv_id, req.session.user.id);
+
+      //update conversation and mark this user as read
+      const isU1 = await isUser1(req.session.user.id, conv_id);
+      console.log(`In conv ${conv_id} value of isUser1 is ${isU1}`);
+      if (isU1 == true) {
+        await db.none(
+          `UPDATE conversations SET user1_unread = false WHERE id = $1`,
+          [conv_id]
+        );
+      } else {
+        await db.none(
+          `UPDATE conversations SET user2_unread = false WHERE id = $1`,
+          [conv_id]
+        );
+      }
+
+      //now we render the page
       res.render('pages/im', {
         other_user: otherUser,
         messages: messages,
-        conv_id: req.query.conv_id
+        conv_id: conv_id
       });
     } catch (error) {
       res.render('pages/im', {
@@ -194,17 +244,26 @@ app.get('/im', async (req, res) => {
         error: true
       });
     }
-  } else {
+  } else { //Show a list of conversations
     console.log("Finding conversations for user:", req.session.user.username);
 
     db.any(
-      `SELECT c.id AS conversation_id, u.id AS user_id, u.first_name, u.last_name, u.username
+      `SELECT c.id AS conversation_id, 
+              u.id AS user_id, 
+              u.first_name, 
+              u.last_name, 
+              u.username, 
+              CASE 
+                WHEN c.user1_id = $1 THEN c.user1_unread 
+                WHEN c.user2_id = $1 THEN c.user2_unread 
+              END AS current_unread
        FROM conversations c
        JOIN users u ON (u.id = c.user1_id OR u.id = c.user2_id)
        WHERE (c.user1_id = $1 OR c.user2_id = $1) AND u.id != $1`,
       [req.session.user.id]
     )
       .then(conversations => {
+        console.log("Conversations found, checking for unread messages");
         res.render('pages/im', {
           conversations: conversations
         });
@@ -225,12 +284,31 @@ app.post('/im', async (req, res) => {
     const { message, conv_id } = req.body;
     const user_id = req.session.user.id;
 
+    console.log(`Sending a message from ${user_id} in conversation${conv_id}`);
+
     // Insert the new message into the database
     await db.none(
-      `INSERT INTO messages (conversation_id, user_id, message_text, time_sent, user_read) 
-       VALUES ($1, $2, $3, CURRENT_TIMESTAMP, FALSE)`,
+      `INSERT INTO messages (conversation_id, user_id, message_text, time_sent) 
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
       [conv_id, user_id, message]
     );
+    console.log("Sent message");
+
+    // Determine if the current user is user1 or user2 and update the unread value for the other user'
+    const isU1 = await isUser1(user_id, conv_id);
+    console.log(`In conversation ${conv_id}, is user #1?: ${isU1}`)
+    if (isU1 == true) {
+      await db.none(
+        `UPDATE conversations SET user2_unread = true WHERE id = $1`,
+        [conv_id]
+      );
+    } else {
+      await db.none(
+        `UPDATE conversations SET user1_unread = true WHERE id = $1`,
+        [conv_id]
+      );
+    }
+    console.log("Updating read status");
 
     // Fetch updated messages and user info
     const { messages, otherUser } = await fetchMessagesAndUserInfo(conv_id, user_id);

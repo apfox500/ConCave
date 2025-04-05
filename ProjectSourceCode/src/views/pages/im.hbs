@@ -40,7 +40,13 @@
         <tbody>
             {{#each conversations}}
             <tr>
-                <td>{{first_name}} {{last_name}} ({{username}})</td>
+                <td>
+                    {{first_name}} {{last_name}} ({{username}})
+                    {{#if current_unread}}
+                    <span class="notification-symbol"></span>
+                    {{/if}}
+                </td>
+
                 <td>
                     <a href="/im?conv_id={{conversation_id}}" class="btn btn-primary">Chat</a>
                 </td>
@@ -48,6 +54,19 @@
             {{/each}}
         </tbody>
     </table>
+
+    <style>
+        .notification-symbol {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: blue;
+            border-radius: 50%;
+            margin-left: 5px;
+            position: relative;
+            top: -2px;
+        }
+    </style>
 
     {{else}}
     {{!-- they have no conversations --}}
