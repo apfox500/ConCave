@@ -184,7 +184,7 @@ async function fetchMessagesAndUserInfo(conv_id, user_id) {
       }
 
       message.date = messageTime.toLocaleDateString("en-US", { timeZone: "America/Denver" });
-      message.recieved = message.user_id == otherUser.id;
+      message.received = message.user_id == otherUser.id;
       message.new_date = index === 0 || message.date !== messages[index - 1].date;
     });
 
