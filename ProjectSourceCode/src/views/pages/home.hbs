@@ -1,15 +1,63 @@
 <div class="container mt-4 text-center">
+  <div class="container mt-4">
+        <!-- Button to trigger form card -->
+        <div class="d-flex justify-content-end mb-3">
+            <button id="addConventionBtn" class="btn btn-success">Add Convention</button>
+        </div>
+        <!-- Form Card to Add a Convention -->
+        <div class="row mt-4" id="addConventionFormCard" style="display: none;">
+            <div class="col-md-6 mb-4 offset-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Add a New Convention</h5>
+                        <form id="addConventionForm">
+                            <div class="mb-3">
+                                <label for="conventionName" class="form-label">Convention Name</label>
+                                <input type="text" class="form-control" id="conventionName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="conventionLocation" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="conventionLocation" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="conventionLocation" class="form-label">Convention Center</label>
+                                <input type="text" class="form-control" id="conventionCenter" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="conventionLocation" class="form-label">Convention Bio</label>
+                                <input type="text" class="form-control" id="conventionBio" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="conventionImage" class="form-label">Convention Image</label>
+                                <input type="text" class="form-control" id="conventionImage" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="conventionStart" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="conventionStart" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="conventionEnd" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="conventionEnd" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Convention</button>
+                        </form>
+                        <button id="cancelFormBtn" class="btn btn-secondary mt-3">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     <h2>Upcoming Conventions</h2>
     <div class="d-flex justify-content-center">
         <div id="eventsCarousel" class="carousel slide" data-bs-ride="carousel" style="width: 900px;">
             <div class="carousel-inner">
-                {{#each events}}
+                {{#each conventions}}
                     <div class="carousel-item {{#if @first}}active{{/if}}">
                         <div class="d-flex justify-content-center align-items-center" style="height: 300px; background-color: #ddd; border-radius: 10px;">
-                            <h5>{{title}}</h5>
+                            <img src="{{this.convention_image}}" class="d-block w-100" alt="{{this.name}}" style="object-fit: cover; height: 100%; border-radius: 10px;">
                         </div>
                         <div class="text-center mt-3">
-                            <a href="{{link}}" class="btn btn-dark">Learn More</a>
+                            <h5>{{this.name}}</h5>
+                            <a href="/conventions/{{this.id}}" class="btn btn-dark">Learn More</a>
                         </div>
                     </div>
                 {{/each}}
@@ -29,17 +77,75 @@
 <div class="container mt-5">
   <h2 class="text-center mb-4">Other Events</h2>
   <div class="row">
-    {{#each events}}
+    {{#each conventions}}
       <div class="col-md-4 mb-3">
         <div class="card" style="aspect-ratio: 1/1; overflow: hidden;">
-          <div style="height: 66%; background-image: url('https://via.placeholder.com/300'); background-size: cover; background-position: center;"></div>
+          <div style="height: 66%; background-image: url('{{this.convention_image}}'); background-size: cover; background-position: center;"></div>
           <div style="height: 34%; background-color: #eaeaea;" class="d-flex flex-column justify-content-center align-items-center p-2">
-            <h5 class="card-title mb-4">{{title}}</h5>
-            <a href="{{link}}" class="btn btn-dark">Learn More</a>
+            <h5 class="card-title mb-4">{{this.name}}</h5>
+            <a href="/conventions/{{this.id}}" class="btn btn-dark">Learn More</a>
           </div>
         </div>
       </div>
     {{/each}}
   </div>
 </div>
+<!-- Include your custom JavaScript to handle the form -->
+    <script>
+        // Add convention button
+        document.getElementById('addConventionBtn').addEventListener('click', function () {
+            document.getElementById('addConventionFormCard').style.display = 'block';
+        });
 
+        // Cancel button
+        document.getElementById('cancelFormBtn').addEventListener('click', function () {
+            document.getElementById('addConventionFormCard').style.display = 'none';
+        });
+
+        // Form submission
+        document.getElementById('addConventionForm').addEventListener('submit', async function (e) {
+            // Allows me to handle the rest with Javascript
+            e.preventDefault();
+            const name = document.getElementById('conventionName').value;
+            const location = document.getElementById('conventionLocation').value;
+            const convention_center = document.getElementById('conventionCenter').value;
+            const convention_bio = document.getElementById('conventionBio').value;
+            const convention_image = document.getElementById('conventionImage').value;
+            const startDate = document.getElementById('conventionStart').value;
+            const endDate = document.getElementById('conventionEnd').value;
+
+            // Make a POST request to the backend to add the convention
+            try {
+                const response = await fetch('/conventions/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        location,
+                        convention_center,
+                        convention_bio,
+                        convention_image,
+                        start_date: startDate,
+                        end_date: endDate
+                    })
+                });
+                //console.log('Response:', response);
+                //console.log('Response Status:', response.status);
+                //const responseData = await response.json().catch(() => null);
+                //console.log('Response Data:', responseData);
+                //alert(response.ok)
+                if (response.ok) {
+                    alert('Convention added successfully!');
+                    document.getElementById('addConventionFormCard').style.display = 'none';
+                } else {
+                    alert('Error adding convention: ' + data.message);
+                }
+            } catch (error) {
+                alert('There was an error adding the convention.');
+            }
+        });
+
+        
+    </script>

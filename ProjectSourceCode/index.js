@@ -79,15 +79,35 @@ app.use((req, res, next) => {
 // <!-- Section 4 : API Routes -->
 // *****************************************************
 
-app.get("/", (req, res) => {
-  const events = [
-    { title: "Comic-Con 2024", link: "https://www.comic-con.org/" },
-    { title: "Anime Expo", link: "https://www.anime-expo.org/" },
-    { title: "PAX West", link: "https://west.paxsite.com/" },
-    { title: "GDC 2024", link: "https://gdconf.com/" },
-    { title: "E3 Expo", link: "https://www.e3expo.com/" }
-  ];
-  res.render("pages/home", { title: "ConCave", events });
+app.get('/', async (req, res) => {
+  try {
+    const conventions = await db.any('SELECT * FROM conventions ORDER BY start_date ASC');
+    
+    res.render('pages/home', {
+      title: 'ConCave',
+      message: 'Welcome to ConCave!',
+      conventions,
+    });
+  } catch (error) {
+    console.error('Error fetching conventions:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/conventions/:id', async (req, res) => {
+  const conventionId = req.params.id;
+  
+  try {
+    const convention = await db.one(`SELECT * FROM conventions WHERE id = ${conventionId}`);
+    
+    res.render('pages/conventionDetails', {
+      title: convention.name,
+      convention: convention,
+    });
+  } catch (error) {
+    console.log('ERROR:', error.message || error);
+    res.status(500).send('Error fetching convention details.');
+  }
 });
 
 app.get("/register", (req, res) => {
@@ -152,6 +172,37 @@ const auth = (req, res, next) => {
   }
   next();
 };
+
+/*const authorizeConventionHost = (req, res, next) => {
+  if (req.user.rank !== "convention_host" || req.user.rank !== "admin") {
+      return res.status(403).json({ message: "Forbidden: Only Convention Hosts can add conventions." });
+  }
+  next();
+};*/
+
+app.post("/conventions/add", async (req, res) => {
+  try {
+      const { name, location, convention_center, convention_bio, convention_image, start_date, end_date } = req.body;
+
+      if (!name || !location || !convention_center || !convention_bio || !convention_image || !start_date || !end_date) {
+          return res.status(400).json({ message: "All fields are required" });
+      }
+
+      const result = await db.task(async t => {
+          // Insert convention
+          const conventionQuery = `
+              INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date)
+              VALUES ($1, $2, $3, $4, $5, $6, $7)
+              RETURNING id;`;
+          const conventionResult = await t.one(conventionQuery, [name, location, convention_center, convention_bio, convention_image, start_date, end_date]);
+          return conventionResult;
+      });
+
+      res.status(201).json({ message: "Convention added successfully!", convention: result });
+  } catch (error) {
+      res.status(500).json({ message: "An error occurred", error: error.message });
+  }
+});
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
