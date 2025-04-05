@@ -3,7 +3,30 @@
         <!-- Button to trigger form card -->
         <div class="d-flex justify-content-end mb-3">
             <button id="addConventionBtn" class="btn btn-success">Add Convention</button>
+<body>
+    <div class="container mt-4">
+        <!-- Button to trigger form card -->
+        <div class="d-flex justify-content-end mb-3">
+            <button id="addConventionBtn" class="btn btn-success">Add Convention</button>
         </div>
+        
+        <h2>Upcoming Conventions</h2>
+        
+        <!-- Placeholder cards from wireframe -->
+        <div class="row mt-4" id="conventions-list">
+            {{#each conventions}}
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
+                    <div class="card-body">
+                        <h5 class="card-title">{{this.name}}</h5>
+                        <a href="#" class="btn btn-primary">Learn More</a>
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+        
         <!-- Form Card to Add a Convention -->
         <div class="row mt-4" id="addConventionFormCard" style="display: none;">
             <div class="col-md-6 mb-4 offset-md-3">
@@ -28,10 +51,6 @@
                                 <input type="text" class="form-control" id="conventionBio" required>
                             </div>
                             <div class="mb-3">
-                                <label for="conventionImage" class="form-label">Convention Image</label>
-                                <input type="text" class="form-control" id="conventionImage" required>
-                            </div>
-                            <div class="mb-3">
                                 <label for="conventionStart" class="form-label">Start Date</label>
                                 <input type="date" class="form-control" id="conventionStart" required>
                             </div>
@@ -46,51 +65,9 @@
                 </div>
             </div>
         </div>
-    <h2>Upcoming Conventions</h2>
-    <div class="d-flex justify-content-center">
-        <div id="eventsCarousel" class="carousel slide" data-bs-ride="carousel" style="width: 900px;">
-            <div class="carousel-inner">
-                {{#each conventions}}
-                    <div class="carousel-item {{#if @first}}active{{/if}}">
-                        <div class="d-flex justify-content-center align-items-center" style="height: 300px; background-color: #ddd; border-radius: 10px;">
-                            <img src="{{this.convention_image}}" class="d-block w-100" alt="{{this.name}}" style="object-fit: cover; height: 100%; border-radius: 10px;">
-                        </div>
-                        <div class="text-center mt-3">
-                            <h5>{{this.name}}</h5>
-                            <a href="/conventions/{{this.id}}" class="btn btn-dark">Learn More</a>
-                        </div>
-                    </div>
-                {{/each}}
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#eventsCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#eventsCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-        </div>
     </div>
-</div>
 
-<div class="container mt-5">
-  <h2 class="text-center mb-4">Other Events</h2>
-  <div class="row">
-    {{#each conventions}}
-      <div class="col-md-4 mb-3">
-        <div class="card" style="aspect-ratio: 1/1; overflow: hidden;">
-          <div style="height: 66%; background-image: url('{{this.convention_image}}'); background-size: cover; background-position: center;"></div>
-          <div style="height: 34%; background-color: #eaeaea;" class="d-flex flex-column justify-content-center align-items-center p-2">
-            <h5 class="card-title mb-4">{{this.name}}</h5>
-            <a href="/conventions/{{this.id}}" class="btn btn-dark">Learn More</a>
-          </div>
-        </div>
-      </div>
-    {{/each}}
-  </div>
-</div>
-<!-- Include your custom JavaScript to handle the form -->
+    <!-- Include your custom JavaScript to handle the form -->
     <script>
         // Add convention button
         document.getElementById('addConventionBtn').addEventListener('click', function () {
@@ -110,7 +87,6 @@
             const location = document.getElementById('conventionLocation').value;
             const convention_center = document.getElementById('conventionCenter').value;
             const convention_bio = document.getElementById('conventionBio').value;
-            const convention_image = document.getElementById('conventionImage').value;
             const startDate = document.getElementById('conventionStart').value;
             const endDate = document.getElementById('conventionEnd').value;
 
@@ -126,7 +102,6 @@
                         location,
                         convention_center,
                         convention_bio,
-                        convention_image,
                         start_date: startDate,
                         end_date: endDate
                     })
@@ -138,7 +113,24 @@
                 //alert(response.ok)
                 if (response.ok) {
                     alert('Convention added successfully!');
+                    const conventionCard = document.createElement('div');
+                    conventionCard.classList.add('col-md-3', 'mb-4');
+                    conventionCard.innerHTML = `
+                        <div class="card">
+                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Convention placeholder">
+                            <div class="card-body">
+                                <h5 class="card-title">${name}</h5>
+                                <a href="#" class="btn btn-primary">Learn More</a>
+                            </div>
+                        </div>
+                    `;
+
+                    // Add it to the convention list
+                    document.getElementById('conventions-list').appendChild(conventionCard);
+
+                    // Hide the form and clear input fields
                     document.getElementById('addConventionFormCard').style.display = 'none';
+                    document.getElementById('addConventionForm').reset();
                 } else {
                     alert('Error adding convention: ' + data.message);
                 }
@@ -149,3 +141,4 @@
 
         
     </script>
+</body>
