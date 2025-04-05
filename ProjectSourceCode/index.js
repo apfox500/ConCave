@@ -204,6 +204,22 @@ app.post("/conventions/add", async (req, res) => {
   }
 });
 
+app.get("/profile", (req, res) => {
+  res.render("pages/profile");
+});
+
+app.get('/profile', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]); // Assuming req.user.id contains the logged-in user’s ID
+    const user = result.rows[0];
+
+    res.render('profile', { user }); // Pass the user data to the profile view
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error retrieving user profile');
+  }
+});
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
