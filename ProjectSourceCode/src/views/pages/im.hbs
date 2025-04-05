@@ -2,7 +2,7 @@
     {{> message}}
 
 
-    {{#if messages}}
+    {{#if conv_exists}}
     <a href="/im" class="btn btn-primary">Back</a>
     {{!-- loading in a specific conversation --}}
     <h4>Chat with {{other_user.first_name}} {{other_user.last_name}} ({{other_user.username}})</h4>
@@ -59,7 +59,32 @@
     {{!-- they have no conversations --}}
     <p>No conversations, Go make some!</p>
     {{/if}}
+    <button id="start-new-conversation" class="btn btn-secondary mt-3"
+        onclick='document.getElementById("new-conversation-modal").style.display = "block";'>Start new
+        conversation</button>
 
-    {{!-- TODO: add in a way to start a new chat based on username --}}
+    <div id="new-conversation-modal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-content"
+            style="background: white; margin: 10% auto; padding: 20px; width: 50%; border-radius: 8px;">
+            <h4>Start a New Conversation</h4>
+            <form action="/im/create" method="POST">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Enter username"
+                        required>
+                </div>
+                <div class="form-group mt-3">
+                    <button type="submit" class="btn btn-primary">Start</button>
+                    <button type="button" id="close-modal" class="btn btn-secondary"
+                        onclick='document.getElementById("new-conversation-modal").style.display = "none";'>Cancel</button>
+                </div>
+            </form>
+        </div>
+
+
+
+    </div>
+
     {{/if}}
 </div>

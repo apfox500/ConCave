@@ -130,7 +130,7 @@ app.post("/login", async (req, res) => {
     if (user && (await bcrypt.compare(req.body.password, user.password))) {
       req.session.user = user;
       req.session.save();
-      console.log("Logged in ", user);
+      console.log("Logged in ", user.username);
       res.redirect("/im");
     } else {
       res.render("pages/login", { error: "Incorrect username or password." });
@@ -163,6 +163,7 @@ async function fetchMessagesAndUserInfo(conv_id, user_id) {
       [conv_id, user_id]
     );
 
+    //makes time on messages print nice
     messages.forEach((message, index) => {
       const now = new Date();
       const messageTime = new Date(message.time_sent);
@@ -188,67 +189,32 @@ async function fetchMessagesAndUserInfo(conv_id, user_id) {
       message.new_date = index === 0 || message.date !== messages[index - 1].date;
     });
 
-
+    //update conversation and mark this user as read
+    const isU1 = await isUser1(user_id, conv_id);
+    // console.log(`In conv ${conv_id} value of isUser1 is ${isU1}`);
+    if (isU1 == true) {
+      await db.none(
+        `UPDATE conversations SET user1_unread = false WHERE id = $1`,
+        [conv_id]
+      );
+    } else {
+      await db.none(
+        `UPDATE conversations SET user2_unread = false WHERE id = $1`,
+        [conv_id]
+      );
+    }
 
     return { messages, otherUser };
+
   } catch (error) {
     console.error("Error fetching messages or user info:", error);
     throw error;
   }
 }
 
-async function isUser1(user_id, conv_id) {
-  const ret = await db.one(
-    `SELECT CASE WHEN user1_id = $1 THEN true ELSE false END AS is_user1
-   FROM conversations WHERE id = $2`,
-    [user_id, conv_id]
-  );
-  console.log("INSIDE isUser1 returning:", ret.is_user1);
-  return ret.is_user1;
-}
-
-app.get('/im', async (req, res) => {
-  console.log("Handling IM request for:", req.session.user.username);
-
-  const conv_id = req.query.conv_id;
-  if (conv_id) { //They have selected a specific conversation
-
-    console.log("Pulling messages in conversation:", conv_id);
-    try {
-      const { messages, otherUser } = await fetchMessagesAndUserInfo(conv_id, req.session.user.id);
-
-      //update conversation and mark this user as read
-      const isU1 = await isUser1(req.session.user.id, conv_id);
-      console.log(`In conv ${conv_id} value of isUser1 is ${isU1}`);
-      if (isU1 == true) {
-        await db.none(
-          `UPDATE conversations SET user1_unread = false WHERE id = $1`,
-          [conv_id]
-        );
-      } else {
-        await db.none(
-          `UPDATE conversations SET user2_unread = false WHERE id = $1`,
-          [conv_id]
-        );
-      }
-
-      //now we render the page
-      res.render('pages/im', {
-        other_user: otherUser,
-        messages: messages,
-        conv_id: conv_id
-      });
-    } catch (error) {
-      res.render('pages/im', {
-        message: "Could not load messages or user info.",
-        error: true
-      });
-    }
-  } else { //Show a list of conversations
-    console.log("Finding conversations for user:", req.session.user.username);
-
-    db.any(
-      `SELECT c.id AS conversation_id, 
+async function fetchConversations(req, res, message = null, error = null) {
+  await db.any(
+    `SELECT c.id AS conversation_id, 
               u.id AS user_id, 
               u.first_name, 
               u.last_name, 
@@ -260,21 +226,62 @@ app.get('/im', async (req, res) => {
        FROM conversations c
        JOIN users u ON (u.id = c.user1_id OR u.id = c.user2_id)
        WHERE (c.user1_id = $1 OR c.user2_id = $1) AND u.id != $1`,
-      [req.session.user.id]
-    )
-      .then(conversations => {
-        console.log("Conversations found, checking for unread messages");
-        res.render('pages/im', {
-          conversations: conversations
-        });
-      })
-      .catch(error => {
-        console.log("Error fetching conversations:", error);
-        res.render('pages/im', {
-          message: "Could not load conversations.",
-          error: true
-        });
+    [req.session.user.id]
+  )
+    .then(conversations => {
+      console.log("Conversations found");
+      res.render('pages/im', {
+        conversations: conversations,
+        message: message,
+        error: error
       });
+    })
+    .catch(error => {
+      console.log("Error fetching conversations:", error);
+      res.render('pages/im', {
+        message: "Could not load conversations.",
+        error: true
+      });
+    });
+}
+
+
+async function isUser1(user_id, conv_id) {
+  const ret = await db.one(
+    `SELECT CASE WHEN user1_id = $1 THEN true ELSE false END AS is_user1
+   FROM conversations WHERE id = $2`,
+    [user_id, conv_id]
+  );
+  // console.log("INSIDE isUser1 returning:", ret.is_user1);
+  return ret.is_user1;
+}
+
+app.get('/im', async (req, res) => {
+  console.log("Handling IM request for:", req.session.user.username);
+
+  const conv_id = req.query.conv_id;
+  if (conv_id) { //They have selected a specific conversation
+    console.log("Pulling messages in conversation:", conv_id);
+    try {
+      const { messages, otherUser } = await fetchMessagesAndUserInfo(conv_id, req.session.user.id);
+
+      //now we render the page
+      res.render('pages/im', {
+        other_user: otherUser,
+        messages: messages,
+        conv_exists: true,
+        conv_id: conv_id
+      });
+    } catch (error) {
+      res.render('pages/im', {
+        message: "Could not load messages or user info.",
+        error: true
+      });
+    }
+  } else { //Show a list of conversations
+    console.log("Finding conversations for user:", req.session.user.username);
+
+    fetchConversations(req, res);
   }
 });
 
@@ -296,7 +303,7 @@ app.post('/im', async (req, res) => {
 
     // Determine if the current user is user1 or user2 and update the unread value for the other user'
     const isU1 = await isUser1(user_id, conv_id);
-    console.log(`In conversation ${conv_id}, is user #1?: ${isU1}`)
+    // console.log(`In conversation ${conv_id}, is user #1?: ${isU1}`)
     if (isU1 == true) {
       await db.none(
         `UPDATE conversations SET user2_unread = true WHERE id = $1`,
@@ -308,7 +315,7 @@ app.post('/im', async (req, res) => {
         [conv_id]
       );
     }
-    console.log("Updating read status");
+    console.log("Re-rendering page");
 
     // Fetch updated messages and user info
     const { messages, otherUser } = await fetchMessagesAndUserInfo(conv_id, user_id);
@@ -317,6 +324,7 @@ app.post('/im', async (req, res) => {
     res.render('pages/im', {
       other_user: otherUser,
       messages: messages,
+      conv_exists: true,
       conv_id: conv_id
     });
   } catch (error) {
@@ -328,9 +336,56 @@ app.post('/im', async (req, res) => {
   }
 });
 
+app.post('/im/create', async (req, res) => {
+  try {
+    const { username } = req.body;
+    const user1_id = req.session.user.id;
+
+    // Validate that the user exists
+    const user2 = await db.oneOrNone(
+      "SELECT id FROM users WHERE username = $1",
+      [username]
+    );
+
+    if (!user2) {
+      await fetchConversations(req, res, `Could not locate user ${username}`, true)
+    }
+
+    const user2_id = user2.id;
+
+    // Check if a conversation already exists between the two users
+    const existingConversation = await db.oneOrNone(
+      `SELECT id FROM conversations 
+       WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)`,
+      [user1_id, user2_id]
+    );
+
+    if (existingConversation) {
+      return res.redirect(`/im?conv_id=${existingConversation.id}`);
+    }
+
+    // Create a new conversation
+    const newConversation = await db.one(
+      `INSERT INTO conversations (user1_id, user2_id, user1_unread, user2_unread) 
+       VALUES ($1, $2, false, true) RETURNING id`,
+      [user1_id, user2_id]
+    );
+
+    // Redirect to the new conversation page
+    res.redirect(`/im?conv_id=${newConversation.id}`);
+  } catch (error) {
+    console.log("Error creating conversation:", error);
+    res.render('pages/im', {
+      message: "Could not create conversation.",
+      error: true
+    });
+  }
+});
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
 // starting the server and keeping the connection open to listen for more requests
 app.listen(3000);
 console.log('Server is listening on port 3000');
+
