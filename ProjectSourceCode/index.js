@@ -150,6 +150,11 @@ const auth = (req, res, next) => {
 
 app.use(auth);
 
+
+// ******************************************************************
+// <!-- Section 4.1 : Instant Messaging Routes + Helper functions -->
+// ******************************************************************
+
 // Function to fetch messages and user info for a conversation
 async function fetchMessagesAndUserInfo(conv_id, user_id) {
   try {
@@ -244,7 +249,6 @@ async function fetchConversations(req, res, message = null, error = null) {
       });
     });
 }
-
 
 async function isUser1(user_id, conv_id) {
   const ret = await db.one(
