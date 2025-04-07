@@ -41,45 +41,6 @@
 </head>
 <body>
     {{> navbar}}
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const searchInput = document.getElementById('search-bar');
-            const resultsContainer = document.getElementById('search-results');
-
-            searchInput.addEventListener('input', async (event) => {
-                const query = event.target.value;
-                resultsContainer.innerHTML = '';
-
-                if (query.length > 0) {
-                    const newUrl = `/search?q=${encodeURIComponent(query)}`;
-                    history.pushState({ path: newUrl }, '', newUrl);
-
-                    try {
-                        const response = await fetch(newUrl);
-                        const results = await response.json();
-
-                        if (results.length > 0) {
-                            results.forEach(convention => {
-                                const resultItem = document.createElement('div');
-                                resultItem.className = 'result-item';
-                                resultItem.innerHTML = `<strong>${convention.name}</strong>
-                                <a href="${convention.link}" class="btn btn-dark">Learn More</a>`;
-                                resultsContainer.appendChild(resultItem);
-                            });
-                        } else {
-                            resultsContainer.innerHTML = '<p class="p-2">No conventions found</p>';
-                        }
-                    } catch (error) {
-                        console.error('Error fetching search results:', error);
-                        resultsContainer.innerHTML = '<p class="p-2">Error loading search results</p>';
-                    }
-                } else {
-                    history.pushState({ path: '/' }, '', '/');
-                    resultsContainer.innerHTML = '';
-                }
-            });
-        });
-    </script>
     <div class="container mt-4">
         {{{body}}}
     </div>
