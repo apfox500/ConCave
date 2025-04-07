@@ -81,11 +81,11 @@ app.use((req, res, next) => {
 
 app.get("/", (req, res) => {
   const events = [
-    { title: "Comic-Con 2024", link: "https://www.comic-con.org/" },
-    { title: "Anime Expo", link: "https://www.anime-expo.org/" },
-    { title: "PAX West", link: "https://west.paxsite.com/" },
-    { title: "GDC 2024", link: "https://gdconf.com/" },
-    { title: "E3 Expo", link: "https://www.e3expo.com/" }
+    { id: 1, title: "Comic-Con 2024", link: "https://www.comic-con.org/" },
+    { id: 2, title: "Anime Expo", link: "https://www.anime-expo.org/" },
+    { id: 3, title: "PAX West", link: "https://west.paxsite.com/" },
+    { id: 4, title: "GDC 2024", link: "https://gdconf.com/" },
+    { id: 5, title: "E3 Expo", link: "https://www.e3expo.com/" }
   ];
   res.render("pages/home", { title: "ConCave", events });
 });
