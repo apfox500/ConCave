@@ -173,14 +173,18 @@ const auth = (req, res, next) => {
   next();
 };
 
-/*const authorizeConventionHost = (req, res, next) => {
-  if (req.user.rank !== "convention_host" || req.user.rank !== "admin") {
-      return res.status(403).json({ message: "Forbidden: Only Convention Hosts can add conventions." });
+const authorizeConventionHost = (req, res, next) => {
+  console.log("checking", req.user);
+  if (!req.session.user) {
+    return res.status(401).json({ message: "Unauthorized: No user logged in" });
+  }
+  if (req.session.user.rank === "user") {
+    return res.status(403).json({ message: "Forbidden: Only Convention Hosts can add conventions." });
   }
   next();
-};*/
+};
 
-app.post("/conventions/add", async (req, res) => {
+app.post("/conventions/add", authorizeConventionHost, async (req, res) => {
   try {
       const { name, location, convention_center, convention_bio, convention_image, start_date, end_date } = req.body;
 
@@ -189,7 +193,6 @@ app.post("/conventions/add", async (req, res) => {
       }
 
       const result = await db.task(async t => {
-          // Insert convention
           const conventionQuery = `
               INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date)
               VALUES ($1, $2, $3, $4, $5, $6, $7)

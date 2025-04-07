@@ -131,8 +131,9 @@
                 if (response.ok) {
                     alert('Convention added successfully!');
                     document.getElementById('addConventionFormCard').style.display = 'none';
-                } else {
-                    alert('Error adding convention: ' + data.message);
+                }
+                else {
+                    alert('Forbidden: Only Convention Hosts can add conventions.');
                 }
             } catch (error) {
                 alert('There was an error adding the convention.');
