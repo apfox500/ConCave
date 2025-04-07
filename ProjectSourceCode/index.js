@@ -130,7 +130,7 @@ app.post("/login", async (req, res) => {
     );
     if (user && (await bcrypt.compare(req.body.password, user.password))) {
       req.session.user = user;
-      req.session.save();
+      await req.session.save();
       res.redirect("/");
     } else {
       res.render("pages/login", { error: "Incorrect username or password." });
@@ -141,27 +141,35 @@ app.post("/login", async (req, res) => {
   }
 });
 
-const auth = (req, res, next) => {
-  if (!req.session.user) {
-    return res.redirect("/login");
-  }
-  next();
-};
+// const auth = (req, res, next) => {
+//   if (!req.session.user) {
+//     return res.redirect("/login");
+//   }
+//   next();
+// };
 
-app.get('/search', (req, res) => {
-  const searchQuery = req.query.q;
-  const query = `SELECT * FROM conventions WHERE name LIKE $1;`;
-  const values = [`%${searchQuery}%`];
-  
-  db.any(query, values)
-   .then(results => {
-       res.json(results);
-   })
-   .catch(err => {
-       console.error('Error executing query:', err);
-       res.status(500).json({ error: 'Internal Server Error' });
-   });
+app.get('/search', async (req, res) => {
+    const searchQuery = req.query.q;
+    if (!searchQuery) {
+      return res.json([]);
+    }
+
+    console.log(`Search Query: ${searchQuery}`);
+
+    const results = await db.any(
+      'SELECT * FROM conventions WHERE name ILIKE $1',
+      [`${searchQuery}%`]
+    );
+
+    console.log(`Query Results:`, results);
+    try {
+    res.json(results);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
+
 
 
 // *****************************************************
