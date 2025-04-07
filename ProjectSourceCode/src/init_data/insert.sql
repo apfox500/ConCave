@@ -1,5 +1,9 @@
-INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date)
-VALUES 
+INSERT INTO users (first_name, last_name, username, email, rank, password) VALUES
+('Leon', 'Vayedjian', 'leva5149', 'leva5149@colorado.edu', 'user', '$2y$10$PruaOATtY/iuRCMZZufqz.2t18fZUtXYEMfXHzfsLCFZc9yjZj5HC'),
+('Jane', 'Smith', 'jasm1234', 'jasm1234@colorado.edu', 'user', '$2y$10$OxqM94dcbuIcmrZDfcNuK.rqDzcY3/lp97lZLJvia3UWnooLNRhRa'),
+('Alex', 'Taylor', 'alta5678', 'alta5678@colorado.edu', 'user', '$2y$10$dtUYrY/1eRBhJhzoymzfMuliTn8A4A94JzNRPbnER1.FWAB2AnCLi');
+
+INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date) VALUES 
 ('Comic-Con International: San Diego 2025', 'San Diego, CA', 'San Diego Convention Center',
 'Comic-Con is the premier event for all things comics and related popular art, including movies, television, gaming, interactive multimedia, and so much more! Enjoy cosplay galore and take part in unique programming, exclusive previews, and presentations, not to mention the expansive and diverse Exhibit Hall featuring merchandise and displays representing all fandoms.',
 'https://media.animecons.com/ConLogos/024/logo_C24805.png','2025-07-24', '2025-07-27'),
@@ -17,3 +21,8 @@ Find your fandom family at FAN EXPO Boston. All 55,000 of them.',
 ('New York Comic Con 2025', 'New York, NY', 'Jacob K. Javits Center',
 'New York Comic Con (NYCC) is the biggest comic and pop culture event on the East Coast. From meeting celebrities to surprise appearances, to comic creators from every corner of the globe to the top anime, cosplay, and gaming stars ... it''s always one hell of a 4-day weekend.',
 'https://media.animecons.com/ConLogos/024/logo_C24806.png','2025-10-09', '2025-10-12');
+
+INSERT INTO reviews (convention_id, user_id, rating, review) VALUES
+(1, 1, 5, 'Absolutely loved this convention! Great panels and guests.'),
+(1, 2, 4, 'Had a great time, but the food options could be better.'),
+(1, 3, 3, 'It was okay. Some events were disorganized but still fun overall.');

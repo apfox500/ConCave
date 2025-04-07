@@ -79,9 +79,24 @@
           <h5 class="mt-4">Convention Bio:</h5>
           <p>{{convention.convention_bio}}</p>
           <h5 class="mt-4">Event Dates:</h5>
-          <p><strong>Start Date:</strong> {{convention.start_date}}</p>
-          <p><strong>End Date:</strong> {{convention.end_date}}</p>
+          <p><strong>Start Date:</strong> {{convention.formatted_start_date}}</p>
+          <p><strong>End Date:</strong> {{convention.formatted_end_date}}</p>
         </div>
+      </div>
+      <h4 class="mt-5">Reviews</h4>
+      {{#if reviews.length}}
+        {{#each reviews}}
+            <div class="border rounded p-3 my-3 bg-white shadow-sm position-relative">
+            <div class="d-flex justify-content-between">
+                <p class="mb-1"><strong>{{username}}</strong> rated it {{rating}}/5 stars</p>
+                <small class="text-muted">{{formatted_time}}</small>
+            </div>
+              <p class="mb-1">{{review}}</p>
+            </div>
+        {{/each}}
+      {{else}}
+        <p class="text-muted">No reviews yet. Be the first to leave one!</p>
+      {{/if}}
       </div>
       <div class="text-center mt-4">
         <a href="/" class="btn btn-primary">← Back to Home</a>
