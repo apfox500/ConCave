@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Groups for {{convention.name}}</title>
+</head>
+<body>
+  <h1>Groups for {{convention.name}}</h1>
+  {{#if user}}
+    <button onclick="document.getElementById('createGroupForm').style.display='block'">Add Group</button>
+    <form id="createGroupForm" action="/conventions/{{convention.id}}/groups/create" method="POST" style="display:none;">
+      <div>
+        <label for="groupName">Group Name:</label>
+        <input id="groupName" name="groupName" type="text" required>
+      </div>
+      <div>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"></textarea>
+      </div>
+      <button type="submit">Create</button>
+    </form>
+  {{/if}}
+  <ul>
+    {{#each groups}}
+      <li>
+        <h3>{{this.name}}</h3>
+        <p>{{this.description}}</p>
+        <p>Created by: {{this.created_by_username}}</p>
+        {{#if ../user}}
+          <form action="/groups/{{this.id}}/join" method="POST">
+            <button type="submit">Join</button>
+          </form>
+        {{/if}}
+      </li>
+    {{/each}}
+  </ul>
+</body>
+</html>

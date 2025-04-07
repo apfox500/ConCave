@@ -153,6 +153,79 @@ const auth = (req, res, next) => {
   next();
 };
 
+app.get('/conventions/:id/groups', async (req, res) => {
+  try {
+    const { id: conventionId } = req.params;
+    const convention = await db.oneOrNone(
+      'SELECT * FROM conventions WHERE id = $1',
+      [conventionId]
+    );
+    if (!convention) {
+      return res.status(404).send('Convention not found');
+    }
+    const groups = await db.any(
+      'SELECT g.*, u.username AS created_by_username FROM groups g JOIN users u ON g.created_by = u.id WHERE g.convention_id = $1',
+      [conventionId]
+    );
+    res.render('pages/groups', {
+      convention,
+      groups
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Error fetching groups');
+  }
+});
+
+app.post('/conventions/:id/groups/create', auth, async (req, res) => {
+  try {
+    const { id: conventionId } = req.params;
+    const { groupName, description } = req.body;
+    const userId = req.session.user.id;
+    const newGroup = await db.one(
+      'INSERT INTO groups (convention_id, name, description, created_by) VALUES ($1, $2, $3, $4) RETURNING id',
+      [conventionId, groupName, description, userId]
+    );
+    await db.none(
+      'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)',
+      [newGroup.id, userId]
+    );
+    res.redirect(`/conventions/${conventionId}/groups`);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Error creating group');
+  }
+});
+
+app.post('/groups/:groupId/join', auth, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.session.user.id;
+    const existingRow = await db.oneOrNone(
+      'SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2',
+      [groupId, userId]
+    );
+    if (existingRow) {
+      return res.redirect('back');
+    }
+    await db.none(
+      'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)',
+      [groupId, userId]
+    );
+    const group = await db.oneOrNone(
+      'SELECT convention_id FROM groups WHERE id = $1',
+      [groupId]
+    );
+    if (!group) {
+      return res.status(404).send('Group not found');
+    }
+    res.redirect(`/conventions/${group.convention_id}/groups`);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Error joining group');
+  }
+});
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
