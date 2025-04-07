@@ -83,11 +83,51 @@ app.get('/', (req, res) => {
 
 // Cave route
 app.get('/cave', async (req, res) => {
+
+  const userId = 1;
+
+  const sort = req.query.sort || 'newest'; 
+
+  let orderBy;
+  switch (sort) {
+    case 'oldest':
+      orderBy = 'tunnels.created_at ASC';
+      break;
+    case 'most_liked':
+      orderBy = 'like_count DESC';
+      break;
+    case 'least_liked':
+      orderBy = 'like_count ASC';
+      break;
+    case 'newest':
+    default:
+      orderBy = 'tunnels.created_at DESC';
+  }
+  
+  
   try {
-    const tunnels = await db.any('SELECT * FROM tunnels ORDER BY created_at DESC');
+
+    const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
+
+    const tunnels = await db.any(`
+      SELECT tunnels.*, users.username, 
+        COUNT(DISTINCT replies.id) AS reply_count, 
+        COUNT(DISTINCT likes.id) AS like_count, 
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM tunnels
+      LEFT JOIN users ON tunnels.user_id = users.id
+      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
+      LEFT JOIN replies ON replies.tunnel_id = tunnels.id
+      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
+      GROUP BY tunnels.id, users.username, conventions.name
+      ORDER BY ${orderBy}
+    `, [userId]);
+
     res.render('pages/cave', {
       title: 'ConCave',
       tunnels: tunnels,
+      conventions: conventions,
+      sort: sort
     });
   } catch (error) {
     console.error(error);
@@ -97,9 +137,15 @@ app.get('/cave', async (req, res) => {
 
 // Cave Tunnel Post
 app.post('/cave', async (req, res) => {
-  const { title, message } = req.body;
+  const { title, message, convention_id } = req.body;
+  const userId = 1; // Replace with actual user id when login is implemented.
+
   try {
-    await db.none('INSERT INTO tunnels (title, message) VALUES ($1, $2)', [title, message]);
+    await db.none(
+      `INSERT INTO tunnels (title, message, user_id, convention_id)
+       VALUES ($1, $2, $3, $4)`,
+      [title, message, userId, convention_id || null]
+    );
     res.redirect('/cave');
   } catch (error) {
     console.error(error);
@@ -110,13 +156,32 @@ app.post('/cave', async (req, res) => {
 // Cave Tunnel Page Get
 app.get('/cave/:id', async (req, res) => {
   const tunnelId = req.params.id;
+  const userId = 1; // Replace later
 
   try {
-    const tunnel = await db.one('SELECT * FROM tunnels WHERE id = $1', [tunnelId]);
-    const replies = await db.any(
-      'SELECT * FROM replies WHERE tunnel_id = $1 ORDER BY created_at ASC',
-      [tunnelId]
-    );
+    const tunnel = await db.one(`
+      SELECT tunnels.*, users.username,
+        COUNT(DISTINCT likes.id) AS like_count,
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM tunnels
+      LEFT JOIN users ON tunnels.user_id = users.id
+      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
+      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
+      WHERE tunnels.id = $2
+      GROUP BY tunnels.id, users.username, conventions.name
+    `, [userId, tunnelId]);
+
+    const replies = await db.any(`
+      SELECT replies.*, users.username,
+        COUNT(DISTINCT likes.id) AS like_count,
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM replies
+      LEFT JOIN users ON replies.user_id = users.id
+      LEFT JOIN likes ON likes.reply_id = replies.id
+      WHERE replies.tunnel_id = $2
+      GROUP BY replies.id, users.username
+      ORDER BY replies.created_at ASC
+    `, [userId, tunnelId]);
 
     res.render('pages/tunnel', {
       tunnel,
@@ -134,14 +199,78 @@ app.post('/cave/:id/reply', async (req, res) => {
   const { message } = req.body;
 
   try {
+    const userId = 1; // Replace with actual user id when login is implemented.
     await db.none(
-      'INSERT INTO replies (tunnel_id, message) VALUES ($1, $2)',
-      [tunnelId, message]
+      'INSERT INTO replies (tunnel_id, message, user_id) VALUES ($1, $2, $3)',
+      [tunnelId, message, userId]
     );
     res.redirect(`/cave/${tunnelId}`);
   } catch (error) {
     console.error(error);
     res.status(500).send('Error posting reply.');
+  }
+});
+
+// Like a tunnel
+app.post('/like/tunnel/:id', async (req, res) => {
+  const userId = 1; // Replace later
+  const tunnelId = req.params.id;
+  const redirectTo = req.body.redirectTo || '/cave';
+
+  try {
+
+    const liked = await db.oneOrNone(
+      'SELECT id FROM likes WHERE user_id = $1 AND tunnel_id = $2',
+      [userId, tunnelId]
+    );
+
+    if (liked) {
+      await db.none('DELETE FROM likes WHERE user_id = $1 AND tunnel_id = $2', [userId, tunnelId]);
+    } else {
+      await db.none(
+        'INSERT INTO likes (user_id, tunnel_id) VALUES ($1, $2)',
+        [userId, tunnelId]
+      );
+
+    }
+
+    res.redirect(redirectTo);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error when liking tunnel');
+  }
+});
+
+// Like a reply
+app.post('/like/reply/:id', async (req, res) => {
+  const userId = 1; // Replace later
+  const replyId = req.params.id;
+
+  try {
+
+    const liked = await db.oneOrNone(
+      'SELECT id FROM likes WHERE user_id = $1 AND reply_id = $2',
+      [userId, replyId]
+    );
+
+    if (liked) {
+      await db.none('DELETE FROM likes WHERE user_id = $1 AND reply_id = $2', [userId, replyId]);
+    } else {
+      await db.none(
+        'INSERT INTO likes (user_id, reply_id) VALUES ($1, $2)',
+        [userId, replyId]
+      );
+    }
+
+    const result = await db.one(
+      'SELECT tunnel_id FROM replies WHERE id = $1',
+      [replyId]
+    );
+
+    res.redirect(`/cave/${result.tunnel_id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error when liking reply');
   }
 });
 

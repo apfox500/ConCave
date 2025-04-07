@@ -32,3 +32,7 @@ INSERT INTO replies (tunnel_id, parent_reply_id, message) VALUES
 -- Replies to Tunnel #5: ConCrunch Therapy Circle
 (5, NULL, 'Still stitching on my gloves and the con is *tomorrow*. Why am I like this?'),
 (5, NULL, 'Hot gluing in the hotel room at 2am counts as tradition, right?');
+
+INSERT INTO users (id, first_name, last_name, username, email, rank, password)
+VALUES (1, 'Test', 'User', 'testuser', 'test@example.com', 'user', 'placeholderpassword');
+
