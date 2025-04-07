@@ -1,112 +1,104 @@
 <div class="container mt-4">
     <h2>Convention Merchandise</h2>
     
+    {{#if user}}
+    <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addMerchModal">
+        Add New Merchandise
+    </button>
+    {{/if}}
+
+    {{#if message}}
+    <div class="alert {{#if error}}alert-danger{{else}}alert-success{{/if}} alert-dismissible fade show" role="alert">
+        {{message}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {{/if}}
+    
     <div class="list-group mt-4">
-        <!-- Merch Item 1 -->
-        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#merchModal1">
+        {{#each merchandise}}
+        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#merchModal{{id}}">
             <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">Convention T-Shirt</h5>
-                <small>$24.99</small>
+                <h5 class="mb-1">{{name}}</h5>
+                <small>${{price}}</small>
             </div>
-            <p class="mb-1">Official convention t-shirt with exclusive design</p>
+            <p class="mb-1">{{description}}</p>
         </a>
-
-        <!-- Merch Item 2 -->
-        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#merchModal2">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">Convention Poster</h5>
-                <small>$19.99</small>
-            </div>
-            <p class="mb-1">Limited edition commemorative poster</p>
-        </a>
-
-        <!-- Merch Item 3 -->
-        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#merchModal3">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">Convention Badge Holder</h5>
-                <small>$9.99</small>
-            </div>
-            <p class="mb-1">Premium lanyard with badge holder</p>
-        </a>
+        {{/each}}
     </div>
 
-    <!-- Modal 1 -->
-    <div class="modal fade" id="merchModal1" tabindex="-1" aria-labelledby="merchModal1Label" aria-hidden="true">
+    {{#each merchandise}}
+    <div class="modal fade" id="merchModal{{id}}">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="merchModal1Label">Convention T-Shirt</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">{{name}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <img src="https://via.placeholder.com/400x300" class="img-fluid mb-3" alt="Convention T-Shirt">
-                    <h6>Price: $24.99</h6>
-                    <p>High-quality cotton t-shirt featuring exclusive convention artwork. Available in sizes S-XXL.</p>
+                    <img src="{{image_url}}" class="img-fluid mb-3" alt="{{name}}">
+                    <h6>Price: ${{price}}</h6>
+                    <p>{{description}}</p>
                     <ul>
-                        <li>100% Cotton</li>
-                        <li>Machine washable</li>
-                        <li>Pre-shrunk</li>
-                        <li>Limited edition design</li>
+                        {{#each details}}
+                        <li>{{this}}</li>
+                        {{/each}}
                     </ul>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Purchase</button>
+                    {{#if ../user}}
+                        {{#if is_creator}}
+                        <form action="/merch/delete/{{id}}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">Delete Listing</button>
+                        </form>
+                        {{/if}}
+                        <button type="button" class="btn btn-primary">Purchase</button>
+                    {{/if}}
                 </div>
             </div>
         </div>
     </div>
+    {{/each}}
 
-    <!-- Modal 2 -->
-    <div class="modal fade" id="merchModal2" tabindex="-1" aria-labelledby="merchModal2Label" aria-hidden="true">
+    <div class="modal fade" id="addMerchModal">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="merchModal2Label">Convention Poster</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Add New Merchandise</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <img src="https://via.placeholder.com/400x300" class="img-fluid mb-3" alt="Convention Poster">
-                    <h6>Price: $19.99</h6>
-                    <p>High-quality printed poster featuring convention artwork. Size: 24" x 36".</p>
-                    <ul>
-                        <li>Premium paper stock</li>
-                        <li>Full color printing</li>
-                        <li>Numbered edition</li>
-                        <li>Suitable for framing</li>
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Purchase</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal 3 -->
-    <div class="modal fade" id="merchModal3" tabindex="-1" aria-labelledby="merchModal3Label" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="merchModal3Label">Convention Badge Holder</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <img src="https://via.placeholder.com/400x300" class="img-fluid mb-3" alt="Convention Badge Holder">
-                    <h6>Price: $9.99</h6>
-                    <p>Durable lanyard with premium badge holder featuring convention branding.</p>
-                    <ul>
-                        <li>Breakaway safety feature</li>
-                        <li>Clear badge pocket</li>
-                        <li>Comfortable neck strap</li>
-                        <li>Convention logo print</li>
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Purchase</button>
-                </div>
+                <form action="/merch" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Item Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price ($)</label>
+                            <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="image_url" class="form-label">Image URL</label>
+                            <input type="url" class="form-control" id="image_url" name="image_url" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="details" class="form-label">Details (comma-separated)</label>
+                            <textarea class="form-control" id="details" name="details" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Add Merchandise</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
