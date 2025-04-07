@@ -17,3 +17,8 @@ Find your fandom family at FAN EXPO Boston. All 55,000 of them.',
 ('New York Comic Con 2025', 'New York, NY', 'Jacob K. Javits Center',
 'New York Comic Con (NYCC) is the biggest comic and pop culture event on the East Coast. From meeting celebrities to surprise appearances, to comic creators from every corner of the globe to the top anime, cosplay, and gaming stars ... it''s always one hell of a 4-day weekend.',
 'https://media.animecons.com/ConLogos/024/logo_C24806.png','2025-10-09', '2025-10-12');
+
+INSERT INTO users (first_name, last_name, username, email, rank, password)
+VALUES 
+('Admin', 'Role', 'admin', 'admin@example.com', 'admin', '$2a$10$B9j4S5oYU5aLGgDodvYIVeS0SA49a9nAQLG018mOJ9avSpubmRhRC'),
+('Convention', 'Host', 'convention_host', 'conventionhost@example.com', 'convention_host', '$2a$10$B9j4S5oYU5aLGgDodvYIVeS0SA49a9nAQLG018mOJ9avSpubmRhRC');

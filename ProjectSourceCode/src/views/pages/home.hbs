@@ -1,10 +1,8 @@
 <div class="container mt-4 text-center">
   <div class="container mt-4">
-        <!-- Button to trigger form card -->
         <div class="d-flex justify-content-end mb-3">
             <button id="addConventionBtn" class="btn btn-success">Add Convention</button>
         </div>
-        <!-- Form Card to Add a Convention -->
         <div class="row mt-4" id="addConventionFormCard" style="display: none;">
             <div class="col-md-6 mb-4 offset-md-3">
                 <div class="card">
@@ -90,21 +88,16 @@
     {{/each}}
   </div>
 </div>
-<!-- Include your custom JavaScript to handle the form -->
     <script>
-        // Add convention button
         document.getElementById('addConventionBtn').addEventListener('click', function () {
             document.getElementById('addConventionFormCard').style.display = 'block';
         });
 
-        // Cancel button
         document.getElementById('cancelFormBtn').addEventListener('click', function () {
             document.getElementById('addConventionFormCard').style.display = 'none';
         });
 
-        // Form submission
         document.getElementById('addConventionForm').addEventListener('submit', async function (e) {
-            // Allows me to handle the rest with Javascript
             e.preventDefault();
             const name = document.getElementById('conventionName').value;
             const location = document.getElementById('conventionLocation').value;
@@ -114,7 +107,6 @@
             const startDate = document.getElementById('conventionStart').value;
             const endDate = document.getElementById('conventionEnd').value;
 
-            // Make a POST request to the backend to add the convention
             try {
                 const response = await fetch('/conventions/add', {
                     method: 'POST',
