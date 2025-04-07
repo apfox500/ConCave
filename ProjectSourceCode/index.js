@@ -110,7 +110,7 @@ app.get('/conventions/:id', async (req, res) => {
       FROM reviews r
       JOIN users u ON r.user_id = u.id
       WHERE r.convention_id = ${conventionId}
-      ORDER BY r.time_sent DESC
+      ORDER BY r.rating DESC
       LIMIT 3`);
     
     res.render('pages/conventionDetails', {
@@ -193,8 +193,9 @@ app.post('/submit_review', auth, async (req, res) => {
 
   try {
     await db.none(`
-      INSERT INTO reviews (convention_id, user_id, rating, review) VALUES 
-      (${convention_id}, ${user_id}, ${rating}, ${review})`);
+      INSERT INTO reviews (convention_id, user_id, rating, review)
+      VALUES ($1, $2, $3, $4)
+    `, [convention_id, user_id, parseInt(rating[0]), review]);
 
     res.redirect(`/conventions/${convention_id}`);
   } catch (error) {
@@ -212,7 +213,7 @@ app.post('/submit_review', auth, async (req, res) => {
         FROM reviews r
         JOIN users u ON r.user_id = u.id
         WHERE r.convention_id = ${convention_id}
-        ORDER BY r.time_sent DESC
+        ORDER BY r.rating DESC
         LIMIT 3`);
 
       res.render('pages/conventionDetails', {
