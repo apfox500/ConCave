@@ -140,35 +140,35 @@ app.post("/login", async (req, res) => {
     res.render("pages/login", { error: "Error logging in." });
   }
 });
-
-// const auth = (req, res, next) => {
-//   if (!req.session.user) {
-//     return res.redirect("/login");
-//   }
-//   next();
-// };
-
 app.get('/search', async (req, res) => {
-    const searchQuery = req.query.q;
-    if (!searchQuery) {
-      return res.json([]);
-    }
-
-    console.log(`Search Query: ${searchQuery}`);
-
-    const results = await db.any(
-      'SELECT * FROM conventions WHERE name ILIKE $1',
-      [`${searchQuery}%`]
-    );
-
-    console.log(`Query Results:`, results);
-    try {
-    res.json(results);
-  } catch (err) {
-    console.error('Error executing query:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
   }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM conventions WHERE name ILIKE $1',
+    [`${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+  res.json(results);
+} catch (err) {
+  console.error('Error executing query:', err);
+  res.status(500).json({ error: 'Internal Server Error' });
+}
 });
+
+const auth = (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  next();
+};
+
 
 
 
