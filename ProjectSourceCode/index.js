@@ -167,6 +167,12 @@ app.get('/search', async (req, res) => {
 }
 });
 
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
+});
+
 const auth = (req, res, next) => {
   if (!req.session.user) {
     return res.redirect("/login");
