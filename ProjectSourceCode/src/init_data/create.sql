@@ -81,7 +81,22 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 );
 
-<<<<<<< HEAD
+CREATE TABLE IF NOT EXISTS tunnels (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS replies (
+  id SERIAL PRIMARY KEY,
+  tunnel_id INT,
+  FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
+  parent_reply_id INT REFERENCES replies(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS groups (
     id SERIAL PRIMARY KEY,
     convention_id INT NOT NULL,
@@ -100,20 +115,4 @@ CREATE TABLE IF NOT EXISTS group_members (
     PRIMARY KEY (group_id, user_id),
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-=======
-CREATE TABLE IF NOT EXISTS tunnels (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    message TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS replies (
-  id SERIAL PRIMARY KEY,
-  tunnel_id INT,
-  FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
-  parent_reply_id INT REFERENCES replies(id) ON DELETE CASCADE,
-  message TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
->>>>>>> main
 );
