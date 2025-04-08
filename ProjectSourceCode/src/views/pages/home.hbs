@@ -49,7 +49,6 @@
         <div class="card" style="aspect-ratio: 1/1; overflow: hidden;">
           <div style="height: 66%; background-image: url('{{this.convention_image}}'); background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
           <div style="height: 34%; background-color: #eaeaea;" class="d-flex flex-column justify-content-center align-items-center p-2">
-            <a href="/conventions/{{id}}/groups" class="btn btn-primary">Groups</a>
             <h5 class="card-title mb-4">{{this.name}}</h5>
             <a href="/conventions/{{this.id}}" class="btn btn-dark">Learn More</a>
           </div>
@@ -87,7 +86,7 @@
                                 const resultItem = document.createElement('div');
                                 resultItem.className = 'result-item';
                                 resultItem.innerHTML = `<strong>${convention.name}</strong>
-                                <a href="${convention.link}" class="btn btn-dark">Learn More</a>`;
+                                <a href="/conventions/${convention.id}" class="btn btn-dark">Learn More</a>`;
                                 resultsContainer.appendChild(resultItem);
                             });
                         } else {
