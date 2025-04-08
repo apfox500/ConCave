@@ -31,13 +31,14 @@ CREATE TABLE IF NOT EXISTS users_to_badges (
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 */
--- Potentially only for Dummy Data if we use an API
+
 CREATE TABLE IF NOT EXISTS conventions (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     location TEXT NOT NULL,
     convention_center TEXT,
     convention_bio TEXT,
+    convention_image TEXT,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL
 );
@@ -55,7 +56,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     id SERIAL PRIMARY KEY,
     convention_id INT NOT NULL,
     user_id INT NOT NULL,
-    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    rating INT NOT NULL CHECK (rating BETWEEN 0 AND 5),
     review TEXT,
     time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     FOREIGN KEY (convention_id) REFERENCES conventions(id) ON DELETE CASCADE,

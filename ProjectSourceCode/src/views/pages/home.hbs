@@ -16,13 +16,15 @@
     <div class="d-flex justify-content-center">
         <div id="eventsCarousel" class="carousel slide" data-bs-ride="carousel" style="width: 900px;">
             <div class="carousel-inner">
-                {{#each events}}
+                {{#each conventions}}
                     <div class="carousel-item {{#if @first}}active{{/if}}">
                         <div class="d-flex justify-content-center align-items-center" style="height: 300px; background-color: #ddd; border-radius: 10px;">
-                            <h5>{{title}}</h5>
+                            <!-- Use 'object-fit: contain' to prevent the image from filling the container entirely -->
+                            <img src="{{this.convention_image}}" class="d-block w-100" alt="{{this.name}}" style="object-fit: contain; height: 100%; border-radius: 10px;">
                         </div>
                         <div class="text-center mt-3">
-                            <a href="{{link}}" class="btn btn-dark">Learn More</a>
+                            <h5>{{this.name}}</h5>
+                            <a href="/conventions/{{this.id}}" class="btn btn-dark">Learn More</a>
                         </div>
                     </div>
                 {{/each}}
@@ -42,13 +44,13 @@
 <div class="container mt-5">
   <h2 class="text-center mb-4">Other Events</h2>
   <div class="row">
-    {{#each events}}
+    {{#each conventions}}
       <div class="col-md-4 mb-3">
         <div class="card" style="aspect-ratio: 1/1; overflow: hidden;">
-          <div style="height: 66%; background-image: url('https://via.placeholder.com/300'); background-size: cover; background-position: center;"></div>
+          <div style="height: 66%; background-image: url('{{this.convention_image}}'); background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
           <div style="height: 34%; background-color: #eaeaea;" class="d-flex flex-column justify-content-center align-items-center p-2">
-            <h5 class="card-title mb-4">{{title}}</h5>
-            <a href="{{link}}" class="btn btn-dark">Learn More</a>
+            <h5 class="card-title mb-4">{{this.name}}</h5>
+            <a href="/conventions/{{this.id}}" class="btn btn-dark">Learn More</a>
           </div>
         </div>
       </div>
