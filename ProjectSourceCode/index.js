@@ -85,15 +85,49 @@ app.use((req, res, next) => {
 // <!-- Section 4 : API Routes -->
 // *****************************************************
 
-app.get("/", (req, res) => {
-  const events = [
-    { title: "Comic-Con 2024", link: "https://www.comic-con.org/" },
-    { title: "Anime Expo", link: "https://www.anime-expo.org/" },
-    { title: "PAX West", link: "https://west.paxsite.com/" },
-    { title: "GDC 2024", link: "https://gdconf.com/" },
-    { title: "E3 Expo", link: "https://www.e3expo.com/" }
-  ];
-  res.render("pages/home", { title: "ConCave", events });
+app.get('/', async (req, res) => {
+  try {
+    const conventions = await db.any('SELECT * FROM conventions ORDER BY start_date ASC');
+    
+    res.render('pages/home', {
+      title: 'ConCave',
+      message: 'Welcome to ConCave!',
+      conventions,
+    });
+  } catch (error) {
+    console.error('Error fetching conventions:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/conventions/:id', async (req, res) => {
+  const conventionId = req.params.id;
+  
+  try {
+    const convention = await db.one(`
+      SELECT c.*, 
+      TO_CHAR(c.start_date, 'Mon DD YYYY') AS formatted_start_date, 
+      TO_CHAR(c.end_date, 'Mon DD YYYY') AS formatted_end_date 
+      FROM conventions c 
+      WHERE c.id = ${conventionId}`);
+    const reviews = await db.any(`
+      SELECT r.*, u.username,
+      TO_CHAR(r.time_sent, 'Mon DD YYYY HH24:MI') AS formatted_time
+      FROM reviews r
+      JOIN users u ON r.user_id = u.id
+      WHERE r.convention_id = ${conventionId}
+      ORDER BY r.rating DESC
+      LIMIT 3`);
+    
+    res.render('pages/conventionDetails', {
+      title: convention.name,
+      convention,
+      reviews,
+    });
+  } catch (error) {
+    console.log('ERROR:', error.message || error);
+    res.status(500).send('Error fetching convention details.');
+  }
 });
 
 app.get("/register", (req, res) => {
@@ -180,9 +214,47 @@ const auth = (req, res, next) => {
   next();
 };
 
+app.post('/submit_review', auth, async (req, res) => {
+  const { rating, review, convention_id } = req.body;
+  const user_id = req.session.user.id;
 
+  try {
+    await db.none(`
+      INSERT INTO reviews (convention_id, user_id, rating, review)
+      VALUES ($1, $2, $3, $4)
+    `, [convention_id, user_id, parseInt(rating[0]), review]);
 
+    res.redirect(`/conventions/${convention_id}`);
+  } catch (error) {
+    console.log('Error submitting review:', error);
 
+    try {
+      const convention = await db.one(`SELECT c.*, 
+        TO_CHAR(c.start_date, 'Mon DD YYYY') AS formatted_start_date, 
+        TO_CHAR(c.end_date, 'Mon DD YYYY') AS formatted_end_date
+        FROM conventions c 
+        WHERE c.id = ${convention_id}`);
+
+      const reviews = await db.any(`SELECT r.*, u.username,
+        TO_CHAR(r.time_sent, 'Mon DD YYYY HH24:MI') AS formatted_time
+        FROM reviews r
+        JOIN users u ON r.user_id = u.id
+        WHERE r.convention_id = ${convention_id}
+        ORDER BY r.rating DESC
+        LIMIT 3`);
+
+      res.render('pages/conventionDetails', {
+        title: convention.name,
+        convention,
+        reviews,
+        error: 'Could not submit your review. Please try again later.',
+      });
+    } catch (innerError) {
+      console.log('Error loading fallback convention details:', innerError);
+      res.status(500).send('Something went wrong.');
+    }
+  }
+});
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
