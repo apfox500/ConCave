@@ -32,11 +32,13 @@ CREATE TABLE IF NOT EXISTS users_to_badges (
 );
 */
 
--- Potentially only for Dummy Data if we use an API
 CREATE TABLE IF NOT EXISTS conventions (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL UNIQUE,
     location TEXT NOT NULL,
+    convention_center TEXT,
+    convention_bio TEXT,
+    convention_image TEXT,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL
 );
@@ -54,7 +56,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     id SERIAL PRIMARY KEY,
     convention_id INT NOT NULL,
     user_id INT NOT NULL,
-    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    rating INT NOT NULL CHECK (rating BETWEEN 0 AND 5),
     review TEXT,
     time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     FOREIGN KEY (convention_id) REFERENCES conventions(id) ON DELETE CASCADE,
@@ -79,6 +81,7 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 );
 
+<<<<<<< HEAD
 CREATE TABLE IF NOT EXISTS groups (
     id SERIAL PRIMARY KEY,
     convention_id INT NOT NULL,
@@ -97,4 +100,20 @@ CREATE TABLE IF NOT EXISTS group_members (
     PRIMARY KEY (group_id, user_id),
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+=======
+CREATE TABLE IF NOT EXISTS tunnels (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS replies (
+  id SERIAL PRIMARY KEY,
+  tunnel_id INT,
+  FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
+  parent_reply_id INT REFERENCES replies(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+>>>>>>> main
 );
