@@ -75,6 +75,17 @@ app.use(
   })
 );
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+app.use((req, res, next) => {
+  res.locals.user = req.session.user;
+  next();
+});
+
 // *****************************************************
 // <!-- Section 4 : API Routes -->
 // *****************************************************
@@ -129,9 +140,8 @@ app.post("/login", async (req, res) => {
     );
     if (user && (await bcrypt.compare(req.body.password, user.password))) {
       req.session.user = user;
-      req.session.save();
-      console.log("Logged in ", user.username);
-      res.redirect("/im");
+      await req.session.save();
+      res.redirect("/");
     } else {
       res.render("pages/login", { error: "Incorrect username or password." });
     }
@@ -139,6 +149,33 @@ app.post("/login", async (req, res) => {
     console.log(error);
     res.render("pages/login", { error: "Error logging in." });
   }
+});
+app.get('/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM conventions WHERE name ILIKE $1',
+    [`${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+  res.json(results);
+} catch (err) {
+  console.error('Error executing query:', err);
+  res.status(500).json({ error: 'Internal Server Error' });
+}
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
 });
 
 const auth = (req, res, next) => {
