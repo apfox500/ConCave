@@ -8,7 +8,9 @@ VALUES
 INSERT INTO users (first_name, last_name, username, email, rank, password) VALUES
 ('Leon', 'Vayedjian', 'leva5149', 'leva5149@colorado.edu', 'user', '$2y$10$PruaOATtY/iuRCMZZufqz.2t18fZUtXYEMfXHzfsLCFZc9yjZj5HC'),
 ('Jane', 'Smith', 'jasm1234', 'jasm1234@colorado.edu', 'user', '$2y$10$OxqM94dcbuIcmrZDfcNuK.rqDzcY3/lp97lZLJvia3UWnooLNRhRa'),
-('Alex', 'Taylor', 'alta5678', 'alta5678@colorado.edu', 'user', '$2y$10$dtUYrY/1eRBhJhzoymzfMuliTn8A4A94JzNRPbnER1.FWAB2AnCLi');
+('Alex', 'Taylor', 'alta5678', 'alta5678@colorado.edu', 'user', '$2y$10$dtUYrY/1eRBhJhzoymzfMuliTn8A4A94JzNRPbnER1.FWAB2AnCLi'),
+('Admin', 'Role', 'admin', 'admin@example.com', 'admin', '$2a$10$B9j4S5oYU5aLGgDodvYIVeS0SA49a9nAQLG018mOJ9avSpubmRhRC'),
+('Convention', 'Host', 'convention_host', 'conventionhost@example.com', 'convention_host', '$2a$10$B9j4S5oYU5aLGgDodvYIVeS0SA49a9nAQLG018mOJ9avSpubmRhRC');
 
 INSERT INTO conversations (user1_id, user2_id, user1_unread, user2_unread, created_at)
 VALUES
@@ -30,18 +32,6 @@ VALUES
     (3, 2, 'Im good', '2025-04-03 00:01:45.455904'),
     (3, 2, 'How are you?', '2025-04-03 00:01:46.455904');
 
-INSERT INTO conventions (name, location, start_date, end_date) VALUES
-    ('Tech Expo 2025', 'San Francisco, CA', '2025-06-12', '2025-06-14'),
-    ('Gaming Con 2025', 'Los Angeles, CA', '2025-07-05', '2025-07-07'),
-    ('AI & Robotics Summit', 'New York, NY', '2025-08-15', '2025-08-18'),
-    ('Cybersecurity Forum', 'Washington, D.C.', '2025-09-10', '2025-09-12'),
-    ('Comic Fest 2025', 'Seattle, WA', '2025-10-20', '2025-10-22'),
-    ('Blockchain World 2025', 'Miami, FL', '2025-11-05', '2025-11-07'),
-    ('Space Tech Conference', 'Houston, TX', '2025-12-10', '2025-12-12'),
-    ('Renewable Energy Summit', 'Denver, CO', '2026-01-15', '2026-01-17'),
-    ('Medical Innovations Expo', 'Chicago, IL', '2026-02-20', '2026-02-22'),
-    ('E-Sports Championship', 'Las Vegas, NV', '2026-03-08', '2026-03-10');
-
 
 INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date) VALUES 
 ('Comic-Con International: San Diego 2025', 'San Diego, CA', 'San Diego Convention Center',
@@ -61,6 +51,7 @@ Find your fandom family at FAN EXPO Boston. All 55,000 of them.',
 ('New York Comic Con 2025', 'New York, NY', 'Jacob K. Javits Center',
 'New York Comic Con (NYCC) is the biggest comic and pop culture event on the East Coast. From meeting celebrities to surprise appearances, to comic creators from every corner of the globe to the top anime, cosplay, and gaming stars ... it''s always one hell of a 4-day weekend.',
 'https://media.animecons.com/ConLogos/024/logo_C24806.png','2025-10-09', '2025-10-12');
+
 
 INSERT INTO reviews (convention_id, user_id, rating, review) VALUES
 (1, 1, 5, 'Absolutely loved this convention! Great panels and guests.'),

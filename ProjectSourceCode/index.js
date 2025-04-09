@@ -203,10 +203,48 @@ const auth = (req, res, next) => {
   next();
 };
 
+// *****************************************
+// <!-- Section 4.2 : Adding Conventions -->
+// *****************************************
+
+const authorizeConventionHost = (req, res, next) => {
+  //console.log("checking", req.user);
+  if (!req.session.user) {
+    return res.status(401).json({ message: "Unauthorized: No user logged in" });
+  }
+  if (req.session.user.rank === "user") {
+    return res.status(403).json({ message: "Forbidden: Only Convention Hosts can add conventions." });
+  }
+  next();
+};
+
+app.post("/conventions/add", authorizeConventionHost, async (req, res) => {
+  try {
+      const { name, location, convention_center, convention_bio, convention_image, start_date, end_date } = req.body;
+
+      if (!name || !location || !convention_center || !convention_bio || !convention_image || !start_date || !end_date) {
+          return res.status(400).json({ message: "All fields are required" });
+      }
+
+      const result = await db.task(async t => {
+          const conventionQuery = `
+              INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date)
+              VALUES ($1, $2, $3, $4, $5, $6, $7)
+              RETURNING id;`;
+          const conventionResult = await t.one(conventionQuery, [name, location, convention_center, convention_bio, convention_image, start_date, end_date]);
+          return conventionResult;
+      });
+
+      res.status(201).json({ message: "Convention added successfully!", convention: result });
+  } catch (error) {
+      res.status(500).json({ message: "An error occurred", error: error.message });
+  }
+});
+
 app.use(auth);
 
 // ******************************
-// <!-- Section 4.2 : Search -->
+// <!-- Section 4.3 : Search -->
 // ******************************
 
 app.get('/search', async (req, res) => {
@@ -233,7 +271,7 @@ app.get('/search', async (req, res) => {
 
 
 // ******************************************************************
-// <!-- Section 4.3 : Instant Messaging Routes + Helper functions -->
+// <!-- Section 4.4 : Instant Messaging Routes + Helper functions -->
 // ******************************************************************
 
 // Function to fetch messages and user info for a conversation
@@ -468,7 +506,7 @@ app.post('/im/create', async (req, res) => {
 });
 
 // *******************************
-// <!-- Section 4.4 : Reviews -->
+// <!-- Section 4.5 : Reviews -->
 // *******************************
 
 app.post('/submit_review', auth, async (req, res) => {
@@ -512,6 +550,8 @@ app.post('/submit_review', auth, async (req, res) => {
     }
   }
 });
+
+
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->

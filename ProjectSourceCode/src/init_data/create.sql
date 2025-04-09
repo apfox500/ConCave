@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS users_to_badges (
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 */
-
+-- Potentially only for Dummy Data if we use an API
 CREATE TABLE IF NOT EXISTS conventions (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
@@ -98,3 +98,4 @@ CREATE TABLE IF NOT EXISTS replies (
   message TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
