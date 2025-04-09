@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS users_to_badges (
     awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 */
-
+-- Potentially only for Dummy Data if we use an API
 CREATE TABLE IF NOT EXISTS conventions (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
@@ -85,7 +85,6 @@ CREATE TABLE IF NOT EXISTS messages (
 
 
 /* Tunnels Table */
-
 CREATE TABLE IF NOT EXISTS tunnels (
     id SERIAL PRIMARY KEY,
     user_id INTEGER,
@@ -98,7 +97,6 @@ CREATE TABLE IF NOT EXISTS tunnels (
 
 
 /* Replies Table */
-
 CREATE TABLE IF NOT EXISTS replies (
   id SERIAL PRIMARY KEY,
   user_id INTEGER,
@@ -111,7 +109,6 @@ CREATE TABLE IF NOT EXISTS replies (
 );
 
 /* Likes Table */
-
 CREATE TABLE IF NOT EXISTS likes (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL,
@@ -124,4 +121,3 @@ CREATE TABLE IF NOT EXISTS likes (
   CONSTRAINT unique_tunnel_like UNIQUE (user_id, tunnel_id),
   CONSTRAINT unique_reply_like UNIQUE (user_id, reply_id)
 );
-
