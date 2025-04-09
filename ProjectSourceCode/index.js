@@ -172,6 +172,9 @@ const auth = (req, res, next) => {
   }
   next();
 };
+// *******************************
+// <!-- Section 4.5 : addConventions -->
+// *******************************
 
 const authorizeConventionHost = (req, res, next) => {
   console.log("checking", req.user);
