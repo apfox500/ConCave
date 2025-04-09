@@ -67,6 +67,8 @@ CREATE TABLE IF NOT EXISTS conversations (
     id SERIAL PRIMARY KEY,
     user1_id INT NOT NULL,
     user2_id INT NOT NULL,
+    user1_unread BOOLEAN NOT NULL, -- true if user 1 has messages to read
+    user2_unread BOOLEAN NOT NULL, -- false if they have read all
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE
@@ -75,9 +77,9 @@ CREATE TABLE IF NOT EXISTS conversations (
 CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,
     conversation_id INT NOT NULL,
+    user_id INT NOT NULL,
     message_text TEXT NOT NULL,
     time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    user_read BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 );
 
