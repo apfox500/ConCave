@@ -83,19 +83,41 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 );
 
+
+/* Tunnels Table */
 CREATE TABLE IF NOT EXISTS tunnels (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    message TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    user_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    convention_id INTEGER,
+    FOREIGN KEY (convention_id) REFERENCES conventions(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+
 );
 
+
+/* Replies Table */
 CREATE TABLE IF NOT EXISTS replies (
   id SERIAL PRIMARY KEY,
-  tunnel_id INT,
+  user_id INTEGER,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  tunnel_id INTEGER,
   FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
-  parent_reply_id INT REFERENCES replies(id) ON DELETE CASCADE,
+  parent_reply_id INTEGER REFERENCES replies(id) ON DELETE CASCADE,
   message TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+/* Likes Table */
+CREATE TABLE IF NOT EXISTS likes (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL,
+  tunnel_id INT,
+  reply_id INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
+  FOREIGN KEY (reply_id) REFERENCES replies(id) ON DELETE CASCADE,
+  CONSTRAINT unique_tunnel_like UNIQUE (user_id, tunnel_id),
+  CONSTRAINT unique_reply_like UNIQUE (user_id, reply_id)
+);
