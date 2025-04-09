@@ -75,7 +75,7 @@ app.use(
   })
 );
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
@@ -90,10 +90,11 @@ app.use((req, res, next) => {
 // <!-- Section 4 : API Routes -->
 // *****************************************************
 
+//home page
 app.get('/', async (req, res) => {
   try {
     const conventions = await db.any('SELECT * FROM conventions ORDER BY start_date ASC');
-    
+
     res.render('pages/home', {
       title: 'ConCave',
       message: 'Welcome to ConCave!',
@@ -107,7 +108,7 @@ app.get('/', async (req, res) => {
 
 app.get('/conventions/:id', async (req, res) => {
   const conventionId = req.params.id;
-  
+
   try {
     const convention = await db.one(`
       SELECT c.*, 
@@ -123,7 +124,7 @@ app.get('/conventions/:id', async (req, res) => {
       WHERE r.convention_id = ${conventionId}
       ORDER BY r.rating DESC
       LIMIT 3`);
-    
+
     res.render('pages/conventionDetails', {
       title: convention.name,
       convention,
@@ -135,6 +136,9 @@ app.get('/conventions/:id', async (req, res) => {
   }
 });
 
+// *************************************
+// <!-- Section 4.1 : Login/Register -->
+// *************************************
 app.get("/register", (req, res) => {
   res.render("pages/register");
 });
@@ -184,27 +188,7 @@ app.post("/login", async (req, res) => {
     res.render("pages/login", { error: "Error logging in." });
   }
 });
-app.get('/search', async (req, res) => {
-  const searchQuery = req.query.q;
-  if (!searchQuery) {
-    return res.json([]);
-  }
 
-  console.log(`Search Query: ${searchQuery}`);
-
-  const results = await db.any(
-    'SELECT * FROM conventions WHERE name ILIKE $1',
-    [`${searchQuery}%`]
-  );
-
-  console.log(`Query Results:`, results);
-  try {
-  res.json(results);
-} catch (err) {
-  console.error('Error executing query:', err);
-  res.status(500).json({ error: 'Internal Server Error' });
-}
-});
 
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
@@ -221,9 +205,35 @@ const auth = (req, res, next) => {
 
 app.use(auth);
 
+// ******************************
+// <!-- Section 4.2 : Search -->
+// ******************************
+
+app.get('/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM conventions WHERE name ILIKE $1',
+    [`${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+    res.json(results);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 // ******************************************************************
-// <!-- Section 4.1 : Instant Messaging Routes + Helper functions -->
+// <!-- Section 4.3 : Instant Messaging Routes + Helper functions -->
 // ******************************************************************
 
 // Function to fetch messages and user info for a conversation
@@ -457,6 +467,10 @@ app.post('/im/create', async (req, res) => {
   }
 });
 
+// *******************************
+// <!-- Section 4.4 : Reviews -->
+// *******************************
+
 app.post('/submit_review', auth, async (req, res) => {
   const { rating, review, convention_id } = req.body;
   const user_id = req.session.user.id;
@@ -498,6 +512,7 @@ app.post('/submit_review', auth, async (req, res) => {
     }
   }
 });
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
