@@ -204,7 +204,7 @@ app.post("/conventions/add", async (req, res) => {
   }
 });
 
-app.get("/profile", (req, res) => {
+app.get("/profile", auth, (req, res) => {
   res.render("pages/profile");
 });
 
@@ -218,6 +218,10 @@ app.get('/profile', async (req, res) => {
     console.error(err);
     res.status(500).send('Error retrieving user profile');
   }
+});
+
+app.get("/settings", (req, res) => {
+  res.render("pages/settings");
 });
 
 // *****************************************************
