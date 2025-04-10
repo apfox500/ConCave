@@ -136,6 +136,100 @@ app.get('/conventions/:id', async (req, res) => {
   }
 });
 
+app.get('/cave', async (req, res) => {
+
+  const userId = req.session.user.id;
+
+  const sort = req.query.sort || 'newest';
+
+  let orderBy;
+  switch (sort) {
+    case 'oldest':
+      orderBy = 'tunnels.created_at ASC';
+      break;
+    case 'most_liked':
+      orderBy = 'like_count DESC';
+      break;
+    case 'least_liked':
+      orderBy = 'like_count ASC';
+      break;
+    case 'newest':
+    default:
+      orderBy = 'tunnels.created_at DESC';
+  }
+
+
+  try {
+
+    const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
+
+    const tunnels = await db.any(`
+      SELECT tunnels.*, users.username, 
+        COUNT(DISTINCT replies.id) AS reply_count, 
+        COUNT(DISTINCT likes.id) AS like_count, 
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM tunnels
+      LEFT JOIN users ON tunnels.user_id = users.id
+      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
+      LEFT JOIN replies ON replies.tunnel_id = tunnels.id
+      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
+      GROUP BY tunnels.id, users.username, conventions.name
+      ORDER BY ${orderBy}
+    `, [userId]);
+
+    res.render('pages/cave', {
+      title: 'ConCave',
+      tunnels: tunnels,
+      conventions: conventions,
+      sort: sort
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error loading the cave.');
+  }
+});
+
+
+// Cave Tunnel Page Get
+app.get('/cave/:id', async (req, res) => {
+  const tunnelId = req.params.id;
+  const userId = req.session.user.id;
+
+  try {
+    const tunnel = await db.one(`
+      SELECT tunnels.*, users.username,
+        COUNT(DISTINCT likes.id) AS like_count,
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM tunnels
+      LEFT JOIN users ON tunnels.user_id = users.id
+      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
+      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
+      WHERE tunnels.id = $2
+      GROUP BY tunnels.id, users.username, conventions.name
+    `, [userId, tunnelId]);
+
+    const replies = await db.any(`
+      SELECT replies.*, users.username,
+        COUNT(DISTINCT likes.id) AS like_count,
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM replies
+      LEFT JOIN users ON replies.user_id = users.id
+      LEFT JOIN likes ON likes.reply_id = replies.id
+      WHERE replies.tunnel_id = $2
+      GROUP BY replies.id, users.username
+      ORDER BY replies.created_at ASC
+    `, [userId, tunnelId]);
+
+    res.render('pages/tunnel', {
+      tunnel,
+      replies,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error loading tunnel.');
+  }
+});
+
 // *************************************
 // <!-- Section 4.1 : Login/Register -->
 // *************************************
@@ -211,58 +305,7 @@ app.use(auth);
 // ********************************
 
 // Cave route
-app.get('/cave', async (req, res) => {
 
-  const userId = req.session.user.id;
-
-  const sort = req.query.sort || 'newest';
-
-  let orderBy;
-  switch (sort) {
-    case 'oldest':
-      orderBy = 'tunnels.created_at ASC';
-      break;
-    case 'most_liked':
-      orderBy = 'like_count DESC';
-      break;
-    case 'least_liked':
-      orderBy = 'like_count ASC';
-      break;
-    case 'newest':
-    default:
-      orderBy = 'tunnels.created_at DESC';
-  }
-
-
-  try {
-
-    const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
-
-    const tunnels = await db.any(`
-      SELECT tunnels.*, users.username, 
-        COUNT(DISTINCT replies.id) AS reply_count, 
-        COUNT(DISTINCT likes.id) AS like_count, 
-        BOOL_OR(likes.user_id = $1) AS liked_by_user
-      FROM tunnels
-      LEFT JOIN users ON tunnels.user_id = users.id
-      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
-      LEFT JOIN replies ON replies.tunnel_id = tunnels.id
-      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
-      GROUP BY tunnels.id, users.username, conventions.name
-      ORDER BY ${orderBy}
-    `, [userId]);
-
-    res.render('pages/cave', {
-      title: 'ConCave',
-      tunnels: tunnels,
-      conventions: conventions,
-      sort: sort
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error loading the cave.');
-  }
-});
 
 // Cave Tunnel Post
 app.post('/cave', async (req, res) => {
@@ -279,46 +322,6 @@ app.post('/cave', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Error digging your tunnel.');
-  }
-});
-
-// Cave Tunnel Page Get
-app.get('/cave/:id', async (req, res) => {
-  const tunnelId = req.params.id;
-  const userId = req.session.user.id;
-
-  try {
-    const tunnel = await db.one(`
-      SELECT tunnels.*, users.username,
-        COUNT(DISTINCT likes.id) AS like_count,
-        BOOL_OR(likes.user_id = $1) AS liked_by_user
-      FROM tunnels
-      LEFT JOIN users ON tunnels.user_id = users.id
-      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
-      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
-      WHERE tunnels.id = $2
-      GROUP BY tunnels.id, users.username, conventions.name
-    `, [userId, tunnelId]);
-
-    const replies = await db.any(`
-      SELECT replies.*, users.username,
-        COUNT(DISTINCT likes.id) AS like_count,
-        BOOL_OR(likes.user_id = $1) AS liked_by_user
-      FROM replies
-      LEFT JOIN users ON replies.user_id = users.id
-      LEFT JOIN likes ON likes.reply_id = replies.id
-      WHERE replies.tunnel_id = $2
-      GROUP BY replies.id, users.username
-      ORDER BY replies.created_at ASC
-    `, [userId, tunnelId]);
-
-    res.render('pages/tunnel', {
-      tunnel,
-      replies,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error loading tunnel.');
   }
 });
 
