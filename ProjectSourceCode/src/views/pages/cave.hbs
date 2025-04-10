@@ -8,38 +8,41 @@
         <form action="/cave" method="POST">
             <div class="mb-3">
                 <label for="tunnel-title" class="form-label">Tunnel Name</label>
-                <input type="text" class="form-control" id="tunnel-title" name="title" placeholder="Enter a tunnel name">
+                <input type="text" class="form-control" id="tunnel-title" name="title"
+                    placeholder="Enter a tunnel name">
             </div>
             <div class="mb-3">
                 <label for="convention-id" class="form-label">Associated Convention</label>
                 <select class="form-select" id="convention-id" name="convention_id">
                     <option value="" selected>None</option>
                     {{#each conventions}}
-                        <option value="{{this.id}}">{{this.name}}</option>
+                    <option value="{{this.id}}">{{this.name}}</option>
                     {{/each}}
                 </select>
             </div>
             <div class="mb-3">
                 <label for="tunnel-message" class="form-label">Message</label>
-                <textarea class="form-control" id="tunnel-message" rows="5" name="message" placeholder="Write your message..."></textarea>
+                <textarea class="form-control" id="tunnel-message" rows="5" name="message"
+                    placeholder="Write your message..."></textarea>
             </div>
             <button type="submit" class="btn btn-success me-2">Create</button>
             <button type="button" class="btn btn-secondary" id="cancel">Cancel</button>
         </form>
     </div>
 
-    
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Dig a Tunnel Button -->
+        {{#if isUser}}
         <button class="btn btn-primary" id="create-tunnel">Dig a Tunnel</button>
-
+        {{/if}}
         <!-- Sort Tunnels Dropdown -->
         <form method="GET" action="/cave">
             <select id="tunnel-sort" class="form-select" name="sort" onchange="this.form.submit()">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="most_liked">Most Liked</option>
-            <option value="least_liked">Least Liked</option>
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="most_liked">Most Liked</option>
+                <option value="least_liked">Least Liked</option>
             </select>
         </form>
     </div>
@@ -52,11 +55,12 @@
         {{#each tunnels}}
         <div class="mb-3 p-3 border-bottom">
             <h5> <a href="/cave/{{this.id}}" class="text-dark"> {{this.title}} </a> </h5>
-            <small class="text-muted">Dug by {{this.username}} on <span class="localized-date" data-date="{{this.created_at}}"></span> </small>
+            <small class="text-muted">Dug by {{this.username}} on <span class="localized-date"
+                    data-date="{{this.created_at}}"></span> </small>
             {{#if this.convention_name}}
-                <p class="text-muted mb-1">
-                    <i class="bi bi-calendar-event"></i> {{this.convention_name}}
-                </p>
+            <p class="text-muted mb-1">
+                <i class="bi bi-calendar-event"></i> {{this.convention_name}}
+            </p>
             {{/if}}
             <p>{{this.message}}</p>
             <form action="/like/tunnel/{{this.id}}" method="POST" class="d-inline">
@@ -77,12 +81,12 @@
 
 <!-- Dig Tunnel Form/Button Script -->
 <script>
-    document.getElementById('create-tunnel').addEventListener('click', function ()  {
+    document.getElementById('create-tunnel').addEventListener('click', function () {
         document.getElementById('tunnel-form').classList.toggle('d-none');
         document.getElementById('create-tunnel').classList.add('d-none');
     });
 
-    document.getElementById('cancel').addEventListener('click', function ()  {
+    document.getElementById('cancel').addEventListener('click', function () {
         document.getElementById('tunnel-form').classList.add('d-none');
         document.getElementById('create-tunnel').classList.remove('d-none');
     });
@@ -90,12 +94,12 @@
 
 <!-- Tunnel Sort Select Script -->
 <script>
-  const currentSort = "{{sort}}";
-  const tunnelSort = document.getElementById("tunnel-sort");
+    const currentSort = "{{sort}}";
+    const tunnelSort = document.getElementById("tunnel-sort");
 
-  if (tunnelSort && currentSort) {
-    tunnelSort.value = currentSort;
-  }
+    if (tunnelSort && currentSort) {
+        tunnelSort.value = currentSort;
+    }
 </script>
 
 
@@ -103,20 +107,20 @@
 
 <!-- ChatGPT generated localized date display -->
 <script>
-  document.querySelectorAll('.localized-date').forEach(el => {
-    const rawDate = el.dataset.date;
-    const local = new Date(rawDate);
+    document.querySelectorAll('.localized-date').forEach(el => {
+        const rawDate = el.dataset.date;
+        const local = new Date(rawDate);
 
-    // Format: Apr 7, 2025, 3:12 PM — no time zone label
-    const formatted = local.toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
+        // Format: Apr 7, 2025, 3:12 PM — no time zone label
+        const formatted = local.toLocaleString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+
+        el.textContent = formatted;
     });
-
-    el.textContent = formatted;
-  });
 </script>

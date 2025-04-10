@@ -186,6 +186,7 @@ app.get('/cave', async (req, res) => {
       title: 'ConCave',
       tunnels: tunnels,
       conventions: conventions,
+      isUser: userId != -1,
       sort: sort
     });
   } catch (error) {
@@ -232,6 +233,7 @@ app.get('/cave/:id', async (req, res) => {
     res.render('pages/tunnel', {
       tunnel,
       replies,
+      isUser: userId != -1
     });
   } catch (error) {
     console.error(error);
