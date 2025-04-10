@@ -1,26 +1,40 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-            <!-- Link to the cave page-->
-            <a href="/cave" class="nav-link text-dark"> The Cave </a>
-        </div>
+        <!-- Link to the cave page-->
+        <a href="/" class="btn btn-link text-dark text-decoration-none">
+            <span>Conventions</span>
+        </a>
+    </div>
+    <div class="container-fluid">
+        <a href="/cave" class="btn btn-link text-dark text-decoration-none">
+            <span>The Cave</span>
+        </a>
+    </div>
+    <div class="container-fluid">
+        <a href="/merch" class="btn btn-link text-dark text-decoration-none">
+            <span>Merch Store</span>
+        </a>
+    </div>
+    <div class="container-fluid">
+        <a href="/im" class="btn btn-link text-dark text-decoration-none">
+            <span>Messages</span>
+        </a>
+    </div>
 
-        <!-- Right side: Login button -->
-
-        <div class="ms-auto">
-            {{#if user}}
-                <form action="/logout" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-link text-dark text-decoration-none">
-                        <i class="bi bi-box-arrow-right fs-4"></i>
-                        <span>Logout</span>
-                    </button>
-                </form>
-            {{else}}
-                <a href="/login" class="btn btn-link text-dark text-decoration-none">
-                    <i class="bi bi-person-circle fs-4"></i>
-                    <span>Login</span>
-                </a>
-            {{/if}}
-        </div>
+    <div class="ms-auto">
+        {{#if user}}
+        <form action="/logout" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-link text-dark text-decoration-none">
+                <i class="bi bi-box-arrow-right fs-4"></i>
+                <span>Logout</span>
+            </button>
+        </form>
+        {{else}}
+        <a href="/login" class="btn btn-link text-dark text-decoration-none">
+            <i class="bi bi-person-circle fs-4"></i>
+            <span>Login</span>
+        </a>
+        {{/if}}
+    </div>
 </nav>
-
 
