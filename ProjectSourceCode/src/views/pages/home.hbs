@@ -90,19 +90,16 @@
     {{/each}}
   </div>
 </div>
-<!-- Include your custom JavaScript to handle the form -->
     <script>
         // Add convention button
         document.getElementById('addConventionBtn').addEventListener('click', function () {
             document.getElementById('addConventionFormCard').style.display = 'block';
         });
 
-        // Cancel button
         document.getElementById('cancelFormBtn').addEventListener('click', function () {
             document.getElementById('addConventionFormCard').style.display = 'none';
         });
 
-        // Form submission
         document.getElementById('addConventionForm').addEventListener('submit', async function (e) {
             // Allows me to handle the rest with Javascript
             e.preventDefault();
@@ -114,7 +111,6 @@
             const startDate = document.getElementById('conventionStart').value;
             const endDate = document.getElementById('conventionEnd').value;
 
-            // Make a POST request to the backend to add the convention
             try {
                 const response = await fetch('/conventions/add', {
                     method: 'POST',

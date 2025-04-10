@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS users_to_badges (
     user_badge_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     trophy_id INT REFERENCES trophies(trophy_id) ON DELETE CASCADE,
-    awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 */
 -- Potentially only for Dummy Data if we use an API
