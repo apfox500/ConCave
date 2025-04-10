@@ -323,7 +323,7 @@ app.get('/cave/search', async (req, res) => {
 
   const results = await db.any(
     'SELECT * FROM tunnels WHERE title ILIKE $1;',
-    [`${searchQuery}%`]
+    [`%${searchQuery}%`]
   );
 
   console.log(`Query Results:`, results);
