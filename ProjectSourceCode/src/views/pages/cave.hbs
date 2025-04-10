@@ -1,16 +1,17 @@
 <div>
-<h1 class="mb-4" style="text-align: left;">The Cave</h1>
+    <h1 class="mb-4" style="text-align: left;">The Cave</h1>
 </div>
 
 <div class="d-flex align-items-center flex-grow-1">
-            <form id = "search-form" class="d-flex w-100" style="max-width: 300px;">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input id = "search-bar" class="form-control border-start-0" type="search" placeholder="search the cave" aria-label="Search">
-                </div>
-            </form>
+    <form id="search-form" class="d-flex w-100" style="max-width: 300px;">
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search"></i>
+            </span>
+            <input id="search-bar" class="form-control border-start-0" type="search" placeholder="search the cave"
+                aria-label="Search">
+        </div>
+    </form>
 </div>
 
 <div class="container mt-4">
@@ -48,9 +49,9 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Dig a Tunnel Button -->
-        {{#if isUser}}
-        <button class="btn btn-primary" id="create-tunnel">Dig a Tunnel</button>
-        {{/if}}
+
+        <button class="btn btn-primary" id="create-tunnel" {{#if isUser}}{{else}} disabled {{/if}}>Dig a Tunnel</button>
+
         <!-- Sort Tunnels Dropdown -->
         <form method="GET" action="/cave">
             <select id="tunnel-sort" class="form-select" name="sort" onchange="this.form.submit()">
@@ -62,7 +63,7 @@
         </form>
     </div>
 
-<div id="search-results" class="container mt-3 p-2 bg-light border rounded shadow-sm"></div>
+    <div id="search-results" class="container mt-3 p-2 bg-light border rounded shadow-sm"></div>
     <!-- Tunnel Board -->
 
     <div id="tunnel-board" class="border rounded p-3" style="height: 70vh; overflow-y: auto;">
