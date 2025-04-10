@@ -1,0 +1,18 @@
+Meeting on 4/10
+
+everyone was present 
+
+tucker - finished the cave this week (likes, sorting) will try to finish up the bugs this week. also wants to link it to convention pages?
+
+liam - finsihed groups and some other errata, plans on doing finishing up bug fixes and strat im to add a group. Wants to work on the navbar.
+
+micheal - finished  search and search for cave, plans on making ui look better and bug fixes
+
+daniel - dynamic conventions and profile customization. Wnats to workt on profile pcitures? and setting page
+
+leon - review system for the convention pages, can add a review and they are all sorted based on rating. Did image resizing for convention page. Wants to add multiple sort functionalites (sort-by) for the reviews, bug fixes.
+
+Andrew - finished up instant messages and working on integration of all branches. Will continue to work on that(nav bar) and help find and squash bugs.
+
+Billy - 
+
