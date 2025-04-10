@@ -196,13 +196,26 @@ app.post("/logout", (req, res) => {
   });
 });
 
+const auth = (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  next();
+};
+
+app.use(auth);
+
+
+// ********************************
+// <!-- Section 4.2 : The Cave -->
+// ********************************
 
 // Cave route
 app.get('/cave', async (req, res) => {
 
   const userId = 1;
 
-  const sort = req.query.sort || 'newest'; 
+  const sort = req.query.sort || 'newest';
 
   let orderBy;
   switch (sort) {
@@ -219,8 +232,8 @@ app.get('/cave', async (req, res) => {
     default:
       orderBy = 'tunnels.created_at DESC';
   }
-  
-  
+
+
   try {
 
     const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
@@ -390,17 +403,8 @@ app.post('/like/reply/:id', async (req, res) => {
   }
 });
 
-
-
-const auth = (req, res, next) => {
-  if (!req.session.user) {
-    return res.redirect("/login");
-  }
-  next();
-};
-
 // *****************************************
-// <!-- Section 4.2 : Adding Conventions -->
+// <!-- Section 4.3 : Adding Conventions -->
 // *****************************************
 
 const authorizeConventionHost = (req, res, next) => {
@@ -416,31 +420,30 @@ const authorizeConventionHost = (req, res, next) => {
 
 app.post("/conventions/add", authorizeConventionHost, async (req, res) => {
   try {
-      const { name, location, convention_center, convention_bio, convention_image, start_date, end_date } = req.body;
+    const { name, location, convention_center, convention_bio, convention_image, start_date, end_date } = req.body;
 
-      if (!name || !location || !convention_center || !convention_bio || !convention_image || !start_date || !end_date) {
-          return res.status(400).json({ message: "All fields are required" });
-      }
+    if (!name || !location || !convention_center || !convention_bio || !convention_image || !start_date || !end_date) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-      const result = await db.task(async t => {
-          const conventionQuery = `
+    const result = await db.task(async t => {
+      const conventionQuery = `
               INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date)
               VALUES ($1, $2, $3, $4, $5, $6, $7)
               RETURNING id;`;
-          const conventionResult = await t.one(conventionQuery, [name, location, convention_center, convention_bio, convention_image, start_date, end_date]);
-          return conventionResult;
-      });
+      const conventionResult = await t.one(conventionQuery, [name, location, convention_center, convention_bio, convention_image, start_date, end_date]);
+      return conventionResult;
+    });
 
-      res.status(201).json({ message: "Convention added successfully!", convention: result });
+    res.status(201).json({ message: "Convention added successfully!", convention: result });
   } catch (error) {
-      res.status(500).json({ message: "An error occurred", error: error.message });
+    res.status(500).json({ message: "An error occurred", error: error.message });
   }
 });
 
-app.use(auth);
 
 // ******************************
-// <!-- Section 4.3 : Search -->
+// <!-- Section 4.4 : Search -->
 // ******************************
 
 app.get('/search', async (req, res) => {
@@ -467,7 +470,7 @@ app.get('/search', async (req, res) => {
 
 
 // ******************************************************************
-// <!-- Section 4.4 : Instant Messaging Routes + Helper functions -->
+// <!-- Section 4.5 : Instant Messaging Routes + Helper functions -->
 // ******************************************************************
 
 // Function to fetch messages and user info for a conversation
@@ -702,7 +705,7 @@ app.post('/im/create', async (req, res) => {
 });
 
 // *******************************
-// <!-- Section 4.5 : Reviews -->
+// <!-- Section 4.6 : Reviews -->
 // *******************************
 
 app.get('/conventions/:id/groups', async (req, res) => {
