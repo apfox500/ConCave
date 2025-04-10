@@ -1,0 +1,63 @@
+.input-group-text {
+    border-radius: 20px 0 0 20px;
+}
+
+.form-control {
+    border-radius: 0 20px 20px 0;
+}
+
+.input-group {
+    border-radius: 20px;
+}
+
+.message {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 5px 0;
+    max-width: 60%;
+    word-wrap: break-word;
+}
+
+.received {
+    background-color: #aed0f6;
+    text-align: left;
+    float: left;
+    clear: both;
+    margin-left: 10px;
+}
+
+.sent {
+    background-color: #a9fad6;
+    text-align: right;
+    float: right;
+    clear: both;
+    margin-right: 10px;
+}
+
+.date {
+    font-size: 0.8em;
+    color: grey;
+}
+
+.date-separator {
+    font-size: 0.8em;
+    color: gray;
+    text-align: center;
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    clear: both;
+    /* Ensure it starts on a new row */
+}
+
+.notification-symbol {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: rgb(0, 115, 255);
+    border-radius: 50%;
+    margin-left: 5px;
+    position: relative;
+    top: -2px;
+}
