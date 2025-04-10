@@ -139,8 +139,11 @@ app.get('/conventions/:id', async (req, res) => {
 // Cave route
 
 app.get('/cave', async (req, res) => {
+  let userId = -1;
 
-  const userId = req.session.user.id;
+  if (req.session.user) {
+    userId = req.session.user.id;
+  }
 
   const sort = req.query.sort || 'newest';
 
@@ -194,8 +197,12 @@ app.get('/cave', async (req, res) => {
 
 // Cave Tunnel Page Get
 app.get('/cave/:id', async (req, res) => {
+  let userId = -1;
+
+  if (req.session.user) {
+    userId = req.session.user.id;
+  }
   const tunnelId = req.params.id;
-  const userId = req.session.user.id;
 
   try {
     const tunnel = await db.one(`
