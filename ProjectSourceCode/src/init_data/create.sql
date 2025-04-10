@@ -92,7 +92,8 @@ CREATE TABLE IF NOT EXISTS tunnels (
     convention_id INTEGER,
     FOREIGN KEY (convention_id) REFERENCES conventions(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
-    message TEXT NOT NULL
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
