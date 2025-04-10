@@ -834,6 +834,121 @@ app.post('/submit_review', auth, async (req, res) => {
 
 
 
+// ********************************
+// <!-- Section 4.7: Merch -->
+// ********************************
+
+app.get('/merch', async (req, res) => {
+  try {
+    let merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+    
+
+    if (req.session.user) {
+      const userMerchandise = await db.any(
+        'SELECT merchandise_id FROM user_merchandise WHERE user_id = $1',
+        [req.session.user.id]
+      );
+      
+      merchandise = merchandise.map(item => {
+        return {
+          ...item,
+          is_creator: userMerchandise.some(um => um.merchandise_id === item.id)
+        };
+      });
+    }
+    
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: '',
+      merchandise: merchandise,
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error(error);
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: 'Error loading merchandise',
+      merchandise: [],
+      user: req.session.user
+    });
+  }
+});
+
+app.post('/merch', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect('/login');
+    }
+    
+    console.log('Received form data:', req.body);
+    const { name, price, description, image_url, details } = req.body;
+    const detailsArray = details.split(',').map(item => item.trim());
+    
+    await db.tx(async t => {
+      const result = await t.one(
+        'INSERT INTO merchandise (name, price, description, image_url, details) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+        [name, price, description, image_url, detailsArray]
+      );
+      
+      await t.none(
+        'INSERT INTO user_merchandise (user_id, merchandise_id) VALUES ($1, $2)',
+        [req.session.user.id, result.id]
+      );
+    });
+    
+    res.redirect('/merch');
+  } catch (error) {
+    console.error('Error adding merchandise:', error);
+    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: 'Error adding merchandise: ' + error.message,
+      merchandise: merchandise,
+      error: true,
+      user: req.session.user
+    });
+  }
+});
+
+app.post('/merch/delete/:id', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect('/login');
+    }
+    
+    const merchandiseId = req.params.id;
+    
+    const isCreator = await db.oneOrNone(
+      'SELECT * FROM user_merchandise WHERE user_id = $1 AND merchandise_id = $2',
+      [req.session.user.id, merchandiseId]
+    );
+    
+    if (!isCreator) {
+      return res.render('pages/merch', {
+        title: 'Merchandise',
+        message: 'You do not have permission to delete this merchandise',
+        merchandise: await db.any('SELECT * FROM merchandise ORDER BY id'),
+        error: true,
+        user: req.session.user
+      });
+    }
+    
+    await db.none('DELETE FROM merchandise WHERE id = $1', [merchandiseId]);
+    
+    res.redirect('/merch');
+  } catch (error) {
+    console.error('Error deleting merchandise:', error);
+    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: 'Error deleting merchandise: ' + error.message,
+      merchandise: merchandise,
+      error: true,
+      user: req.session.user
+    });
+  }
+});
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************

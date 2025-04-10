@@ -83,7 +83,6 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 );
 
-
 /* Tunnels Table */
 CREATE TABLE IF NOT EXISTS tunnels (
     id SERIAL PRIMARY KEY,
@@ -141,4 +140,23 @@ CREATE TABLE IF NOT EXISTS likes (
   FOREIGN KEY (reply_id) REFERENCES replies(id) ON DELETE CASCADE,
   CONSTRAINT unique_tunnel_like UNIQUE (user_id, tunnel_id),
   CONSTRAINT unique_reply_like UNIQUE (user_id, reply_id)
+);
+
+CREATE TABLE IF NOT EXISTS merchandise (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    description TEXT NOT NULL,
+    details TEXT[] NOT NULL,
+    image_url TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_merchandise (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    merchandise_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (merchandise_id) REFERENCES merchandise(id) ON DELETE CASCADE,
+    UNIQUE(user_id, merchandise_id)
 );
