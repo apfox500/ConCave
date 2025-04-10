@@ -94,10 +94,14 @@ app.use((req, res, next) => {
 app.get('/', async (req, res) => {
   try {
     const conventions = await db.any('SELECT * FROM conventions ORDER BY start_date ASC');
-
+    let = isConvOrAdmin = false;
+    if (req.session.user) {
+      isConvOrAdmin = req.session.user.rank != 'user';
+    }
     res.render('pages/home', {
       title: 'ConCave',
       message: 'Welcome to ConCave!',
+      isConvOrAdmin: isConvOrAdmin,
       conventions,
     });
   } catch (error) {
