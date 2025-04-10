@@ -313,6 +313,50 @@ app.post('/cave', async (req, res) => {
   }
 });
 
+app.get('/cave/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM tunnels WHERE title ILIKE $1;',
+    [`%${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+  res.json(results);
+} catch (err) {
+  console.error('Error executing query:', err);
+  res.status(500).json({ error: 'Internal Server Error' });
+}
+});
+
+app.get('/cave/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM tunnels WHERE title ILIKE $1;',
+    [`${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+  res.json(results);
+} catch (err) {
+  console.error('Error executing query:', err);
+  res.status(500).json({ error: 'Internal Server Error' });
+}
+});
+
 // Cave Tunnel Page Get
 app.get('/cave/:id', async (req, res) => {
   const tunnelId = req.params.id;
