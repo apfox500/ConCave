@@ -17,16 +17,16 @@
 
 <h4>Tunnel Notes</h4>
 {{#each replies}}
-  <div class="mb-3 ps-3 border-start border-secondary">
-    <small>By {{this.username}} on <span class="localized-date" data-date="{{this.created_at}}"></span> </small>
-    <p>{{this.message}}</p>
-    <form action="/like/reply/{{this.id}}" method="POST" class="d-inline">
-      <button class="btn btn-link p-0" type="submit">
-        <i class="bi {{#if this.liked_by_user}}bi-heart-fill{{else}}bi-heart{{/if}}"></i>
-        {{this.like_count}}
-      </button>
-    </form>
-  </div>
+<div class="mb-3 ps-3 border-start border-secondary">
+  <small>By {{this.username}} on <span class="localized-date" data-date="{{this.created_at}}"></span> </small>
+  <p>{{this.message}}</p>
+  <form action="/like/reply/{{this.id}}" method="POST" class="d-inline">
+    <button class="btn btn-link p-0" type="submit">
+      <i class="bi {{#if this.liked_by_user}}bi-heart-fill{{else}}bi-heart{{/if}}"></i>
+      {{this.like_count}}
+    </button>
+  </form>
+</div>
 {{/each}}
 
 <!-- Tunnel Reply Form -->
@@ -36,6 +36,7 @@
   </div>
   <button type="submit" class="btn btn-primary">Leave a Note</button>
 </form>
+
 
 
 
