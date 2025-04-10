@@ -244,7 +244,7 @@ app.use(auth);
 // Cave route
 app.get('/cave', async (req, res) => {
 
-  const userId = 1;
+  const userId = req.session.user.id;
 
   const sort = req.query.sort || 'newest';
 
@@ -298,7 +298,7 @@ app.get('/cave', async (req, res) => {
 // Cave Tunnel Post
 app.post('/cave', async (req, res) => {
   const { title, message, convention_id } = req.body;
-  const userId = 1; // Replace with actual user id when login is implemented.
+  const userId = req.session.user.id;
 
   try {
     await db.none(
@@ -316,7 +316,7 @@ app.post('/cave', async (req, res) => {
 // Cave Tunnel Page Get
 app.get('/cave/:id', async (req, res) => {
   const tunnelId = req.params.id;
-  const userId = 1; // Replace later
+  const userId = req.session.user.id;
 
   try {
     const tunnel = await db.one(`
@@ -359,7 +359,7 @@ app.post('/cave/:id/reply', async (req, res) => {
   const { message } = req.body;
 
   try {
-    const userId = 1; // Replace with actual user id when login is implemented.
+    const userId = req.session.user.id;
     await db.none(
       'INSERT INTO replies (tunnel_id, message, user_id) VALUES ($1, $2, $3)',
       [tunnelId, message, userId]
@@ -373,7 +373,7 @@ app.post('/cave/:id/reply', async (req, res) => {
 
 // Like a tunnel
 app.post('/like/tunnel/:id', async (req, res) => {
-  const userId = 1; // Replace later
+  const userId = req.session.user.id;
   const tunnelId = req.params.id;
   const redirectTo = req.body.redirectTo || '/cave';
 
@@ -403,7 +403,7 @@ app.post('/like/tunnel/:id', async (req, res) => {
 
 // Like a reply
 app.post('/like/reply/:id', async (req, res) => {
-  const userId = 1; // Replace later
+  const userId = req.session.user.id;
   const replyId = req.params.id;
 
   try {
