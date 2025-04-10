@@ -217,10 +217,7 @@ const auth = (req, res, next) => {
 app.get('/conventions/:id/groups', async (req, res) => {
   try {
     const { id: conventionId } = req.params;
-    const convention = await db.oneOrNone(
-      'SELECT * FROM conventions WHERE id = $1',
-      [conventionId]
-    );
+    const convention = await db.oneOrNone('SELECT * FROM conventions WHERE id = $1', [conventionId]);
     if (!convention) {
       return res.status(404).send('Convention not found');
     }
@@ -238,7 +235,11 @@ app.get('/conventions/:id/groups', async (req, res) => {
       JOIN users u ON g.created_by = u.id
       WHERE g.convention_id = $1
     `, [conventionId]);
-    res.render('pages/groups', { convention, groups });
+    const enhancedGroups = groups.map(group => {
+      group.ownedByUser = req.session.user && (group.created_by === req.session.user.id);
+      return group;
+    });
+    res.render('pages/groups', { convention, groups: enhancedGroups });
   } catch (error) {
     console.log(error);
     res.status(500).send('Error fetching groups');
@@ -247,50 +248,52 @@ app.get('/conventions/:id/groups', async (req, res) => {
 
 app.post('/conventions/:id/groups/create', auth, async (req, res) => {
   try {
-    const { id: conventionId } = req.params;
-    const { groupName, description } = req.body;
-    const userId = req.session.user.id;
+    const { id: conventionId } = req.params
+    const { groupName, description } = req.body
+    const userId = req.session.user.id
     const newGroup = await db.one(
       'INSERT INTO groups (convention_id, name, description, created_by) VALUES ($1, $2, $3, $4) RETURNING id',
       [conventionId, groupName, description, userId]
-    );
-    await db.none(
-      'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)',
-      [newGroup.id, userId]
-    );
-    res.redirect(`/conventions/${conventionId}/groups`);
+    )
+    await db.none('INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)', [newGroup.id, userId])
+    res.redirect(`/conventions/${conventionId}/groups`)
   } catch (error) {
-    console.log(error);
-    res.status(500).send('Error creating group');
+    console.log(error)
+    res.status(500).send('Error creating group')
   }
 });
 
-app.post("/groups/:groupId/join", auth, async (req, res) => {
+app.post('/groups/:groupId/join', auth, async (req, res) => {
   try {
-    const { groupId } = req.params;
-    const userId = req.session.user.id;
+    const { groupId } = req.params
+    const userId = req.session.user.id
     const existingRow = await db.oneOrNone(
-      "SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2",
+      'SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2',
       [groupId, userId]
-    );
-    if (existingRow) {
-      return res.redirect("back");
-    }
-    await db.none(
-      "INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)",
-      [groupId, userId]
-    );
-    const group = await db.oneOrNone(
-      "SELECT convention_id FROM groups WHERE id = $1",
-      [groupId]
-    );
-    if (!group) {
-      return res.status(404).send("Group not found");
-    }
-    res.redirect(`/conventions/${group.convention_id}/groups`);
+    )
+    if (existingRow) return res.redirect('back')
+    await db.none('INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)', [groupId, userId])
+    const group = await db.oneOrNone('SELECT convention_id FROM groups WHERE id = $1', [groupId])
+    if (!group) return res.status(404).send('Group not found')
+    res.redirect(`/conventions/${group.convention_id}/groups`)
   } catch (error) {
-    console.log(error);
-    res.status(500).send("Error joining group");
+    console.log(error)
+    res.status(500).send('Error joining group')
+  }
+});
+
+app.post('/groups/:groupId/delete', auth, async (req, res) => {
+  try {
+    const { groupId } = req.params
+    const userId = req.session.user.id
+    const group = await db.oneOrNone('SELECT * FROM groups WHERE id = $1', [groupId])
+    if (!group) return res.status(404).send('Group not found')
+    if (group.created_by !== userId) return res.status(403).send('Forbidden')
+    await db.none('DELETE FROM groups WHERE id = $1', [groupId])
+    return res.redirect(`/conventions/${group.convention_id}/groups`)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).send('Error')
   }
 });
 
