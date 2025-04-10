@@ -164,12 +164,13 @@
         e.preventDefault(); 
     });
 
-
+            resultsContainer.style.display = 'none';
             searchInput.addEventListener('input', async (event) => {
                 const query = event.target.value;
                 resultsContainer.innerHTML = '';
 
                 if (query.length > 0) {
+                    resultsContainer.style.display = 'block';
                     const newUrl = `/search?q=${encodeURIComponent(query)}`;
                     history.pushState({ path: newUrl }, '', newUrl);
 
@@ -195,6 +196,7 @@
                 } else {
                     history.pushState({ path: '/' }, '', '/');
                     resultsContainer.innerHTML = '';
+                    resultsContainer.style.display = 'none';
                 }
             });
         });
