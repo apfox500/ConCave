@@ -113,9 +113,9 @@
         </div>
     </div>
     <script>
-        document.getElementById('addConventionBtn').addEventListener('click', function () {
+         document.getElementById('addConventionBtn').addEventListener('click', function () {
             document.getElementById('addConventionFormCard').style.display = 'block';
-        });
+        }); 
 
         document.getElementById('cancelFormBtn').addEventListener('click', function () {
             document.getElementById('addConventionFormCard').style.display = 'none';
@@ -163,8 +163,8 @@
                 alert('There was an error adding the convention.');
             }
         });
-
-
+</script>
+<script>
         document.addEventListener("DOMContentLoaded", () => {
             const searchForm = document.getElementById('search-form');
             const searchInput = document.getElementById('search-bar');
@@ -173,13 +173,14 @@
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
             });
-
+            resultsContainer.style.display = 'none';
 
             searchInput.addEventListener('input', async (event) => {
                 const query = event.target.value;
                 resultsContainer.innerHTML = '';
 
                 if (query.length > 0) {
+                    resultsContainer.style.display = 'block';
                     const newUrl = `/search?q=${encodeURIComponent(query)}`;
                     history.pushState({ path: newUrl }, '', newUrl);
 
@@ -203,6 +204,7 @@
                         resultsContainer.innerHTML = '<p class="p-2">Error loading search results</p>';
                     }
                 } else {
+                    resultsContainer.style.display = 'none';
                     history.pushState({ path: '/' }, '', '/');
                     resultsContainer.innerHTML = '';
                 }
