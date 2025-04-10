@@ -61,3 +61,113 @@
     position: relative;
     top: -2px;
 }
+
+.input-group-text {
+    border-radius: 20px 0 0 20px;
+}
+
+.form-control {
+    border-radius: 0 20px 20px 0;
+}
+
+.input-group {
+    border-radius: 20px;
+}
+
+.search-results-container {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 1000;
+    display: none;
+}
+
+.result-item {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    background-color: #007bff;
+    color: white;
+    font-size: 1.5rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+.btn-primary {
+    border-radius: 50px;
+}
+
+.convention-logo {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid #ddd;
+    padding: 5px;
+    background-color: white;
+}
+
+.star-rating {
+    display: inline-block;
+    cursor: pointer;
+    direction: rtl;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    color: #ddd;
+    font-size: 24px;
+    padding: 0 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.star-rating label:hover,
+.star-rating label:hover~label,
+.star-rating input:checked~label {
+    color: #ffc107;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    background-color: #007bff;
+    color: white;
+    font-size: 1.5rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+.btn-primary {
+    border-radius: 50px;
+}
