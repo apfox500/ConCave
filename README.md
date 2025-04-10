@@ -17,7 +17,7 @@ Welcome to **ConCave**, a convention-centric web platform developed by **Team 3 
 
 1. **Navigate to the Project Source Code:**
    ```sh
-   cd path/to/ConCave
+   cd path/to/ConCave/ProjectSourceCode
    ```
 2. **Start the Application using Docker Compose:**
    ```sh
