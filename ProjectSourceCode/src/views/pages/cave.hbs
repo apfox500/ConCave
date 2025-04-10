@@ -48,7 +48,9 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Dig a Tunnel Button -->
-        <button class="btn btn-primary" id="create-tunnel" {{#if isUser}} {{else}}disabled {{/if}}>Dig a Tunnel</button>
+        {{#if isUser}}
+        <button class="btn btn-primary" id="create-tunnel">Dig a Tunnel</button>
+        {{/if}}
         <!-- Sort Tunnels Dropdown -->
         <form method="GET" action="/cave">
             <select id="tunnel-sort" class="form-select" name="sort" onchange="this.form.submit()">
@@ -97,7 +99,6 @@
     document.getElementById('create-tunnel').addEventListener('click', function () {
         document.getElementById('tunnel-form').classList.toggle('d-none');
         document.getElementById('create-tunnel').classList.add('d-none');
-
     });
 
     document.getElementById('cancel').addEventListener('click', function () {
