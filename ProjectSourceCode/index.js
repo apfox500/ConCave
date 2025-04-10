@@ -136,6 +136,33 @@ app.get('/conventions/:id', async (req, res) => {
   }
 });
 
+// ******************************
+// <!-- Section 4.4 : Search -->
+// ******************************
+
+app.get('/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM conventions WHERE name ILIKE $1',
+    [`${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+    res.json(results);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 // *************************************
 // <!-- Section 4.1 : Login/Register -->
 // *************************************
@@ -442,31 +469,6 @@ app.post("/conventions/add", authorizeConventionHost, async (req, res) => {
 });
 
 
-// ******************************
-// <!-- Section 4.4 : Search -->
-// ******************************
-
-app.get('/search', async (req, res) => {
-  const searchQuery = req.query.q;
-  if (!searchQuery) {
-    return res.json([]);
-  }
-
-  console.log(`Search Query: ${searchQuery}`);
-
-  const results = await db.any(
-    'SELECT * FROM conventions WHERE name ILIKE $1',
-    [`${searchQuery}%`]
-  );
-
-  console.log(`Query Results:`, results);
-  try {
-    res.json(results);
-  } catch (err) {
-    console.error('Error executing query:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 
 // ******************************************************************
