@@ -136,6 +136,8 @@ app.get('/conventions/:id', async (req, res) => {
   }
 });
 
+// Cave route
+
 app.get('/cave', async (req, res) => {
 
   const userId = req.session.user.id;
@@ -303,8 +305,6 @@ app.use(auth);
 // ********************************
 // <!-- Section 4.2 : The Cave -->
 // ********************************
-
-// Cave route
 
 
 // Cave Tunnel Post
