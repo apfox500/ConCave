@@ -94,10 +94,14 @@ app.use((req, res, next) => {
 app.get('/', async (req, res) => {
   try {
     const conventions = await db.any('SELECT * FROM conventions ORDER BY start_date ASC');
-
+    let = isConvOrAdmin = false;
+    if (req.session.user) {
+      isConvOrAdmin = req.session.user.rank != 'user';
+    }
     res.render('pages/home', {
       title: 'ConCave',
       message: 'Welcome to ConCave!',
+      isConvOrAdmin: isConvOrAdmin,
       conventions,
     });
   } catch (error) {
@@ -135,6 +139,33 @@ app.get('/conventions/:id', async (req, res) => {
     res.status(500).send('Error fetching convention details.');
   }
 });
+
+// ******************************
+// <!-- Section 4.4 : Search -->
+// ******************************
+
+app.get('/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM conventions WHERE name ILIKE $1',
+    [`${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+    res.json(results);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 // *************************************
 // <!-- Section 4.1 : Login/Register -->
@@ -196,13 +227,26 @@ app.post("/logout", (req, res) => {
   });
 });
 
+const auth = (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  next();
+};
+
+app.use(auth);
+
+
+// ********************************
+// <!-- Section 4.2 : The Cave -->
+// ********************************
 
 // Cave route
 app.get('/cave', async (req, res) => {
 
-  const userId = 1;
+  const userId = req.session.user.id;
 
-  const sort = req.query.sort || 'newest'; 
+  const sort = req.query.sort || 'newest';
 
   let orderBy;
   switch (sort) {
@@ -219,8 +263,8 @@ app.get('/cave', async (req, res) => {
     default:
       orderBy = 'tunnels.created_at DESC';
   }
-  
-  
+
+
   try {
 
     const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
@@ -254,7 +298,7 @@ app.get('/cave', async (req, res) => {
 // Cave Tunnel Post
 app.post('/cave', async (req, res) => {
   const { title, message, convention_id } = req.body;
-  const userId = 1; // Replace with actual user id when login is implemented.
+  const userId = req.session.user.id;
 
   try {
     await db.none(
@@ -272,7 +316,7 @@ app.post('/cave', async (req, res) => {
 // Cave Tunnel Page Get
 app.get('/cave/:id', async (req, res) => {
   const tunnelId = req.params.id;
-  const userId = 1; // Replace later
+  const userId = req.session.user.id;
 
   try {
     const tunnel = await db.one(`
@@ -315,7 +359,7 @@ app.post('/cave/:id/reply', async (req, res) => {
   const { message } = req.body;
 
   try {
-    const userId = 1; // Replace with actual user id when login is implemented.
+    const userId = req.session.user.id;
     await db.none(
       'INSERT INTO replies (tunnel_id, message, user_id) VALUES ($1, $2, $3)',
       [tunnelId, message, userId]
@@ -329,7 +373,7 @@ app.post('/cave/:id/reply', async (req, res) => {
 
 // Like a tunnel
 app.post('/like/tunnel/:id', async (req, res) => {
-  const userId = 1; // Replace later
+  const userId = req.session.user.id;
   const tunnelId = req.params.id;
   const redirectTo = req.body.redirectTo || '/cave';
 
@@ -359,7 +403,7 @@ app.post('/like/tunnel/:id', async (req, res) => {
 
 // Like a reply
 app.post('/like/reply/:id', async (req, res) => {
-  const userId = 1; // Replace later
+  const userId = req.session.user.id;
   const replyId = req.params.id;
 
   try {
@@ -390,17 +434,8 @@ app.post('/like/reply/:id', async (req, res) => {
   }
 });
 
-
-
-const auth = (req, res, next) => {
-  if (!req.session.user) {
-    return res.redirect("/login");
-  }
-  next();
-};
-
 // *****************************************
-// <!-- Section 4.2 : Adding Conventions -->
+// <!-- Section 4.3 : Adding Conventions -->
 // *****************************************
 
 const authorizeConventionHost = (req, res, next) => {
@@ -416,58 +451,32 @@ const authorizeConventionHost = (req, res, next) => {
 
 app.post("/conventions/add", authorizeConventionHost, async (req, res) => {
   try {
-      const { name, location, convention_center, convention_bio, convention_image, start_date, end_date } = req.body;
+    const { name, location, convention_center, convention_bio, convention_image, start_date, end_date } = req.body;
 
-      if (!name || !location || !convention_center || !convention_bio || !convention_image || !start_date || !end_date) {
-          return res.status(400).json({ message: "All fields are required" });
-      }
+    if (!name || !location || !convention_center || !convention_bio || !convention_image || !start_date || !end_date) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-      const result = await db.task(async t => {
-          const conventionQuery = `
+    const result = await db.task(async t => {
+      const conventionQuery = `
               INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date)
               VALUES ($1, $2, $3, $4, $5, $6, $7)
               RETURNING id;`;
-          const conventionResult = await t.one(conventionQuery, [name, location, convention_center, convention_bio, convention_image, start_date, end_date]);
-          return conventionResult;
-      });
+      const conventionResult = await t.one(conventionQuery, [name, location, convention_center, convention_bio, convention_image, start_date, end_date]);
+      return conventionResult;
+    });
 
-      res.status(201).json({ message: "Convention added successfully!", convention: result });
+    res.status(201).json({ message: "Convention added successfully!", convention: result });
   } catch (error) {
-      res.status(500).json({ message: "An error occurred", error: error.message });
+    res.status(500).json({ message: "An error occurred", error: error.message });
   }
 });
 
-app.use(auth);
 
-// ******************************
-// <!-- Section 4.3 : Search -->
-// ******************************
-
-app.get('/search', async (req, res) => {
-  const searchQuery = req.query.q;
-  if (!searchQuery) {
-    return res.json([]);
-  }
-
-  console.log(`Search Query: ${searchQuery}`);
-
-  const results = await db.any(
-    'SELECT * FROM conventions WHERE name ILIKE $1',
-    [`${searchQuery}%`]
-  );
-
-  console.log(`Query Results:`, results);
-  try {
-    res.json(results);
-  } catch (err) {
-    console.error('Error executing query:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 
 // ******************************************************************
-// <!-- Section 4.4 : Instant Messaging Routes + Helper functions -->
+// <!-- Section 4.5 : Instant Messaging Routes + Helper functions -->
 // ******************************************************************
 
 // Function to fetch messages and user info for a conversation
@@ -702,7 +711,7 @@ app.post('/im/create', async (req, res) => {
 });
 
 // *******************************
-// <!-- Section 4.5 : Reviews -->
+// <!-- Section 4.6 : Reviews -->
 // *******************************
 
 app.get('/conventions/:id/groups', async (req, res) => {
@@ -831,6 +840,121 @@ app.post('/submit_review', auth, async (req, res) => {
 });
 
 
+
+// ********************************
+// <!-- Section 4.7: Merch -->
+// ********************************
+
+app.get('/merch', async (req, res) => {
+  try {
+    let merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+    
+
+    if (req.session.user) {
+      const userMerchandise = await db.any(
+        'SELECT merchandise_id FROM user_merchandise WHERE user_id = $1',
+        [req.session.user.id]
+      );
+      
+      merchandise = merchandise.map(item => {
+        return {
+          ...item,
+          is_creator: userMerchandise.some(um => um.merchandise_id === item.id)
+        };
+      });
+    }
+    
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: '',
+      merchandise: merchandise,
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error(error);
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: 'Error loading merchandise',
+      merchandise: [],
+      user: req.session.user
+    });
+  }
+});
+
+app.post('/merch', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect('/login');
+    }
+    
+    console.log('Received form data:', req.body);
+    const { name, price, description, image_url, details } = req.body;
+    const detailsArray = details.split(',').map(item => item.trim());
+    
+    await db.tx(async t => {
+      const result = await t.one(
+        'INSERT INTO merchandise (name, price, description, image_url, details) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+        [name, price, description, image_url, detailsArray]
+      );
+      
+      await t.none(
+        'INSERT INTO user_merchandise (user_id, merchandise_id) VALUES ($1, $2)',
+        [req.session.user.id, result.id]
+      );
+    });
+    
+    res.redirect('/merch');
+  } catch (error) {
+    console.error('Error adding merchandise:', error);
+    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: 'Error adding merchandise: ' + error.message,
+      merchandise: merchandise,
+      error: true,
+      user: req.session.user
+    });
+  }
+});
+
+app.post('/merch/delete/:id', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect('/login');
+    }
+    
+    const merchandiseId = req.params.id;
+    
+    const isCreator = await db.oneOrNone(
+      'SELECT * FROM user_merchandise WHERE user_id = $1 AND merchandise_id = $2',
+      [req.session.user.id, merchandiseId]
+    );
+    
+    if (!isCreator) {
+      return res.render('pages/merch', {
+        title: 'Merchandise',
+        message: 'You do not have permission to delete this merchandise',
+        merchandise: await db.any('SELECT * FROM merchandise ORDER BY id'),
+        error: true,
+        user: req.session.user
+      });
+    }
+    
+    await db.none('DELETE FROM merchandise WHERE id = $1', [merchandiseId]);
+    
+    res.redirect('/merch');
+  } catch (error) {
+    console.error('Error deleting merchandise:', error);
+    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: 'Error deleting merchandise: ' + error.message,
+      merchandise: merchandise,
+      error: true,
+      user: req.session.user
+    });
+  }
+});
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->

@@ -1,0 +1,105 @@
+<div class="container mt-4">
+    <h2>Convention Merchandise</h2>
+    
+    {{#if user}}
+    <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addMerchModal">
+        Add New Merchandise
+    </button>
+    {{/if}}
+
+    {{#if message}}
+    <div class="alert {{#if error}}alert-danger{{else}}alert-success{{/if}} alert-dismissible fade show" role="alert">
+        {{message}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {{/if}}
+    
+    <div class="list-group mt-4">
+        {{#each merchandise}}
+        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#merchModal{{id}}">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{name}}</h5>
+                <small>${{price}}</small>
+            </div>
+            <p class="mb-1">{{description}}</p>
+        </a>
+        {{/each}}
+    </div>
+
+    {{#each merchandise}}
+    <div class="modal fade" id="merchModal{{id}}">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{name}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="{{image_url}}" class="img-fluid mb-3" alt="{{name}}">
+                    <h6>Price: ${{price}}</h6>
+                    <p>{{description}}</p>
+                    <ul>
+                        {{#each details}}
+                        <li>{{this}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    {{#if ../user}}
+                        {{#if is_creator}}
+                        <form action="/merch/delete/{{id}}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">Delete Listing</button>
+                        </form>
+                        {{/if}}
+                        <button type="button" class="btn btn-primary">Purchase</button>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+
+    <div class="modal fade" id="addMerchModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Merchandise</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/merch" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Item Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price ($)</label>
+                            <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="image_url" class="form-label">Image URL</label>
+                            <input type="url" class="form-control" id="image_url" name="image_url" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="details" class="form-label">Details (comma-separated)</label>
+                            <textarea class="form-control" id="details" name="details" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Add Merchandise</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
