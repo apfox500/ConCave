@@ -94,10 +94,14 @@ app.use((req, res, next) => {
 app.get('/', async (req, res) => {
   try {
     const conventions = await db.any('SELECT * FROM conventions ORDER BY start_date ASC');
-
+    let = isConvOrAdmin = false;
+    if (req.session.user) {
+      isConvOrAdmin = req.session.user.rank != 'user';
+    }
     res.render('pages/home', {
       title: 'ConCave',
       message: 'Welcome to ConCave!',
+      isConvOrAdmin: isConvOrAdmin,
       conventions,
     });
   } catch (error) {
@@ -133,6 +137,29 @@ app.get('/conventions/:id', async (req, res) => {
   } catch (error) {
     console.log('ERROR:', error.message || error);
     res.status(500).send('Error fetching convention details.');
+  }
+});
+
+//Searching
+app.get('/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM conventions WHERE name ILIKE $1',
+    [`${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+    res.json(results);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -192,6 +219,34 @@ app.get('/cave', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Error loading the cave.');
+  }
+});
+
+// ******************************
+// <!-- Section 4.4 : Search -->
+// ******************************
+
+
+//Note: cave/search MUST be above cave:id or it will get oh so confused
+app.get('/cave/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM tunnels WHERE title ILIKE $1;',
+    [`%${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+    res.json(results);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -454,31 +509,6 @@ app.post("/conventions/add", authorizeConventionHost, async (req, res) => {
 });
 
 
-// ******************************
-// <!-- Section 4.4 : Search -->
-// ******************************
-
-app.get('/search', async (req, res) => {
-  const searchQuery = req.query.q;
-  if (!searchQuery) {
-    return res.json([]);
-  }
-
-  console.log(`Search Query: ${searchQuery}`);
-
-  const results = await db.any(
-    'SELECT * FROM conventions WHERE name ILIKE $1',
-    [`${searchQuery}%`]
-  );
-
-  console.log(`Query Results:`, results);
-  try {
-    res.json(results);
-  } catch (err) {
-    console.error('Error executing query:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 
 // ******************************************************************
@@ -723,10 +753,7 @@ app.post('/im/create', async (req, res) => {
 app.get('/conventions/:id/groups', async (req, res) => {
   try {
     const { id: conventionId } = req.params;
-    const convention = await db.oneOrNone(
-      'SELECT * FROM conventions WHERE id = $1',
-      [conventionId]
-    );
+    const convention = await db.oneOrNone('SELECT * FROM conventions WHERE id = $1', [conventionId]);
     if (!convention) {
       return res.status(404).send('Convention not found');
     }
@@ -744,7 +771,11 @@ app.get('/conventions/:id/groups', async (req, res) => {
       JOIN users u ON g.created_by = u.id
       WHERE g.convention_id = $1
     `, [conventionId]);
-    res.render('pages/groups', { convention, groups });
+    const enhancedGroups = groups.map(group => {
+      group.ownedByUser = req.session.user && (group.created_by === req.session.user.id);
+      return group;
+    });
+    res.render('pages/groups', { convention, groups: enhancedGroups });
   } catch (error) {
     console.log(error);
     res.status(500).send('Error fetching groups');
@@ -753,50 +784,52 @@ app.get('/conventions/:id/groups', async (req, res) => {
 
 app.post('/conventions/:id/groups/create', auth, async (req, res) => {
   try {
-    const { id: conventionId } = req.params;
-    const { groupName, description } = req.body;
-    const userId = req.session.user.id;
+    const { id: conventionId } = req.params
+    const { groupName, description } = req.body
+    const userId = req.session.user.id
     const newGroup = await db.one(
       'INSERT INTO groups (convention_id, name, description, created_by) VALUES ($1, $2, $3, $4) RETURNING id',
       [conventionId, groupName, description, userId]
-    );
-    await db.none(
-      'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)',
-      [newGroup.id, userId]
-    );
-    res.redirect(`/conventions/${conventionId}/groups`);
+    )
+    await db.none('INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)', [newGroup.id, userId])
+    res.redirect(`/conventions/${conventionId}/groups`)
   } catch (error) {
-    console.log(error);
-    res.status(500).send('Error creating group');
+    console.log(error)
+    res.status(500).send('Error creating group')
   }
 });
 
-app.post("/groups/:groupId/join", auth, async (req, res) => {
+app.post('/groups/:groupId/join', auth, async (req, res) => {
   try {
-    const { groupId } = req.params;
-    const userId = req.session.user.id;
+    const { groupId } = req.params
+    const userId = req.session.user.id
     const existingRow = await db.oneOrNone(
-      "SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2",
+      'SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2',
       [groupId, userId]
-    );
-    if (existingRow) {
-      return res.redirect("back");
-    }
-    await db.none(
-      "INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)",
-      [groupId, userId]
-    );
-    const group = await db.oneOrNone(
-      "SELECT convention_id FROM groups WHERE id = $1",
-      [groupId]
-    );
-    if (!group) {
-      return res.status(404).send("Group not found");
-    }
-    res.redirect(`/conventions/${group.convention_id}/groups`);
+    )
+    if (existingRow) return res.redirect('back')
+    await db.none('INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)', [groupId, userId])
+    const group = await db.oneOrNone('SELECT convention_id FROM groups WHERE id = $1', [groupId])
+    if (!group) return res.status(404).send('Group not found')
+    res.redirect(`/conventions/${group.convention_id}/groups`)
   } catch (error) {
-    console.log(error);
-    res.status(500).send("Error joining group");
+    console.log(error)
+    res.status(500).send('Error joining group')
+  }
+});
+
+app.post('/groups/:groupId/delete', auth, async (req, res) => {
+  try {
+    const { groupId } = req.params
+    const userId = req.session.user.id
+    const group = await db.oneOrNone('SELECT * FROM groups WHERE id = $1', [groupId])
+    if (!group) return res.status(404).send('Group not found')
+    if (group.created_by !== userId) return res.status(403).send('Forbidden')
+    await db.none('DELETE FROM groups WHERE id = $1', [groupId])
+    return res.redirect(`/conventions/${group.convention_id}/groups`)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).send('Error')
   }
 });
 
@@ -843,6 +876,121 @@ app.post('/submit_review', auth, async (req, res) => {
 });
 
 
+
+// ********************************
+// <!-- Section 4.7: Merch -->
+// ********************************
+
+app.get('/merch', async (req, res) => {
+  try {
+    let merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+
+
+    if (req.session.user) {
+      const userMerchandise = await db.any(
+        'SELECT merchandise_id FROM user_merchandise WHERE user_id = $1',
+        [req.session.user.id]
+      );
+
+      merchandise = merchandise.map(item => {
+        return {
+          ...item,
+          is_creator: userMerchandise.some(um => um.merchandise_id === item.id)
+        };
+      });
+    }
+
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: '',
+      merchandise: merchandise,
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error(error);
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: 'Error loading merchandise',
+      merchandise: [],
+      user: req.session.user
+    });
+  }
+});
+
+app.post('/merch', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect('/login');
+    }
+
+    console.log('Received form data:', req.body);
+    const { name, price, description, image_url, details } = req.body;
+    const detailsArray = details.split(',').map(item => item.trim());
+
+    await db.tx(async t => {
+      const result = await t.one(
+        'INSERT INTO merchandise (name, price, description, image_url, details) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+        [name, price, description, image_url, detailsArray]
+      );
+
+      await t.none(
+        'INSERT INTO user_merchandise (user_id, merchandise_id) VALUES ($1, $2)',
+        [req.session.user.id, result.id]
+      );
+    });
+
+    res.redirect('/merch');
+  } catch (error) {
+    console.error('Error adding merchandise:', error);
+    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: 'Error adding merchandise: ' + error.message,
+      merchandise: merchandise,
+      error: true,
+      user: req.session.user
+    });
+  }
+});
+
+app.post('/merch/delete/:id', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect('/login');
+    }
+
+    const merchandiseId = req.params.id;
+
+    const isCreator = await db.oneOrNone(
+      'SELECT * FROM user_merchandise WHERE user_id = $1 AND merchandise_id = $2',
+      [req.session.user.id, merchandiseId]
+    );
+
+    if (!isCreator) {
+      return res.render('pages/merch', {
+        title: 'Merchandise',
+        message: 'You do not have permission to delete this merchandise',
+        merchandise: await db.any('SELECT * FROM merchandise ORDER BY id'),
+        error: true,
+        user: req.session.user
+      });
+    }
+
+    await db.none('DELETE FROM merchandise WHERE id = $1', [merchandiseId]);
+
+    res.redirect('/merch');
+  } catch (error) {
+    console.error('Error deleting merchandise:', error);
+    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+    res.render('pages/merch', {
+      title: 'Merchandise',
+      message: 'Error deleting merchandise: ' + error.message,
+      merchandise: merchandise,
+      error: true,
+      user: req.session.user
+    });
+  }
+});
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
