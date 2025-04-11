@@ -140,10 +140,7 @@ app.get('/conventions/:id', async (req, res) => {
   }
 });
 
-// ******************************
-// <!-- Section 4.4 : Search -->
-// ******************************
-
+//Searching
 app.get('/search', async (req, res) => {
   const searchQuery = req.query.q;
   if (!searchQuery) {
@@ -166,6 +163,138 @@ app.get('/search', async (req, res) => {
   }
 });
 
+// Cave route
+
+app.get('/cave', async (req, res) => {
+  let userId = -1;
+
+  if (req.session.user) {
+    userId = req.session.user.id;
+  }
+
+  const sort = req.query.sort || 'newest';
+
+  let orderBy;
+  switch (sort) {
+    case 'oldest':
+      orderBy = 'tunnels.created_at ASC';
+      break;
+    case 'most_liked':
+      orderBy = 'like_count DESC';
+      break;
+    case 'least_liked':
+      orderBy = 'like_count ASC';
+      break;
+    case 'newest':
+    default:
+      orderBy = 'tunnels.created_at DESC';
+  }
+
+
+  try {
+
+    const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
+
+    const tunnels = await db.any(`
+      SELECT tunnels.*, users.username, 
+        COUNT(DISTINCT replies.id) AS reply_count, 
+        COUNT(DISTINCT likes.id) AS like_count, 
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM tunnels
+      LEFT JOIN users ON tunnels.user_id = users.id
+      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
+      LEFT JOIN replies ON replies.tunnel_id = tunnels.id
+      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
+      GROUP BY tunnels.id, users.username, conventions.name
+      ORDER BY ${orderBy}
+    `, [userId]);
+
+    res.render('pages/cave', {
+      title: 'ConCave',
+      tunnels: tunnels,
+      conventions: conventions,
+      isUser: userId != -1,
+      sort: sort
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error loading the cave.');
+  }
+});
+
+// ******************************
+// <!-- Section 4.4 : Search -->
+// ******************************
+
+
+//Note: cave/search MUST be above cave:id or it will get oh so confused
+app.get('/cave/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM tunnels WHERE title ILIKE $1;',
+    [`%${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+    res.json(results);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// Cave Tunnel Page Get
+app.get('/cave/:id', async (req, res) => {
+  let userId = -1;
+
+  if (req.session.user) {
+    userId = req.session.user.id;
+  }
+  const tunnelId = req.params.id;
+
+  try {
+    const tunnel = await db.one(`
+      SELECT tunnels.*, users.username,
+        COUNT(DISTINCT likes.id) AS like_count,
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM tunnels
+      LEFT JOIN users ON tunnels.user_id = users.id
+      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
+      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
+      WHERE tunnels.id = $2
+      GROUP BY tunnels.id, users.username, conventions.name
+    `, [userId, tunnelId]);
+
+    const replies = await db.any(`
+      SELECT replies.*, users.username,
+        COUNT(DISTINCT likes.id) AS like_count,
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM replies
+      LEFT JOIN users ON replies.user_id = users.id
+      LEFT JOIN likes ON likes.reply_id = replies.id
+      WHERE replies.tunnel_id = $2
+      GROUP BY replies.id, users.username
+      ORDER BY replies.created_at ASC
+    `, [userId, tunnelId]);
+
+    res.render('pages/tunnel', {
+      tunnel,
+      replies,
+      isUser: userId != -1
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error loading tunnel.');
+  }
+});
 
 // *************************************
 // <!-- Section 4.1 : Login/Register -->
@@ -241,59 +370,6 @@ app.use(auth);
 // <!-- Section 4.2 : The Cave -->
 // ********************************
 
-// Cave route
-app.get('/cave', async (req, res) => {
-
-  const userId = req.session.user.id;
-
-  const sort = req.query.sort || 'newest';
-
-  let orderBy;
-  switch (sort) {
-    case 'oldest':
-      orderBy = 'tunnels.created_at ASC';
-      break;
-    case 'most_liked':
-      orderBy = 'like_count DESC';
-      break;
-    case 'least_liked':
-      orderBy = 'like_count ASC';
-      break;
-    case 'newest':
-    default:
-      orderBy = 'tunnels.created_at DESC';
-  }
-
-
-  try {
-
-    const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
-
-    const tunnels = await db.any(`
-      SELECT tunnels.*, users.username, 
-        COUNT(DISTINCT replies.id) AS reply_count, 
-        COUNT(DISTINCT likes.id) AS like_count, 
-        BOOL_OR(likes.user_id = $1) AS liked_by_user
-      FROM tunnels
-      LEFT JOIN users ON tunnels.user_id = users.id
-      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
-      LEFT JOIN replies ON replies.tunnel_id = tunnels.id
-      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
-      GROUP BY tunnels.id, users.username, conventions.name
-      ORDER BY ${orderBy}
-    `, [userId]);
-
-    res.render('pages/cave', {
-      title: 'ConCave',
-      tunnels: tunnels,
-      conventions: conventions,
-      sort: sort
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error loading the cave.');
-  }
-});
 
 // Cave Tunnel Post
 app.post('/cave', async (req, res) => {
@@ -310,90 +386,6 @@ app.post('/cave', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Error digging your tunnel.');
-  }
-});
-
-app.get('/cave/search', async (req, res) => {
-  const searchQuery = req.query.q;
-  if (!searchQuery) {
-    return res.json([]);
-  }
-
-  console.log(`Search Query: ${searchQuery}`);
-
-  const results = await db.any(
-    'SELECT * FROM tunnels WHERE title ILIKE $1;',
-    [`%${searchQuery}%`]
-  );
-
-  console.log(`Query Results:`, results);
-  try {
-  res.json(results);
-} catch (err) {
-  console.error('Error executing query:', err);
-  res.status(500).json({ error: 'Internal Server Error' });
-}
-});
-
-app.get('/cave/search', async (req, res) => {
-  const searchQuery = req.query.q;
-  if (!searchQuery) {
-    return res.json([]);
-  }
-
-  console.log(`Search Query: ${searchQuery}`);
-
-  const results = await db.any(
-    'SELECT * FROM tunnels WHERE title ILIKE $1;',
-    [`${searchQuery}%`]
-  );
-
-  console.log(`Query Results:`, results);
-  try {
-  res.json(results);
-} catch (err) {
-  console.error('Error executing query:', err);
-  res.status(500).json({ error: 'Internal Server Error' });
-}
-});
-
-// Cave Tunnel Page Get
-app.get('/cave/:id', async (req, res) => {
-  const tunnelId = req.params.id;
-  const userId = req.session.user.id;
-
-  try {
-    const tunnel = await db.one(`
-      SELECT tunnels.*, users.username,
-        COUNT(DISTINCT likes.id) AS like_count,
-        BOOL_OR(likes.user_id = $1) AS liked_by_user
-      FROM tunnels
-      LEFT JOIN users ON tunnels.user_id = users.id
-      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
-      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
-      WHERE tunnels.id = $2
-      GROUP BY tunnels.id, users.username, conventions.name
-    `, [userId, tunnelId]);
-
-    const replies = await db.any(`
-      SELECT replies.*, users.username,
-        COUNT(DISTINCT likes.id) AS like_count,
-        BOOL_OR(likes.user_id = $1) AS liked_by_user
-      FROM replies
-      LEFT JOIN users ON replies.user_id = users.id
-      LEFT JOIN likes ON likes.reply_id = replies.id
-      WHERE replies.tunnel_id = $2
-      GROUP BY replies.id, users.username
-      ORDER BY replies.created_at ASC
-    `, [userId, tunnelId]);
-
-    res.render('pages/tunnel', {
-      tunnel,
-      replies,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error loading tunnel.');
   }
 });
 
@@ -892,14 +884,14 @@ app.post('/submit_review', auth, async (req, res) => {
 app.get('/merch', async (req, res) => {
   try {
     let merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
-    
+
 
     if (req.session.user) {
       const userMerchandise = await db.any(
         'SELECT merchandise_id FROM user_merchandise WHERE user_id = $1',
         [req.session.user.id]
       );
-      
+
       merchandise = merchandise.map(item => {
         return {
           ...item,
@@ -907,7 +899,7 @@ app.get('/merch', async (req, res) => {
         };
       });
     }
-    
+
     res.render('pages/merch', {
       title: 'Merchandise',
       message: '',
@@ -930,23 +922,23 @@ app.post('/merch', async (req, res) => {
     if (!req.session.user) {
       return res.redirect('/login');
     }
-    
+
     console.log('Received form data:', req.body);
     const { name, price, description, image_url, details } = req.body;
     const detailsArray = details.split(',').map(item => item.trim());
-    
+
     await db.tx(async t => {
       const result = await t.one(
         'INSERT INTO merchandise (name, price, description, image_url, details) VALUES ($1, $2, $3, $4, $5) RETURNING id',
         [name, price, description, image_url, detailsArray]
       );
-      
+
       await t.none(
         'INSERT INTO user_merchandise (user_id, merchandise_id) VALUES ($1, $2)',
         [req.session.user.id, result.id]
       );
     });
-    
+
     res.redirect('/merch');
   } catch (error) {
     console.error('Error adding merchandise:', error);
@@ -966,14 +958,14 @@ app.post('/merch/delete/:id', async (req, res) => {
     if (!req.session.user) {
       return res.redirect('/login');
     }
-    
+
     const merchandiseId = req.params.id;
-    
+
     const isCreator = await db.oneOrNone(
       'SELECT * FROM user_merchandise WHERE user_id = $1 AND merchandise_id = $2',
       [req.session.user.id, merchandiseId]
     );
-    
+
     if (!isCreator) {
       return res.render('pages/merch', {
         title: 'Merchandise',
@@ -983,9 +975,9 @@ app.post('/merch/delete/:id', async (req, res) => {
         user: req.session.user
       });
     }
-    
+
     await db.none('DELETE FROM merchandise WHERE id = $1', [merchandiseId]);
-    
+
     res.redirect('/merch');
   } catch (error) {
     console.error('Error deleting merchandise:', error);
