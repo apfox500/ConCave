@@ -212,17 +212,60 @@ app.get('/profile', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]); // Assuming req.user.id contains the logged-in user’s ID
     const user = result.rows[0];
+    const result2 = await pool.query('SELECT * FROM profiles WHERE user_id = $1', [req.user.id]);
+    const profile = result2.rows[0];
 
-    res.render('profile', { user }); // Pass the user data to the profile view
+    res.render('profile', { user }, { profile }); // Pass the user and profile data to the profile view
   } catch (err) {
     console.error(err);
     res.status(500).send('Error retrieving user profile');
   }
 });
 
-app.get("/settings", (req, res) => {
+app.get("/settings", auth, (req, res) => {
   res.render("pages/settings");
 });
+
+app.post('/settings/update-profile', auth, async (req, res) => {
+  const { firstName, lastName, newEmail } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(400).json({ message: 'User is not logged in or session expired.' });
+  }
+
+  try {
+    const result = await db.task(async t => {
+      const updateResult = await t.none(
+        `UPDATE users
+         SET first_name = $1,
+             last_name = $2,
+             email = $3
+         WHERE username = $4`,
+        [firstName, lastName, newEmail, user.username]
+      );
+
+      const updatedUser = await t.one(
+        `SELECT * FROM users WHERE username = $1`,
+        [user.username]
+      );
+
+      req.session.user = updatedUser;
+
+      return updatedUser;
+    });
+
+    res.json({
+      message: 'Profile updated successfully!',
+      user: result
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
