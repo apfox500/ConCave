@@ -229,7 +229,13 @@ app.get('/profile', async (req, res) => {
 });
 
 app.get("/settings", auth, (req, res) => {
-  res.render("pages/settings");
+  let = isAdmin = false;
+     if (req.session.user) {
+       isAdmin = req.session.user.rank == 'admin';
+     }
+  res.render("pages/settings", {
+    isAdmin: isAdmin
+  });
 });
 
 app.post('/settings/update-profile', auth, async (req, res) => {
@@ -325,7 +331,6 @@ app.post('/settings/update-password', auth, async (req, res) => {
 
   if (!user) {
     return res.status(400).json({ message: 'User is not logged in or session expired.' });
-    
   }
 
   if (!(user && (await bcrypt.compare(oldPassword, user.password)))){
@@ -377,6 +382,35 @@ app.post('/settings/delete-profile', auth, async (req, res) => {
   } catch (err) {
     console.error('Error deleting user:', err);
     res.status(500).json({ message: 'Failed to delete account.' });
+  }
+});
+
+app.get("/adminSettings", auth, async (req, res) => {
+  const users = await db.any('SELECT * FROM users ORDER BY username ASC');
+  res.render("pages/adminSettings", {
+    users,
+  });
+});
+
+app.post("/settings/updateUserRank", auth, async (req, res) => {
+  const { username, rank } = req.body;
+  try {
+    await db.none("UPDATE users SET rank = $1 WHERE username = $2", [rank, username]);
+    res.redirect("/adminSettings");
+  } catch (err) {
+    console.error("Error updating user rank:", err);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post("/settings/deleteUser", auth, async (req, res) => {
+  const { username } = req.body;
+  try {
+    await db.none("DELETE FROM users WHERE username = $1", [username]);
+    res.redirect("/adminSettings");
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.status(500).send("Internal Server Error");
   }
 });
 

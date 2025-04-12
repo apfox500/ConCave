@@ -53,6 +53,9 @@
 </div>
 
 <button id="deleteAccountBtn" class="btn btn-danger">Delete My Account</button>
+{{#if isAdmin}}
+    <a href="/adminSettings" class="btn btn-danger">Delete Other Accounts</a>
+{{/if}}
 
 <script>
     document.getElementById('changeProfileInformation').addEventListener('submit', async function (e) {
