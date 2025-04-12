@@ -52,6 +52,8 @@
     </form>
 </div>
 
+<button id="deleteAccountBtn" class="btn btn-danger">Delete My Account</button>
+
 <script>
     document.getElementById('changeProfileInformation').addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -145,6 +147,30 @@
 
         } catch (error) {
             alert("An error occurred: " + error.message);
+        }
+    });
+
+    document.getElementById("deleteAccountBtn").addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        if (confirm("Are you absolutely sure you want to delete your account? This action is irreversible.")) {
+            try {
+            const response = await fetch('/settings/delete-profile', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json' 
+                    }
+            });
+
+            const data = await res.json();
+            alert(data.message);
+            if (response.ok) {
+                window.location.href = '/login';
+            }
+            } catch (err) {
+            console.error(err);
+            alert("An error occurred while deleting your account.");
+            }
         }
     });
 </script>

@@ -356,6 +356,29 @@ app.post('/settings/update-password', auth, async (req, res) => {
   }
 });
 
+app.post('/settings/delete-profile', auth, async (req, res) => {
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ message: 'You are not logged in.' });
+  }
+
+  try {
+    await db.none('DELETE FROM users WHERE id = $1', [user.id]);
+
+    req.session.destroy(err => {
+      if (err) {
+        console.error('Session destroy error:', err);
+        return res.status(500).json({ message: 'Account deleted, but logout failed.' });
+      }
+      return res.json({ message: 'Your account has been deleted successfully.' });
+    });
+
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    res.status(500).json({ message: 'Failed to delete account.' });
+  }
+});
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
