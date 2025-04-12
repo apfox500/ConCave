@@ -210,12 +210,18 @@ app.get("/profile", auth, (req, res) => {
 
 app.get('/profile', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]); // Assuming req.user.id contains the logged-in user’s ID
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]); 
     const user = result.rows[0];
-    const result2 = await pool.query('SELECT * FROM profiles WHERE user_id = $1', [req.user.id]);
+    const result2 = await pool.query(
+      `SELECT * FROM profiles WHERE user_id = (SELECT id FROM users WHERE username = $1)`, [user.username]);
     const profile = result2.rows[0];
-
-    res.render('profile', { user }, { profile }); // Pass the user and profile data to the profile view
+    if (!profile) {
+      console.error('No profile found for this user');
+      return res.status(404).send('Profile not found');
+    }
+    console.log('User:', user);
+    console.log('Profile:', profile);
+    res.render('profile', { user, profile });
   } catch (err) {
     console.error(err);
     res.status(500).send('Error retrieving user profile');
@@ -258,6 +264,90 @@ app.post('/settings/update-profile', auth, async (req, res) => {
     res.json({
       message: 'Profile updated successfully!',
       user: result
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/update-bio', auth, async (req, res) => {
+  const { bio } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(400).json({ message: 'User is not logged in or session expired.' });
+  }
+
+  try {
+    const result = await db.task(async t => {
+
+      const profile = await t.oneOrNone(
+        `SELECT * FROM profiles WHERE user_id = (SELECT id FROM users WHERE username = $1)`, [user.username]
+      );
+
+      if (!profile) {
+        await t.none(
+          `INSERT INTO profiles (user_id, bio)
+           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+          [user.username, bio]
+        );
+      } else {
+        await t.none(
+          `UPDATE profiles
+           SET bio = $1
+           WHERE user_id = (SELECT id FROM users WHERE username = $2)`,[bio, user.username]
+        );
+      }
+
+      const updatedProfile = await t.one(
+        `SELECT * FROM profiles WHERE user_id = (SELECT id FROM users WHERE username = $1)`, [user.username]
+      );
+
+      return updatedProfile;
+    });
+
+    res.json({
+      message: 'Bio updated successfully!',
+      profile: result
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/update-password', auth, async (req, res) => {
+  const { oldPassword, newPassword, reNewPassword } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(400).json({ message: 'User is not logged in or session expired.' });
+    
+  }
+
+  if (!(user && (await bcrypt.compare(oldPassword, user.password)))){
+    return res.status(400).json({ message: 'Old password does not match current password' });
+  }
+
+  if (newPassword != reNewPassword) {
+    return res.status(400).json({ message: 'New passwords do not match' });
+  }
+
+  try {
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    await db.none(
+      `UPDATE users
+       SET password = $1
+       WHERE username = $2`,
+      [hash, user.username]
+    );
+
+    res.json({
+      message: 'Password updated successfully!'
     });
 
   } catch (err) {

@@ -1,4 +1,7 @@
 <!-- Settings for changing info -->
+{{#if error}}
+    <div class="alert alert-danger mt-3">{{error}}</div>
+{{/if}}
 <div class="card mb-4 shadow-sm">
     <form id="changeProfileInformation">
         <div class="card-body">
@@ -25,9 +28,26 @@
         <div class="card-body">
             <h5 class="card-title mb-4 text-center">Update Bio</h5>
             <div class="form-group">
-                <textarea class="form-control" id="review" name="review" rows="4" placeholder="Write a short bio" required></textarea>
+                <textarea class="form-control" id="bio" name="bio" rows="4" placeholder="Write a short bio" required></textarea>
             </div>
             <button type="submit" class="btn btn-primary btn-block mt-3">Update Bio</button>
+        </div>
+    </form>
+</div>
+
+<div class="card mb-4 shadow-sm">
+    <form id="changePassword">
+        <div class="card-body">
+            <h5 class="card-title mb-4 text-center">Change Password</h5>
+            <div class="form-group">
+                <label for="lastName">Old Password</label>
+                <input type="password" class="form-control" id="oldPassword">
+                <label for="lastName">New Password</label> 
+                <input type="password" class="form-control" id="newPassword">
+                <label for="lastName">Re Enter Your New Password</label>
+                <input type="password" class="form-control" id="reNewPassword">             
+            </div>
+            <button type="submit" class="btn btn-primary btn-block mt-3">Change Password</button>
         </div>
     </form>
 </div>
@@ -57,6 +77,68 @@
             //alert(response.ok)
             if (response.ok) {
                 alert("Profile updated successfully!");
+            } else {
+                alert(`Error: ${result.message || "Something went wrong"}`);
+            }
+
+        } catch (error) {
+            alert("An error occurred: " + error.message);
+        }
+    });
+
+    document.getElementById('changeBio').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        //alert("testing")
+
+        const bio = document.getElementById('bio').value;
+        //alert("testing")
+        try {
+            const response = await fetch('/settings/update-bio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    bio
+                })
+            });
+            const result = await response.json();
+            //alert(response.ok)
+            if (response.ok) {
+                alert("Bio updated successfully!");
+            } else {
+                alert(`Error: ${result.message || "Something went wrong"}`);
+            }
+
+        } catch (error) {
+            alert("An error occurred: " + error.message);
+        }
+    });
+
+    document.getElementById('changePassword').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        //alert("testing")
+
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const reNewPassword = document.getElementById('reNewPassword').value;
+        //alert("testing")
+        try {
+            const response = await fetch('/settings/update-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    oldPassword,
+                    newPassword,
+                    reNewPassword
+                })
+            });
+            const result = await response.json();
+            //alert(response.ok)
+            if (response.ok) {
+                alert("Password updated successfully!");
             } else {
                 alert(`Error: ${result.message || "Something went wrong"}`);
             }
