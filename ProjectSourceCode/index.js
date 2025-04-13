@@ -1087,6 +1087,27 @@ app.post('/settings/update-bio', auth, async (req, res) => {
         [bio, user.username]
       );
 
+      const badge = await t.oneOrNone(
+        `SELECT trophy_id FROM badges WHERE name = 'Storyteller'`
+      );
+
+      if (badge) {
+        const alreadyHasBadge = await t.oneOrNone(
+          `SELECT 1 FROM users_to_badges 
+           WHERE user_id = (SELECT id FROM users WHERE username = $1)
+           AND trophy_id = $2`,
+          [user.username, badge.trophy_id]
+        );
+
+        if (!alreadyHasBadge) {
+          await t.none(
+            `INSERT INTO users_to_badges (user_id, trophy_id)
+             VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+            [user.username, badge.trophy_id]
+          );
+        }
+      }
+
       const updatedUser = await t.one(
         `SELECT * FROM users WHERE username = $1`,
         [user.username]

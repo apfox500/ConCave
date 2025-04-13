@@ -12,8 +12,6 @@ CREATE TABLE IF NOT EXISTS users (
     last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-
-/*
 CREATE TABLE IF NOT EXISTS badges (
     trophy_id SERIAL PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
@@ -22,10 +20,10 @@ CREATE TABLE IF NOT EXISTS badges (
 
 CREATE TABLE IF NOT EXISTS users_to_badges (
     user_badge_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    trophy_id INT REFERENCES trophies(trophy_id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    trophy_id INT REFERENCES badges(trophy_id) ON DELETE CASCADE
 );
-*/
+
 -- Potentially only for Dummy Data if we use an API
 CREATE TABLE IF NOT EXISTS conventions (
     id SERIAL PRIMARY KEY,
