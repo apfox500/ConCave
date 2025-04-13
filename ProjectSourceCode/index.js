@@ -992,6 +992,10 @@ app.post('/merch/delete/:id', async (req, res) => {
   }
 });
 
+// *****************************************
+// <!-- Section 4.8 : User Customization -->
+// *****************************************
+
 app.get("/profile", auth, (req, res) => {
   res.render("pages/profile");
 });
