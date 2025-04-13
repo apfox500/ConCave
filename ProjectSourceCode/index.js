@@ -288,35 +288,26 @@ app.post('/settings/update-bio', auth, async (req, res) => {
 
   try {
     const result = await db.task(async t => {
-
-      const profile = await t.oneOrNone(
-        `SELECT * FROM profiles WHERE user_id = (SELECT id FROM users WHERE username = $1)`, [user.username]
+      const updateResult = await t.none(
+        `UPDATE users
+         SET bio = $1
+         WHERE username = $2`,
+        [bio, user.username]
       );
 
-      if (!profile) {
-        await t.none(
-          `INSERT INTO profiles (user_id, bio)
-           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
-          [user.username, bio]
-        );
-      } else {
-        await t.none(
-          `UPDATE profiles
-           SET bio = $1
-           WHERE user_id = (SELECT id FROM users WHERE username = $2)`,[bio, user.username]
-        );
-      }
-
-      const updatedProfile = await t.one(
-        `SELECT * FROM profiles WHERE user_id = (SELECT id FROM users WHERE username = $1)`, [user.username]
+      const updatedUser = await t.one(
+        `SELECT * FROM users WHERE username = $1`,
+        [user.username]
       );
 
-      return updatedProfile;
+      req.session.user = updatedUser;
+
+      return updatedUser;
     });
 
     res.json({
       message: 'Bio updated successfully!',
-      profile: result
+      user: result
     });
 
   } catch (err) {

@@ -1,6 +1,6 @@
 <!-- Settings for changing info -->
-{{#if error}}
-    <div class="alert alert-danger mt-3">{{error}}</div>
+{{#if message}}
+    <div class="alert alert-danger mt-3">{{message}}</div>
 {{/if}}
 <div class="card mb-4 shadow-sm">
     <form id="changeProfileInformation">
@@ -44,7 +44,7 @@
                 <input type="password" class="form-control" id="oldPassword">
                 <label for="lastName">New Password</label> 
                 <input type="password" class="form-control" id="newPassword">
-                <label for="lastName">Re Enter Your New Password</label>
+                <label for="lastName">Re-enter your new password</label>
                 <input type="password" class="form-control" id="reNewPassword">             
             </div>
             <button type="submit" class="btn btn-primary btn-block mt-3">Change Password</button>
@@ -54,7 +54,7 @@
 
 <button id="deleteAccountBtn" class="btn btn-danger">Delete My Account</button>
 {{#if isAdmin}}
-    <a href="/adminSettings" class="btn btn-danger">Delete Other Accounts</a>
+    <a href="/adminSettings" class="btn btn-danger">Manage Other Accounts</a>
 {{/if}}
 
 <script>
@@ -165,8 +165,7 @@
                     }
             });
 
-            const data = await res.json();
-            alert(data.message);
+            alert(response.ok);
             if (response.ok) {
                 window.location.href = '/login';
             }

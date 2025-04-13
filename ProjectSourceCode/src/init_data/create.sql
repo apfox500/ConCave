@@ -3,19 +3,15 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     rank VARCHAR(20) NOT NULL, -- currently planned: admin, user, convention_host
     password VARCHAR(60) NOT NULL,
+    profile_picture TEXT,
+    bio TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS profiles (
-    user_id INT PRIMARY KEY,
-    profile_picture TEXT,
-    bio TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
 
 /*
 CREATE TABLE IF NOT EXISTS badges (
