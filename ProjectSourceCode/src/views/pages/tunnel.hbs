@@ -1,0 +1,62 @@
+<h5 class="mb-4">
+  <a href="/cave" class="text-decoration-none text-dark">
+    <i class="bi bi-arrow-left"></i> Back to Cave
+  </a>
+</h5>
+<h2>{{tunnel.title}}</h2>
+<small>By {{tunnel.username}} on <span class="localized-date" data-date="{{tunnel.created_at}}"></span> </small>
+<p>{{tunnel.message}}</p>
+<form action="/like/tunnel/{{tunnel.id}}" method="POST" class="d-inline">
+  <input type="hidden" name="redirectTo" value="/cave/{{tunnel.id}}">
+  <button class="btn btn-link p-0" type="submit">
+    <i class="bi {{#if tunnel.liked_by_user}}bi-heart-fill{{else}}bi-heart{{/if}}"></i>
+    {{tunnel.like_count}} likes
+  </button>
+</form>
+<hr>
+
+<h4>Tunnel Notes</h4>
+{{#each replies}}
+  <div class="mb-3 ps-3 border-start border-secondary">
+    <small>By {{this.username}} on <span class="localized-date" data-date="{{this.created_at}}"></span> </small>
+    <p>{{this.message}}</p>
+    <form action="/like/reply/{{this.id}}" method="POST" class="d-inline">
+      <button class="btn btn-link p-0" type="submit">
+        <i class="bi {{#if this.liked_by_user}}bi-heart-fill{{else}}bi-heart{{/if}}"></i>
+        {{this.like_count}}
+      </button>
+    </form>
+  </div>
+{{/each}}
+
+<!-- Tunnel Reply Form -->
+<form action="/cave/{{tunnel.id}}/reply" method="POST">
+  <div class="mb-3">
+    <textarea class="form-control" name="message" rows="3" placeholder="Write your note here." required></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Leave a Note</button>
+</form>
+
+
+
+
+
+<!-- ChatGPT generated localized date display -->
+<script>
+  document.querySelectorAll('.localized-date').forEach(el => {
+    const rawDate = el.dataset.date;
+    const local = new Date(rawDate);
+
+    // Format: Apr 7, 2025, 3:12 PM — no time zone label
+    const formatted = local.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    el.textContent = formatted;
+  });
+</script>

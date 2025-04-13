@@ -1,0 +1,41 @@
+UAT Plan
+
+Instant Messaging UAT:
+Description: Users should be able to initiate and join conversations to send and receive messages privately with other users. The system should provide notifications for unread messages
+Test environment: localhost on Windows and Mac PCs; Using three accounts with the following logins:
+aknight, 1234; apfox, 1234; calebl, 1234;
+Test data: 
+Test #1:
+One of the accounts should be able to search the username of another and initiate a conversation. 
+Expected results: This conversation should now be established for both users.
+
+Test #2:
+These three accounts should be able to send the following messages to each other without problems:
+“Hello”, “Hello”, “I heard you are going to comic con next month, can I join your group?” “Yeah sure!”
+Expected results: these messages should display in their individual conversations on both sides of the conversation.
+
+Testers: We will find two people not in this class to do this testing
+
+Searching UAT:
+Test data: A couple of conventions to search over and data about posts on the forum page
+Description: A user can, from the home page, use the search bar to find a specific convention. They can click on the learn more button to take them to a page that contains more information on the convention. They can also search for posts on the forum by a person's username or a keyword in a post. 
+Test case 1: When anything is typed in the search bar, the home page is updated with conventions and posts that match the search bar.
+Test case 2: When something is typed in the search bar that doesn’t match anything in the database for conventions, “No conventions found” is displayed. If it matches a post, the post should still be displayed.
+Test case 3: When something is typed that doesn’t match either, “No conventions found” and “No posts found” are displayed
+
+
+
+Login and Registration UAT: 
+Test data: Account information to test logging in and registering
+Description: From the home page the user can click the “Login” button in the navbar which will redirect them to the login page. They should be able to either enter their credentials that will log them into their account or they should be able to click the register button to make a new account.  When they click register they should be able to enter all their new account information to create a new account. They should then be redirected back to login where they can login with their newly made credentials.
+Test case 1: The login button redirects the user to the login page.
+Test case 2: User credentials can be entered into form and submitted. If the credentials are valid then the account should be logged into if not there should be an error message.
+Test case 3: When the user clicks the registration button they should be redirected to the registration page.
+
+Convention Pages UAT:
+Test Data: Convention information to be able to pull information on
+Description: Users should be able to find a convention they want to learn more about if that convention exists, an info page for that convention should be accessible. 
+Test environment: localhost on Windows and Mac PCs; using a test account to navigate through the homepage to find conventions you want to visit then see their own convention page.
+Test Case 1: The Learn More button redirects the user to the correct convention page and if not an API error should appear.
+Test Case 2: On the convention page, all the information about the convention properly appears and if not an error message should appear.
+

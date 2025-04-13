@@ -1,0 +1,182 @@
+<div>
+    <h1 class="mb-4" style="text-align: left;">The Cave</h1>
+</div>
+
+<div class="d-flex align-items-center flex-grow-1">
+    <form id="search-form" class="d-flex w-100" style="max-width: 300px;">
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search"></i>
+            </span>
+            <input id="search-bar" class="form-control border-start-0" type="search" placeholder="Search The Cave"
+                aria-label="Search">
+        </div>
+    </form>
+</div>
+
+<div class="container mt-4">
+
+    <h1 class="mb-4" style="text-align: left;">The Cave</h1>
+
+    <!-- Create Tunnel Form -->
+    <div id="tunnel-form" class="border rounded p-4 d-none">
+        <h4>Dig your Tunnel</h4>
+        <form action="/cave" method="POST">
+            <div class="mb-3">
+                <label for="tunnel-title" class="form-label">Tunnel Name</label>
+                <input type="text" class="form-control" id="tunnel-title" name="title"
+                    placeholder="Enter a tunnel name">
+            </div>
+            <div class="mb-3">
+                <label for="convention-id" class="form-label">Associated Convention</label>
+                <select class="form-select" id="convention-id" name="convention_id">
+                    <option value="" selected>None</option>
+                    {{#each conventions}}
+                    <option value="{{this.id}}">{{this.name}}</option>
+                    {{/each}}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="tunnel-message" class="form-label">Message</label>
+                <textarea class="form-control" id="tunnel-message" rows="5" name="message"
+                    placeholder="Write your message..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-success me-2">Create</button>
+            <button type="button" class="btn btn-secondary" id="cancel">Cancel</button>
+        </form>
+    </div>
+
+    <div id="search-results" class="container mt-3 p-2 bg-light border rounded shadow-sm"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Dig a Tunnel Button -->
+
+        <button class="btn btn-primary" id="create-tunnel" {{#if isUser}}{{else}} disabled {{/if}}>Dig a Tunnel</button>
+
+        <!-- Sort Tunnels Dropdown -->
+        <form method="GET" action="/cave">
+            <select id="tunnel-sort" class="form-select" name="sort" onchange="this.form.submit()">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="most_liked">Most Liked</option>
+                <option value="least_liked">Least Liked</option>
+            </select>
+        </form>
+    </div>
+    <!-- Tunnel Board -->
+
+    <div id="tunnel-board" class="border rounded p-3" style="height: 70vh; overflow-y: auto;">
+
+        {{#each tunnels}}
+        <div class="mb-3 p-3 border-bottom">
+            <h5> <a href="/cave/{{this.id}}" class="text-dark"> {{this.title}} </a> </h5>
+            <small class="text-muted">Dug by {{this.username}} on <span class="localized-date"
+                    data-date="{{this.created_at}}"></span> </small>
+            {{#if this.convention_name}}
+            <p class="text-muted mb-1">
+                <i class="bi bi-calendar-event"></i> {{this.convention_name}}
+            </p>
+            {{/if}}
+            <p>{{this.message}}</p>
+            <form action="/like/tunnel/{{this.id}}" method="POST" class="d-inline">
+                <input type="hidden" name="redirectTo" value="/cave">
+                <button class="btn btn-link p-0" type="submit">
+                    <i class="bi {{#if this.liked_by_user}}bi-heart-fill{{else}}bi-heart{{/if}}"></i>
+                    {{this.like_count}} likes
+                </button>
+            </form>
+            <p class="text-muted">{{this.reply_count}} replies</p>
+        </div>
+        {{/each}}
+
+    </div>
+
+</div>
+
+
+<!-- Dig Tunnel Form/Button Script -->
+<script>
+    document.getElementById('create-tunnel').addEventListener('click', function () {
+        document.getElementById('tunnel-form').classList.toggle('d-none');
+        document.getElementById('create-tunnel').classList.add('d-none');
+    });
+
+    document.getElementById('cancel').addEventListener('click', function () {
+        document.getElementById('tunnel-form').classList.add('d-none');
+        document.getElementById('create-tunnel').classList.remove('d-none');
+    });
+</script>
+
+<!-- Tunnel Sort Select Script -->
+<script>
+    const currentSort = "{{sort}}";
+    const tunnelSort = document.getElementById("tunnel-sort");
+
+    if (tunnelSort && currentSort) {
+        tunnelSort.value = currentSort;
+    }
+</script>
+
+<!-- ChatGPT generated localized date display -->
+<script>
+    document.querySelectorAll('.localized-date').forEach(el => {
+        const rawDate = el.dataset.date;
+        const local = new Date(rawDate);
+
+        // Format: Apr 7, 2025, 3:12 PM — no time zone label
+        const formatted = local.toLocaleString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+
+        el.textContent = formatted;
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-bar');
+        const resultsContainer = document.getElementById('search-results');
+
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+        });
+        resultsContainer.style.display = 'none';
+        searchInput.addEventListener('input', async (event) => {
+            const query = event.target.value;
+            resultsContainer.innerHTML = '';
+
+            if (query.length > 0) {
+                resultsContainer.style.display = 'block';
+                const newUrl = `/cave/search?q=${encodeURIComponent(query)}`;
+                history.pushState({ path: newUrl }, '', newUrl);
+
+                try {
+                    const response = await fetch(newUrl);
+                    const results = await response.json();
+
+                    if (results.length > 0) {
+                        results.forEach(tunnel => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'result-item';
+                            resultItem.innerHTML = `
+                                <a href="/cave/${tunnel.id}">${tunnel.title}</a>`;
+                            resultsContainer.appendChild(resultItem);
+                        });
+                    } else {
+                        resultsContainer.innerHTML = '<p class="p-2">No conventions found</p>';
+                    }
+                } catch (error) {
+                    console.error('Error fetching search results:', error);
+                    resultsContainer.innerHTML = '<p class="p-2">Error loading search results</p>';
+                }
+            } else {
+                history.pushState({ path: '/cave' }, '', '/cave');
+                resultsContainer.innerHTML = '';
+                resultsContainer.style.display = 'none';
+            }
+        });
+    });
+</script>
