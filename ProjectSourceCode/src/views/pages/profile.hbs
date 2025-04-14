@@ -21,6 +21,20 @@
       </div>
         </div>
     </div>
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Your Badges</h5>
+            {{#if badges}}
+                <ul>
+                    {{#each badges}}
+                        <li><strong>{{this.badge_name}}</strong>: {{this.badge_description}}</li>
+                    {{/each}}
+                </ul>
+            {{else}}
+                <p>No badges earned yet.</p>
+            {{/if}}
+        </div>
+    </div>
 </div>
 
 <script>
