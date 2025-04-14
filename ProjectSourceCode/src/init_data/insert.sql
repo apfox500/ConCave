@@ -42,6 +42,14 @@ Find your fandom family at FAN EXPO Boston. All 55,000 of them.',
 ('Anime Ultra 2025', 'San Antonio, TX', 'Rolling Oaks Mall',
 'Shop our vendor hall filled with artists and anime vendors from all over Texas, in a one-stop shop! Meet the amazing actors to voice some of the best and hottest anime shows you probably watched and/or movie/tv show you''ve been binging! Learn more about the different ecchi workshops, celebrity panels, and performances happening all weekend long!',
 'https://media.animecons.com/ConLogos/025/logo_C25105.png','2025-08-16', '2025-08-17'),
+('Anime NYC 2025', 'New York, NY', 'Jacob K. Javits Center',
+'Anime NYC is New York City’s anime convention! A showcase of the best of Japanese pop culture in the biggest city in America, Anime NYC brings anime fans together for three days of unique exhibits, exclusive screenings, and appearances by some of the biggest creators in Japan!',
+'https://media.animecons.com/ConLogos/024/logo_C24957.png', '2025-08-21', '2025-08-24'),
+('Windblume 2025', 'Mesquite, TX', 'Mesquite Convention Center',
+'Calling all Travelers to Windblume, a festival celebrating our favorite gacha game! Meet celebrity voice actors from Genshin Impact, Honkai Star Rail, and Zenless Zone Zero!
+
+Shop in our curated exhibit hall and artists alley, cosplay your favorite Anime and Hoyoverse characters, attend a themed authentic Japanese Maid Cafe, attend dozens of panels and programs, and party late into the night with a themed rave and after party!',
+'https://media.animecons.com/ConLogos/024/logo_C24416.jpg','2025-08-22', '2025-08-24'),
 ('New York Comic Con 2025', 'New York, NY', 'Jacob K. Javits Center',
 'New York Comic Con (NYCC) is the biggest comic and pop culture event on the East Coast. From meeting celebrities to surprise appearances, to comic creators from every corner of the globe to the top anime, cosplay, and gaming stars ... it''s always one hell of a 4-day weekend.',
 'https://media.animecons.com/ConLogos/024/logo_C24806.png','2025-10-09', '2025-10-12');
@@ -62,10 +70,19 @@ INSERT INTO reviews (convention_id, user_id, rating, review, time_sent) VALUES
 (4, 5, 3, 'Checked it out last year. Vendors were cool, but the space felt cramped.', '2025-02-17 16:10:00'),
 (4, 6, 4, 'Went last August and really enjoyed meeting voice actors. Hoping for even more guests this year.', '2025-03-22 17:30:00'),
 (4, 2, 2, 'My experience last year wasn’t great—some events were confusing and poorly run.', '2025-04-07 09:40:00'),
-(5, 3, 5, 'NYCC is always amazing—2023 was packed with A-list guests and awesome panels.', '2025-01-18 20:00:00'),
-(5, 7, 4, 'Loved the surprise guests in 2022. It can get overwhelming, but it’s worth it.', '2025-02-25 21:15:00'),
-(5, 1, 3, 'Great artists and panels, but the crowd was a bit much last time I went.', '2025-03-12 11:30:00'),
-(5, 6, 5, 'Can’t recommend NYCC enough! I’ve gone for years and 2023 was one of the best.', '2025-04-10 13:45:00');
+(7, 3, 5, 'NYCC is always amazing—2023 was packed with A-list guests and awesome panels.', '2025-01-18 20:00:00'),
+(7, 7, 4, 'Loved the surprise guests in 2022. It can get overwhelming, but it’s worth it.', '2025-02-25 21:15:00'),
+(7, 1, 3, 'Great artists and panels, but the crowd was a bit much last time I went.', '2025-03-12 11:30:00'),
+(1, 8, 5, 'Comic-Con 2024 was a blast! Loved the panels and met some of my favorite artists.', '2025-01-14 10:45:00'),
+(1, 9, 4, 'Went for the first time last year—super fun, but the lines were brutal.', '2025-02-02 13:30:00'),
+(1, 10, 3, 'Mixed feelings. Some panels were great, others felt rushed or unprepared.', '2025-03-06 12:20:00'),
+(2, 11, 5, 'Gen Con blew my mind. The board game demos were endless fun.', '2025-01-27 11:15:00'),
+(2, 12, 2, 'Was excited but felt overwhelmed. Needed better signage and guidance.', '2025-02-21 14:00:00'),
+(2, 13, 4, 'Solid experience! Made some new friends through a late-night RPG session.', '2025-03-09 15:30:00'),
+(3, 14, 5, 'Fan Expo Boston had such a great cosplay community. Felt super welcome.', '2025-01-30 16:45:00'),
+(3, 15, 3, 'The schedule was tight and some rooms got overfilled, but still a decent con.', '2025-02-28 10:20:00'),
+(3, 16, 4, 'Enjoyed the artists and voice actor panels. Security could be friendlier though.', '2025-03-25 09:50:00'),
+(4, 17, 5, 'Anime Ultra had the best vibe—chill, nerdy, and full of energy.', '2025-01-22 18:10:00');
 
 INSERT INTO conversations (user1_id, user2_id, user1_unread, user2_unread, created_at) VALUES
 (1, 2, FALSE, TRUE, '2025-04-03 00:00:45.455904'),
