@@ -212,6 +212,7 @@ app.get('/cave', async (req, res) => {
     res.render('pages/cave', {
       title: 'ConCave',
       tunnels: tunnels,
+      conventions: conventions,
       isUser: userId != -1,
       sort: sort
     });
@@ -375,6 +376,10 @@ app.post('/cave', async (req, res) => {
   const { title, message, convention_id } = req.body;
   const userId = req.session.user.id;
   const user = req.session.user;
+
+  if (message.length > 10000) {
+    return res.status(400).send("Message too long. Max 10,000 characters.");
+  }
 
   try {
     await db.none(
