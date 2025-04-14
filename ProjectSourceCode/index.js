@@ -375,6 +375,7 @@ app.use(auth);
 app.post('/cave', async (req, res) => {
   const { title, message, convention_id } = req.body;
   const userId = req.session.user.id;
+  const user = req.session.user;
 
   try {
     await db.none(
@@ -382,6 +383,26 @@ app.post('/cave', async (req, res) => {
        VALUES ($1, $2, $3, $4)`,
       [title, message, userId, convention_id || null]
     );
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Cave Digger'`
+    );
+
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
+         WHERE user_id = (SELECT id FROM users WHERE username = $1)
+         AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+          [user.username, badge.trophy_id]
+        );
+      }
+    }
     res.redirect('/cave');
   } catch (error) {
     console.error(error);
@@ -393,6 +414,7 @@ app.post('/cave', async (req, res) => {
 app.post('/cave/:id/reply', async (req, res) => {
   const tunnelId = req.params.id;
   const { message } = req.body;
+  const user = req.session.user;
 
   try {
     const userId = req.session.user.id;
@@ -400,6 +422,26 @@ app.post('/cave/:id/reply', async (req, res) => {
       'INSERT INTO replies (tunnel_id, message, user_id) VALUES ($1, $2, $3)',
       [tunnelId, message, userId]
     );
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Conversation Starter'`
+    );
+
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
+         WHERE user_id = (SELECT id FROM users WHERE username = $1)
+         AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+          [user.username, badge.trophy_id]
+        );
+      }
+    }
     res.redirect(`/cave/${tunnelId}`);
   } catch (error) {
     console.error(error);
@@ -836,12 +878,34 @@ app.post('/groups/:groupId/delete', auth, async (req, res) => {
 app.post('/submit_review', auth, async (req, res) => {
   const { rating, review, convention_id } = req.body;
   const user_id = req.session.user.id;
+  const user = req.session.user;
 
   try {
     await db.none(`
       INSERT INTO reviews (convention_id, user_id, rating, review)
       VALUES ($1, $2, $3, $4)
     `, [convention_id, user_id, parseInt(rating[0]), review]);
+
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Critique'`
+    );
+
+      if (badge) {
+        const alreadyHasBadge = await db.oneOrNone(
+          `SELECT 1 FROM users_to_badges 
+          WHERE user_id = (SELECT id FROM users WHERE username = $1)
+          AND trophy_id = $2`,
+          [user.username, badge.trophy_id]
+        );
+
+        if (!alreadyHasBadge) {
+          await db.none(
+            `INSERT INTO users_to_badges (user_id, trophy_id)
+            VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+            [user.username, badge.trophy_id]
+          );
+        }
+      }
 
     res.redirect(`/conventions/${convention_id}`);
   } catch (error) {
