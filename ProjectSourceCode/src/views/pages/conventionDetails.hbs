@@ -42,7 +42,15 @@
         {{#each reviews}}
         <div class="border rounded p-3 my-3 bg-white shadow-sm position-relative">
           <div class="d-flex justify-content-between">
-            <p class="mb-1"><strong>{{username}}</strong> rated it {{rating}}/5 stars</p>
+            <div>
+              <p class="mb-1"><strong>
+                  <form action="/profile" method="POST" style="display:inline;">
+                    <input type="hidden" name="username" value="{{username}}">
+                    <button type="submit" class="btn btn-link p-0"
+                      style="text-decoration: underline; color: inherit; background: none; border: none; padding: 0; font: inherit; cursor: pointer; vertical-align: baseline;">{{username}}</button>
+                  </form>
+                </strong> rated it {{rating}}/5 stars</p>
+            </div>
             <small class="text-muted">{{formatted_time}}</small>
           </div>
           <p class="mb-1">{{review}}</p>
