@@ -3,17 +3,22 @@
     <i class="bi bi-arrow-left"></i> Back to Cave
   </a>
 </h5>
+
 <h2>{{tunnel.title}}</h2>
 <small>By {{tunnel.username}} on <span class="localized-date" data-date="{{tunnel.created_at}}"></span> </small>
 <p class="text-muted mb-1"> 
   <i class="bi bi-calendar-event"></i> 
   <a href="/conventions/{{tunnel.convention_id}}" class="text-decoration-none text-muted"> {{tunnel.convention_name}}</a> 
 </p>
+
 <div class="tunnel-message-container">
-  <p class="tunnel-message collapsed">
-    {{tunnel.message}}
-  </p>
+  <p class="tunnel-message collapsed">{{tunnel.message}}</p>
   <button type="button" class="btn btn-sm btn-link p-0 show-more-toggle">Show more</button>
+</div>
+<div class="row g-2 mt-2">
+  {{#each tunnel.images}}
+    <img src="{{this.image_path}}" alt="Tunnel image" class="img-fluid rounded mb-2" style="max-width: 300px;">
+  {{/each}}
 </div>
 <form action="/like/tunnel/{{tunnel.id}}" method="POST" class="d-inline">
   <input type="hidden" name="redirectTo" value="/cave/{{tunnel.id}}">

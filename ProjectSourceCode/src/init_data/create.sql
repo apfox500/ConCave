@@ -88,6 +88,12 @@ CREATE TABLE IF NOT EXISTS tunnels (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS tunnel_images (
+  id SERIAL PRIMARY KEY,
+  tunnel_id INT REFERENCES tunnels(id) ON DELETE CASCADE,
+  image_path TEXT NOT NULL
+);
+
 
 /* Replies Table */
 CREATE TABLE IF NOT EXISTS replies (

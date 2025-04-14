@@ -13,6 +13,36 @@ const session = require('express-session'); // To set the session object. To sto
 const bcrypt = require('bcryptjs'); //  To hash passwords
 const axios = require('axios'); // To make HTTP requests from our server. We'll learn more about it in Part C.
 
+
+
+// START OF CHATGPT GENERATED  MULTER FOR IMAGE UPLOAD
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'public/uploads');
+
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const multer = require('multer');
+
+// Configure storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, 'public/uploads'));
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + '-' + file.originalname;
+    cb(null, uniqueName);
+  },
+  limits: {
+    files: 5 // Max 5 files
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// END OF CHATGPT GENERATED 
+
 // *****************************************************
 // <!-- Section 2 : Connect to DB -->
 // *****************************************************
@@ -58,6 +88,10 @@ app.use(bodyParser.json()); // specify the usage of JSON for parsing request bod
 
 //set up styles
 app.use(express.static(path.join(__dirname, 'src', 'resources')));
+
+//Allow images in public to be used 
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 
 // initialize session variables
@@ -193,6 +227,14 @@ app.get('/cave', async (req, res) => {
 
   try {
 
+    const images = await db.any('SELECT tunnel_id, image_path FROM tunnel_images');
+
+    const imageList = {};
+    images.forEach(image => {
+      if (!imageList[image.tunnel_id]) imageList[image.tunnel_id] = [];
+      imageList[image.tunnel_id].push(image);
+    });
+
     const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
 
     const tunnels = await db.any(`
@@ -208,6 +250,10 @@ app.get('/cave', async (req, res) => {
       GROUP BY tunnels.id, users.username, conventions.name
       ORDER BY ${orderBy}
     `, [userId]);
+      
+    tunnels.forEach(tunnel => {
+      tunnel.images = imageList[tunnel.id] || [];
+    });
 
     res.render('pages/cave', {
       title: 'ConCave',
@@ -259,8 +305,11 @@ app.get('/cave/:id', async (req, res) => {
     userId = req.session.user.id;
   }
   const tunnelId = req.params.id;
+  
 
   try {
+    const images = await db.any('SELECT image_path FROM tunnel_images WHERE tunnel_id = $1', [tunnelId]);
+
     const tunnel = await db.one(`
       SELECT tunnels.*, users.username, conventions.name AS convention_name,
         COUNT(DISTINCT likes.id) AS like_count,
@@ -284,6 +333,8 @@ app.get('/cave/:id', async (req, res) => {
       GROUP BY replies.id, users.username
       ORDER BY replies.created_at ASC
     `, [userId, tunnelId]);
+
+      tunnel.images = images
 
     res.render('pages/tunnel', {
       tunnel,
@@ -372,7 +423,7 @@ app.use(auth);
 
 
 // Cave Tunnel Post
-app.post('/cave', async (req, res) => {
+app.post('/cave', upload.array('images', 5), async (req, res) => {
   const { title, message, convention_id } = req.body;
   const userId = req.session.user.id;
   const user = req.session.user;
@@ -382,11 +433,26 @@ app.post('/cave', async (req, res) => {
   }
 
   try {
-    await db.none(
+    const tunnel = await db.one(
       `INSERT INTO tunnels (title, message, user_id, convention_id)
-       VALUES ($1, $2, $3, $4)`,
+       VALUES ($1, $2, $3, $4)
+       RETURNING id`,
       [title, message, userId, convention_id || null]
     );
+
+    const tunnelId = tunnel.id
+
+    if (req.files && req.files.length > 0) {
+      const insertPromises = req.files.map(file => {
+        const imagePath = `/uploads/${file.filename}`;
+        return db.none(
+          'INSERT INTO tunnel_images (tunnel_id, image_path) VALUES ($1, $2)',
+          [tunnelId, imagePath]
+        );
+      });
+      await Promise.all(insertPromises);
+    }
+
     const badge = await db.oneOrNone(
       `SELECT trophy_id FROM badges WHERE name = 'Cave Digger'`
     );
@@ -1306,6 +1372,7 @@ app.post("/settings/deleteUser", auth, async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 // *****************************************************
 // <!-- Section 5 : Start Server-->
