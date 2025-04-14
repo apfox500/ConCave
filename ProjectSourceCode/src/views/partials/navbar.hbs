@@ -22,12 +22,10 @@
     </div>
     <div class="ms-auto">
         {{#if user}}
-        <form action="/logout" method="POST" class="d-inline">
-            <button type="submit" class="btn btn-link text-dark text-decoration-none">
-                <i class="bi bi-box-arrow-right fs-4"></i>
-                <span>Logout</span>
-            </button>
-        </form>
+            <a href="/profile" class="btn btn-link text-dark text-decoration-none">
+                <i class="bi bi-person-circle fs-4"></i>
+                <span>{{ user.username }}</span>
+            </a>
         {{else}}
         <a href="/login" class="btn btn-link text-dark text-decoration-none">
             <i class="bi bi-person-circle fs-4"></i>

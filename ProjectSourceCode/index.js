@@ -375,6 +375,7 @@ app.use(auth);
 app.post('/cave', async (req, res) => {
   const { title, message, convention_id } = req.body;
   const userId = req.session.user.id;
+  const user = req.session.user;
 
   try {
     await db.none(
@@ -382,6 +383,26 @@ app.post('/cave', async (req, res) => {
        VALUES ($1, $2, $3, $4)`,
       [title, message, userId, convention_id || null]
     );
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Cave Digger'`
+    );
+
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
+         WHERE user_id = (SELECT id FROM users WHERE username = $1)
+         AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+          [user.username, badge.trophy_id]
+        );
+      }
+    }
     res.redirect('/cave');
   } catch (error) {
     console.error(error);
@@ -393,6 +414,7 @@ app.post('/cave', async (req, res) => {
 app.post('/cave/:id/reply', async (req, res) => {
   const tunnelId = req.params.id;
   const { message } = req.body;
+  const user = req.session.user;
 
   try {
     const userId = req.session.user.id;
@@ -400,6 +422,26 @@ app.post('/cave/:id/reply', async (req, res) => {
       'INSERT INTO replies (tunnel_id, message, user_id) VALUES ($1, $2, $3)',
       [tunnelId, message, userId]
     );
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Conversation Starter'`
+    );
+
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
+         WHERE user_id = (SELECT id FROM users WHERE username = $1)
+         AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+          [user.username, badge.trophy_id]
+        );
+      }
+    }
     res.redirect(`/cave/${tunnelId}`);
   } catch (error) {
     console.error(error);
@@ -836,12 +878,34 @@ app.post('/groups/:groupId/delete', auth, async (req, res) => {
 app.post('/submit_review', auth, async (req, res) => {
   const { rating, review, convention_id } = req.body;
   const user_id = req.session.user.id;
+  const user = req.session.user;
 
   try {
     await db.none(`
       INSERT INTO reviews (convention_id, user_id, rating, review)
       VALUES ($1, $2, $3, $4)
     `, [convention_id, user_id, parseInt(rating[0]), review]);
+
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Critique'`
+    );
+
+      if (badge) {
+        const alreadyHasBadge = await db.oneOrNone(
+          `SELECT 1 FROM users_to_badges 
+          WHERE user_id = (SELECT id FROM users WHERE username = $1)
+          AND trophy_id = $2`,
+          [user.username, badge.trophy_id]
+        );
+
+        if (!alreadyHasBadge) {
+          await db.none(
+            `INSERT INTO users_to_badges (user_id, trophy_id)
+            VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+            [user.username, badge.trophy_id]
+          );
+        }
+      }
 
     res.redirect(`/conventions/${convention_id}`);
   } catch (error) {
@@ -989,6 +1053,253 @@ app.post('/merch/delete/:id', async (req, res) => {
       error: true,
       user: req.session.user
     });
+  }
+});
+
+// ****************************************************
+// <!-- Section 4.8 : User Customization and Badges-->
+// ****************************************************
+
+/*app.get("/profile", auth, (req, res) => {
+  res.render("pages/profile");
+});*/
+
+app.get('/profile', auth, async (req, res) => {
+  try {
+    const badges = await db.query(
+        `SELECT badges.name AS badge_name, 
+        badges.description AS badge_description
+        FROM badges
+        LEFT JOIN users_to_badges ON badges.trophy_id = users_to_badges.trophy_id
+        WHERE users_to_badges.user_id = $1;`,
+        [req.session.user.id]
+    );
+
+    res.render('pages/profile', { badges });
+  } catch (err) {
+    console.error('Failed to load badges:', err.stack);
+    res.status(500).send('Error retrieving badges');
+  }
+});
+
+
+
+app.get("/settings", auth, (req, res) => {
+  let = isAdmin = false;
+     if (req.session.user) {
+       isAdmin = req.session.user.rank == 'admin';
+     }
+  res.render("pages/settings", {
+    isAdmin: isAdmin
+  });
+});
+
+app.post('/settings/update-profile', auth, async (req, res) => {
+  const { firstName, lastName, newEmail } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(400).json({ message: 'User is not logged in or session expired.' });
+  }
+
+  try {
+    const result = await db.task(async t => {
+      const updateResult = await t.none(
+        `UPDATE users
+         SET first_name = $1,
+             last_name = $2,
+             email = $3
+         WHERE username = $4`,
+        [firstName, lastName, newEmail, user.username]
+      );
+
+      const updatedUser = await t.one(
+        `SELECT * FROM users WHERE username = $1`,
+        [user.username]
+      );
+
+      req.session.user = updatedUser;
+
+      return updatedUser;
+    });
+
+    res.json({
+      message: 'Profile updated successfully!',
+      user: result
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/update-bio', auth, async (req, res) => {
+  const { bio } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(400).json({ message: 'User is not logged in or session expired.' });
+  }
+
+  try {
+    const result = await db.task(async t => {
+      const updateResult = await t.none(
+        `UPDATE users
+         SET bio = $1
+         WHERE username = $2`,
+        [bio, user.username]
+      );
+
+      const badge = await t.oneOrNone(
+        `SELECT trophy_id FROM badges WHERE name = 'Storyteller'`
+      );
+
+      if (badge) {
+        const alreadyHasBadge = await t.oneOrNone(
+          `SELECT 1 FROM users_to_badges 
+           WHERE user_id = (SELECT id FROM users WHERE username = $1)
+           AND trophy_id = $2`,
+          [user.username, badge.trophy_id]
+        );
+
+        if (!alreadyHasBadge) {
+          await t.none(
+            `INSERT INTO users_to_badges (user_id, trophy_id)
+             VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+            [user.username, badge.trophy_id]
+          );
+        }
+      }
+
+      const updatedUser = await t.one(
+        `SELECT * FROM users WHERE username = $1`,
+        [user.username]
+      );
+
+      req.session.user = updatedUser;
+
+      return updatedUser;
+    });
+
+    res.json({
+      message: 'Bio updated successfully!',
+      user: result
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/update-password', auth, async (req, res) => {
+  const { oldPassword, newPassword, reNewPassword } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(400).json({ message: 'User is not logged in or session expired.' });
+  }
+
+  if (!(user && (await bcrypt.compare(oldPassword, user.password)))){
+    return res.status(400).json({ message: 'Old password does not match current password' });
+  }
+
+  if (newPassword != reNewPassword) {
+    return res.status(400).json({ message: 'New passwords do not match' });
+  }
+
+  try {
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    await db.none(
+      `UPDATE users
+       SET password = $1
+       WHERE username = $2`,
+      [hash, user.username]
+    );
+
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Security Expert'`
+    );
+
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
+         WHERE user_id = (SELECT id FROM users WHERE username = $1)
+         AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+          [user.username, badge.trophy_id]
+        );
+      }
+    }
+
+    res.json({
+      message: 'Password updated successfully!'
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/delete-profile', auth, async (req, res) => {
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ message: 'You are not logged in.' });
+  }
+
+  try {
+    await db.none('DELETE FROM users WHERE id = $1', [user.id]);
+
+    req.session.destroy(err => {
+      if (err) {
+        console.error('Session destroy error:', err);
+        return res.status(500).json({ message: 'Account deleted, but logout failed.' });
+      }
+      return res.json({ message: 'Your account has been deleted successfully.' });
+    });
+
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    res.status(500).json({ message: 'Failed to delete account.' });
+  }
+});
+
+app.get("/adminSettings", auth, async (req, res) => {
+  const users = await db.any('SELECT * FROM users ORDER BY username ASC');
+  res.render("pages/adminSettings", {
+    users,
+  });
+});
+
+app.post("/settings/updateUserRank", auth, async (req, res) => {
+  const { username, rank } = req.body;
+  try {
+    await db.none("UPDATE users SET rank = $1 WHERE username = $2", [rank, username]);
+    res.redirect("/adminSettings");
+  } catch (err) {
+    console.error("Error updating user rank:", err);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post("/settings/deleteUser", auth, async (req, res) => {
+  const { username } = req.body;
+  try {
+    await db.none("DELETE FROM users WHERE username = $1", [username]);
+    res.redirect("/adminSettings");
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.status(500).send("Internal Server Error");
   }
 });
 

@@ -1,0 +1,53 @@
+<div class="container mt-5">
+    <h2>User Profile</h2>
+
+    <!-- Profile Info -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Profile Information</h5>
+            <p><strong>First Name:</strong> {{user.first_name}}</p>
+            <p><strong>Last Name:</strong> {{user.last_name}}</p>
+            <p><strong>Username:</strong> {{user.username}}</p>
+            <p><strong>Email:</strong> {{user.email}}</p>
+            <p><strong>Bio:</strong> {{user.bio}}</p>
+            <p><strong>Rank:</strong> {{user.rank}}</p>
+            <p><strong>Account Created At:</strong> <span id="createdAt" data-date="{{user.created_at}}"></span></p>
+
+        <a href="/" class="btn btn-secondary me-2 mb-2">Back to Home</a>
+        <a href="/settings" class="btn btn-primary me-2 mb-2">Settings</a>
+        <form action="/logout" method="POST" class="mb-2">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+      </div>
+        </div>
+    </div>
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Your Badges</h5>
+            {{#if badges}}
+                <ul>
+                    {{#each badges}}
+                        <li><strong>{{this.badge_name}}</strong>: {{this.badge_description}}</li>
+                    {{/each}}
+                </ul>
+            {{else}}
+                <p>No badges earned yet.</p>
+            {{/if}}
+        </div>
+    </div>
+</div>
+
+<script>
+    function formatReadableDate(isoString) {
+        const date = new Date(isoString);
+        return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+        });
+    }
+
+  document.getElementById('createdAt').textContent = formatReadableDate(document.getElementById('createdAt').dataset.date);
+</script>

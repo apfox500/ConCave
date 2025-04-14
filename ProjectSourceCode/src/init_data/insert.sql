@@ -117,3 +117,10 @@ INSERT INTO merchandise (name, price, description, details, image_url) VALUES
 
 INSERT INTO user_merchandise (user_id, merchandise_id) 
 SELECT 1, id FROM merchandise;
+
+INSERT INTO badges (name, description) VALUES
+    ('Storyteller', 'Added a bio to your profile'),
+    ('Security Expert', 'Change your password'),
+    ('Cave Digger', 'Create a new post in The Cave'),
+    ('Conversation Starter', 'Reply to a post in The Cave'),
+    ('Critique', 'Write your first review');
