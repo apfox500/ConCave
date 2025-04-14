@@ -4,10 +4,9 @@ CREATE TABLE IF NOT EXISTS users (
     last_name VARCHAR(50) NOT NULL,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
-    rank VARCHAR(20) NOT NULL, -- currently planned: admin, user, convention_host
+    rank VARCHAR(20) NOT NULL, -- admin, user, convention_host
     password VARCHAR(60) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS profiles (
@@ -17,21 +16,12 @@ CREATE TABLE IF NOT EXISTS profiles (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-/*
 CREATE TABLE IF NOT EXISTS badges (
     trophy_id SERIAL PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
     description TEXT
 );
 
-CREATE TABLE IF NOT EXISTS users_to_badges (
-    user_badge_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    trophy_id INT REFERENCES trophies(trophy_id) ON DELETE CASCADE,
-    awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-*/
--- Potentially only for Dummy Data if we use an API
 CREATE TABLE IF NOT EXISTS conventions (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
@@ -41,6 +31,12 @@ CREATE TABLE IF NOT EXISTS conventions (
     convention_image TEXT,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS users_to_badges (
+    user_badge_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    trophy_id INT REFERENCES badges(trophy_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS users_to_conventions (
@@ -80,34 +76,44 @@ CREATE TABLE IF NOT EXISTS messages (
     user_id INT NOT NULL,
     message_text TEXT NOT NULL,
     time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-/* Tunnels Table */
 CREATE TABLE IF NOT EXISTS tunnels (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER,
+    user_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    convention_id INTEGER,
+    convention_id INT,
     FOREIGN KEY (convention_id) REFERENCES conventions(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
-/* Replies Table */
 CREATE TABLE IF NOT EXISTS replies (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER,
+  user_id INT NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  tunnel_id INTEGER,
+  tunnel_id INT,
   FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
-  parent_reply_id INTEGER REFERENCES replies(id) ON DELETE CASCADE,
+  parent_reply_id INT REFERENCES replies(id) ON DELETE CASCADE,
   message TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS likes (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    tunnel_id INT,
+    reply_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
+    FOREIGN KEY (reply_id) REFERENCES replies(id) ON DELETE CASCADE,
+    CONSTRAINT unique_tunnel_like UNIQUE (user_id, tunnel_id),
+    CONSTRAINT unique_reply_like UNIQUE (user_id, reply_id)
+);
 
 CREATE TABLE IF NOT EXISTS groups (
     id SERIAL PRIMARY KEY,
@@ -127,19 +133,6 @@ CREATE TABLE IF NOT EXISTS group_members (
     PRIMARY KEY (group_id, user_id),
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS likes (
-  id SERIAL PRIMARY KEY,
-  user_id INT NOT NULL,
-  tunnel_id INT,
-  reply_id INT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (tunnel_id) REFERENCES tunnels(id) ON DELETE CASCADE,
-  FOREIGN KEY (reply_id) REFERENCES replies(id) ON DELETE CASCADE,
-  CONSTRAINT unique_tunnel_like UNIQUE (user_id, tunnel_id),
-  CONSTRAINT unique_reply_like UNIQUE (user_id, reply_id)
 );
 
 CREATE TABLE IF NOT EXISTS merchandise (
