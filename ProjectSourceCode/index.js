@@ -196,7 +196,7 @@ app.get('/cave', async (req, res) => {
     const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
 
     const tunnels = await db.any(`
-      SELECT tunnels.*, users.username, 
+      SELECT tunnels.*, users.username, conventions.name AS convention_name,
         COUNT(DISTINCT replies.id) AS reply_count, 
         COUNT(DISTINCT likes.id) AS like_count, 
         BOOL_OR(likes.user_id = $1) AS liked_by_user
@@ -212,7 +212,6 @@ app.get('/cave', async (req, res) => {
     res.render('pages/cave', {
       title: 'ConCave',
       tunnels: tunnels,
-      conventions: conventions,
       isUser: userId != -1,
       sort: sort
     });
@@ -262,7 +261,7 @@ app.get('/cave/:id', async (req, res) => {
 
   try {
     const tunnel = await db.one(`
-      SELECT tunnels.*, users.username,
+      SELECT tunnels.*, users.username, conventions.name AS convention_name,
         COUNT(DISTINCT likes.id) AS like_count,
         BOOL_OR(likes.user_id = $1) AS liked_by_user
       FROM tunnels
