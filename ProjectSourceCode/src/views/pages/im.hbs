@@ -1,9 +1,9 @@
-<div class="container">
+<div class="container mb-5">
     {{> message}}
 
 
     {{#if conv_exists}}
-    <a href="/im" class="btn btn-primary">Back</a>
+    <a href="/im" class="btn btn-primary mb-5">Messages</a>
     {{!-- loading in a specific conversation --}}
     <h4>Chat with {{other_user.first_name}} {{other_user.last_name}} ({{other_user.username}})</h4>
     <div class="container border" id="messages-container" style="height: 70vh; overflow-y: auto;">

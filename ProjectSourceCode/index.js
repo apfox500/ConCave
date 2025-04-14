@@ -1105,7 +1105,7 @@ app.post('/profile', auth, async (req, res) => {
         [user.id]
       );
 
-      res.render('pages/profile', { user, badges });
+      res.render('pages/profile', { user, badges, my_user: req.session.user });
     } catch (err) {
       console.error('Failed to load badges:', err.stack);
       res.status(500).send('Error retrieving badges');
