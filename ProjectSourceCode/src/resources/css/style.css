@@ -171,3 +171,9 @@ body {
 .btn-primary {
     border-radius: 50px;
 }
+
+/* Aligns elements to the right side of the screen */
+.right-align {
+    position: absolute;
+    right: 0;
+}
