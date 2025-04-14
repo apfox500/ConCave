@@ -5,7 +5,11 @@
     {{#if conv_exists}}
     <a href="/im" class="btn btn-primary mb-5">Messages</a>
     {{!-- loading in a specific conversation --}}
-    <h4>Chat with {{other_user.first_name}} {{other_user.last_name}} ({{other_user.username}})</h4>
+    <h4>Chat with <form action="/profile" method="POST" style="display: inline;"><input type="hidden" name="username"
+                value="{{other_user.username}}"><button type="submit"
+                style="text-decoration: underline; border: none; background: none; padding: 0; cursor: pointer;">{{other_user.first_name}}
+                {{other_user.last_name}} ({{other_user.username}})</button></form>
+    </h4>
     <div class="container border" id="messages-container" style="height: 70vh; overflow-y: auto;">
         {{#each messages}}
         {{#if new_date}}
