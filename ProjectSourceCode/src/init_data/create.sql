@@ -153,10 +153,10 @@ CREATE TABLE IF NOT EXISTS merchandise (
 
 CREATE TABLE IF NOT EXISTS user_merchandise (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
+    username VARCHAR(50) NOT NULL,
     merchandise_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE,
     FOREIGN KEY (merchandise_id) REFERENCES merchandise(id) ON DELETE CASCADE,
-    UNIQUE(user_id, merchandise_id)
+    UNIQUE(username, merchandise_id)
 );

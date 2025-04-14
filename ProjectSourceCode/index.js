@@ -94,10 +94,14 @@ app.use((req, res, next) => {
 app.get('/', async (req, res) => {
   try {
     const conventions = await db.any('SELECT * FROM conventions ORDER BY start_date ASC');
-
+    let = isConvOrAdmin = false;
+    if (req.session.user) {
+      isConvOrAdmin = req.session.user.rank != 'user';
+    }
     res.render('pages/home', {
       title: 'ConCave',
       message: 'Welcome to ConCave!',
+      isConvOrAdmin: isConvOrAdmin,
       conventions,
     });
   } catch (error) {
@@ -136,10 +140,7 @@ app.get('/conventions/:id', async (req, res) => {
   }
 });
 
-// ******************************
-// <!-- Section 4.4 : Search -->
-// ******************************
-
+//Searching
 app.get('/search', async (req, res) => {
   const searchQuery = req.query.q;
   if (!searchQuery) {
@@ -162,6 +163,138 @@ app.get('/search', async (req, res) => {
   }
 });
 
+// Cave route
+
+app.get('/cave', async (req, res) => {
+  let userId = -1;
+
+  if (req.session.user) {
+    userId = req.session.user.id;
+  }
+
+  const sort = req.query.sort || 'newest';
+
+  let orderBy;
+  switch (sort) {
+    case 'oldest':
+      orderBy = 'tunnels.created_at ASC';
+      break;
+    case 'most_liked':
+      orderBy = 'like_count DESC';
+      break;
+    case 'least_liked':
+      orderBy = 'like_count ASC';
+      break;
+    case 'newest':
+    default:
+      orderBy = 'tunnels.created_at DESC';
+  }
+
+
+  try {
+
+    const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
+
+    const tunnels = await db.any(`
+      SELECT tunnels.*, users.username, 
+        COUNT(DISTINCT replies.id) AS reply_count, 
+        COUNT(DISTINCT likes.id) AS like_count, 
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM tunnels
+      LEFT JOIN users ON tunnels.user_id = users.id
+      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
+      LEFT JOIN replies ON replies.tunnel_id = tunnels.id
+      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
+      GROUP BY tunnels.id, users.username, conventions.name
+      ORDER BY ${orderBy}
+    `, [userId]);
+
+    res.render('pages/cave', {
+      title: 'ConCave',
+      tunnels: tunnels,
+      conventions: conventions,
+      isUser: userId != -1,
+      sort: sort
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error loading the cave.');
+  }
+});
+
+// ******************************
+// <!-- Section 4.4 : Search -->
+// ******************************
+
+
+//Note: cave/search MUST be above cave:id or it will get oh so confused
+app.get('/cave/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  if (!searchQuery) {
+    return res.json([]);
+  }
+
+  console.log(`Search Query: ${searchQuery}`);
+
+  const results = await db.any(
+    'SELECT * FROM tunnels WHERE title ILIKE $1;',
+    [`%${searchQuery}%`]
+  );
+
+  console.log(`Query Results:`, results);
+  try {
+    res.json(results);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// Cave Tunnel Page Get
+app.get('/cave/:id', async (req, res) => {
+  let userId = -1;
+
+  if (req.session.user) {
+    userId = req.session.user.id;
+  }
+  const tunnelId = req.params.id;
+
+  try {
+    const tunnel = await db.one(`
+      SELECT tunnels.*, users.username,
+        COUNT(DISTINCT likes.id) AS like_count,
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM tunnels
+      LEFT JOIN users ON tunnels.user_id = users.id
+      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
+      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
+      WHERE tunnels.id = $2
+      GROUP BY tunnels.id, users.username, conventions.name
+    `, [userId, tunnelId]);
+
+    const replies = await db.any(`
+      SELECT replies.*, users.username,
+        COUNT(DISTINCT likes.id) AS like_count,
+        BOOL_OR(likes.user_id = $1) AS liked_by_user
+      FROM replies
+      LEFT JOIN users ON replies.user_id = users.id
+      LEFT JOIN likes ON likes.reply_id = replies.id
+      WHERE replies.tunnel_id = $2
+      GROUP BY replies.id, users.username
+      ORDER BY replies.created_at ASC
+    `, [userId, tunnelId]);
+
+    res.render('pages/tunnel', {
+      tunnel,
+      replies,
+      isUser: userId != -1
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error loading tunnel.');
+  }
+});
 
 // *************************************
 // <!-- Section 4.1 : Login/Register -->
@@ -237,64 +370,12 @@ app.use(auth);
 // <!-- Section 4.2 : The Cave -->
 // ********************************
 
-// Cave route
-app.get('/cave', async (req, res) => {
-
-  const userId = 1;
-
-  const sort = req.query.sort || 'newest';
-
-  let orderBy;
-  switch (sort) {
-    case 'oldest':
-      orderBy = 'tunnels.created_at ASC';
-      break;
-    case 'most_liked':
-      orderBy = 'like_count DESC';
-      break;
-    case 'least_liked':
-      orderBy = 'like_count ASC';
-      break;
-    case 'newest':
-    default:
-      orderBy = 'tunnels.created_at DESC';
-  }
-
-
-  try {
-
-    const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
-
-    const tunnels = await db.any(`
-      SELECT tunnels.*, users.username, 
-        COUNT(DISTINCT replies.id) AS reply_count, 
-        COUNT(DISTINCT likes.id) AS like_count, 
-        BOOL_OR(likes.user_id = $1) AS liked_by_user
-      FROM tunnels
-      LEFT JOIN users ON tunnels.user_id = users.id
-      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
-      LEFT JOIN replies ON replies.tunnel_id = tunnels.id
-      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
-      GROUP BY tunnels.id, users.username, conventions.name
-      ORDER BY ${orderBy}
-    `, [userId]);
-
-    res.render('pages/cave', {
-      title: 'ConCave',
-      tunnels: tunnels,
-      conventions: conventions,
-      sort: sort
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error loading the cave.');
-  }
-});
 
 // Cave Tunnel Post
 app.post('/cave', async (req, res) => {
   const { title, message, convention_id } = req.body;
-  const userId = 1; // Replace with actual user id when login is implemented.
+  const userId = req.session.user.id;
+  const user = req.session.user;
 
   try {
     await db.none(
@@ -302,6 +383,26 @@ app.post('/cave', async (req, res) => {
        VALUES ($1, $2, $3, $4)`,
       [title, message, userId, convention_id || null]
     );
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Cave Digger'`
+    );
+
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
+         WHERE user_id = (SELECT id FROM users WHERE username = $1)
+         AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+          [user.username, badge.trophy_id]
+        );
+      }
+    }
     res.redirect('/cave');
   } catch (error) {
     console.error(error);
@@ -309,57 +410,38 @@ app.post('/cave', async (req, res) => {
   }
 });
 
-// Cave Tunnel Page Get
-app.get('/cave/:id', async (req, res) => {
-  const tunnelId = req.params.id;
-  const userId = 1; // Replace later
-
-  try {
-    const tunnel = await db.one(`
-      SELECT tunnels.*, users.username,
-        COUNT(DISTINCT likes.id) AS like_count,
-        BOOL_OR(likes.user_id = $1) AS liked_by_user
-      FROM tunnels
-      LEFT JOIN users ON tunnels.user_id = users.id
-      LEFT JOIN conventions ON tunnels.convention_id = conventions.id
-      LEFT JOIN likes ON likes.tunnel_id = tunnels.id
-      WHERE tunnels.id = $2
-      GROUP BY tunnels.id, users.username, conventions.name
-    `, [userId, tunnelId]);
-
-    const replies = await db.any(`
-      SELECT replies.*, users.username,
-        COUNT(DISTINCT likes.id) AS like_count,
-        BOOL_OR(likes.user_id = $1) AS liked_by_user
-      FROM replies
-      LEFT JOIN users ON replies.user_id = users.id
-      LEFT JOIN likes ON likes.reply_id = replies.id
-      WHERE replies.tunnel_id = $2
-      GROUP BY replies.id, users.username
-      ORDER BY replies.created_at ASC
-    `, [userId, tunnelId]);
-
-    res.render('pages/tunnel', {
-      tunnel,
-      replies,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error loading tunnel.');
-  }
-});
-
 // Cave Tunnel Reply Post
 app.post('/cave/:id/reply', async (req, res) => {
   const tunnelId = req.params.id;
   const { message } = req.body;
+  const user = req.session.user;
 
   try {
-    const userId = 1; // Replace with actual user id when login is implemented.
+    const userId = req.session.user.id;
     await db.none(
       'INSERT INTO replies (tunnel_id, message, user_id) VALUES ($1, $2, $3)',
       [tunnelId, message, userId]
     );
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Conversation Starter'`
+    );
+
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
+         WHERE user_id = (SELECT id FROM users WHERE username = $1)
+         AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+          [user.username, badge.trophy_id]
+        );
+      }
+    }
     res.redirect(`/cave/${tunnelId}`);
   } catch (error) {
     console.error(error);
@@ -369,7 +451,7 @@ app.post('/cave/:id/reply', async (req, res) => {
 
 // Like a tunnel
 app.post('/like/tunnel/:id', async (req, res) => {
-  const userId = 1; // Replace later
+  const userId = req.session.user.id;
   const tunnelId = req.params.id;
   const redirectTo = req.body.redirectTo || '/cave';
 
@@ -399,7 +481,7 @@ app.post('/like/tunnel/:id', async (req, res) => {
 
 // Like a reply
 app.post('/like/reply/:id', async (req, res) => {
-  const userId = 1; // Replace later
+  const userId = req.session.user.id;
   const replyId = req.params.id;
 
   try {
@@ -713,10 +795,7 @@ app.post('/im/create', async (req, res) => {
 app.get('/conventions/:id/groups', async (req, res) => {
   try {
     const { id: conventionId } = req.params;
-    const convention = await db.oneOrNone(
-      'SELECT * FROM conventions WHERE id = $1',
-      [conventionId]
-    );
+    const convention = await db.oneOrNone('SELECT * FROM conventions WHERE id = $1', [conventionId]);
     if (!convention) {
       return res.status(404).send('Convention not found');
     }
@@ -734,7 +813,11 @@ app.get('/conventions/:id/groups', async (req, res) => {
       JOIN users u ON g.created_by = u.id
       WHERE g.convention_id = $1
     `, [conventionId]);
-    res.render('pages/groups', { convention, groups });
+    const enhancedGroups = groups.map(group => {
+      group.ownedByUser = req.session.user && (group.created_by === req.session.user.id);
+      return group;
+    });
+    res.render('pages/groups', { convention, groups: enhancedGroups });
   } catch (error) {
     console.log(error);
     res.status(500).send('Error fetching groups');
@@ -743,62 +826,86 @@ app.get('/conventions/:id/groups', async (req, res) => {
 
 app.post('/conventions/:id/groups/create', auth, async (req, res) => {
   try {
-    const { id: conventionId } = req.params;
-    const { groupName, description } = req.body;
-    const userId = req.session.user.id;
+    const { id: conventionId } = req.params
+    const { groupName, description } = req.body
+    const userId = req.session.user.id
     const newGroup = await db.one(
       'INSERT INTO groups (convention_id, name, description, created_by) VALUES ($1, $2, $3, $4) RETURNING id',
       [conventionId, groupName, description, userId]
-    );
-    await db.none(
-      'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)',
-      [newGroup.id, userId]
-    );
-    res.redirect(`/conventions/${conventionId}/groups`);
+    )
+    await db.none('INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)', [newGroup.id, userId])
+    res.redirect(`/conventions/${conventionId}/groups`)
   } catch (error) {
-    console.log(error);
-    res.status(500).send('Error creating group');
+    console.log(error)
+    res.status(500).send('Error creating group')
   }
 });
 
-app.post("/groups/:groupId/join", auth, async (req, res) => {
+app.post('/groups/:groupId/join', auth, async (req, res) => {
   try {
-    const { groupId } = req.params;
-    const userId = req.session.user.id;
+    const { groupId } = req.params
+    const userId = req.session.user.id
     const existingRow = await db.oneOrNone(
-      "SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2",
+      'SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2',
       [groupId, userId]
-    );
-    if (existingRow) {
-      return res.redirect("back");
-    }
-    await db.none(
-      "INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)",
-      [groupId, userId]
-    );
-    const group = await db.oneOrNone(
-      "SELECT convention_id FROM groups WHERE id = $1",
-      [groupId]
-    );
-    if (!group) {
-      return res.status(404).send("Group not found");
-    }
-    res.redirect(`/conventions/${group.convention_id}/groups`);
+    )
+    if (existingRow) return res.redirect('back')
+    await db.none('INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)', [groupId, userId])
+    const group = await db.oneOrNone('SELECT convention_id FROM groups WHERE id = $1', [groupId])
+    if (!group) return res.status(404).send('Group not found')
+    res.redirect(`/conventions/${group.convention_id}/groups`)
   } catch (error) {
-    console.log(error);
-    res.status(500).send("Error joining group");
+    console.log(error)
+    res.status(500).send('Error joining group')
+  }
+});
+
+app.post('/groups/:groupId/delete', auth, async (req, res) => {
+  try {
+    const { groupId } = req.params
+    const userId = req.session.user.id
+    const group = await db.oneOrNone('SELECT * FROM groups WHERE id = $1', [groupId])
+    if (!group) return res.status(404).send('Group not found')
+    if (group.created_by !== userId) return res.status(403).send('Forbidden')
+    await db.none('DELETE FROM groups WHERE id = $1', [groupId])
+    return res.redirect(`/conventions/${group.convention_id}/groups`)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).send('Error')
   }
 });
 
 app.post('/submit_review', auth, async (req, res) => {
   const { rating, review, convention_id } = req.body;
   const user_id = req.session.user.id;
+  const user = req.session.user;
 
   try {
     await db.none(`
       INSERT INTO reviews (convention_id, user_id, rating, review)
       VALUES ($1, $2, $3, $4)
     `, [convention_id, user_id, parseInt(rating[0]), review]);
+
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Critique'`
+    );
+
+      if (badge) {
+        const alreadyHasBadge = await db.oneOrNone(
+          `SELECT 1 FROM users_to_badges 
+          WHERE user_id = (SELECT id FROM users WHERE username = $1)
+          AND trophy_id = $2`,
+          [user.username, badge.trophy_id]
+        );
+
+        if (!alreadyHasBadge) {
+          await db.none(
+            `INSERT INTO users_to_badges (user_id, trophy_id)
+            VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+            [user.username, badge.trophy_id]
+          );
+        }
+      }
 
     res.redirect(`/conventions/${convention_id}`);
   } catch (error) {
@@ -840,15 +947,20 @@ app.post('/submit_review', auth, async (req, res) => {
 
 app.get('/merch', async (req, res) => {
   try {
-    let merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
-    
+    let merchandise = await db.any(`
+      SELECT m.*, um.username as creator_username 
+      FROM merchandise m 
+      JOIN user_merchandise um ON m.id = um.merchandise_id 
+      ORDER BY m.id
+    `);
+
 
     if (req.session.user) {
       const userMerchandise = await db.any(
-        'SELECT merchandise_id FROM user_merchandise WHERE user_id = $1',
-        [req.session.user.id]
+        'SELECT merchandise_id FROM user_merchandise WHERE username = $1',
+        [req.session.user.username]
       );
-      
+
       merchandise = merchandise.map(item => {
         return {
           ...item,
@@ -856,7 +968,7 @@ app.get('/merch', async (req, res) => {
         };
       });
     }
-    
+
     res.render('pages/merch', {
       title: 'Merchandise',
       message: '',
@@ -879,23 +991,23 @@ app.post('/merch', async (req, res) => {
     if (!req.session.user) {
       return res.redirect('/login');
     }
-    
+
     console.log('Received form data:', req.body);
     const { name, price, description, image_url, details } = req.body;
     const detailsArray = details.split(',').map(item => item.trim());
-    
+
     await db.tx(async t => {
       const result = await t.one(
         'INSERT INTO merchandise (name, price, description, image_url, details) VALUES ($1, $2, $3, $4, $5) RETURNING id',
         [name, price, description, image_url, detailsArray]
       );
-      
+
       await t.none(
-        'INSERT INTO user_merchandise (user_id, merchandise_id) VALUES ($1, $2)',
-        [req.session.user.id, result.id]
+        'INSERT INTO user_merchandise (username, merchandise_id) VALUES ($1, $2)',
+        [req.session.user.username, result.id]
       );
     });
-    
+
     res.redirect('/merch');
   } catch (error) {
     console.error('Error adding merchandise:', error);
@@ -915,14 +1027,14 @@ app.post('/merch/delete/:id', async (req, res) => {
     if (!req.session.user) {
       return res.redirect('/login');
     }
-    
+
     const merchandiseId = req.params.id;
-    
+
     const isCreator = await db.oneOrNone(
-      'SELECT * FROM user_merchandise WHERE user_id = $1 AND merchandise_id = $2',
-      [req.session.user.id, merchandiseId]
+      'SELECT * FROM user_merchandise WHERE username = $1 AND merchandise_id = $2',
+      [req.session.user.username, merchandiseId]
     );
-    
+
     if (!isCreator) {
       return res.render('pages/merch', {
         title: 'Merchandise',
@@ -932,9 +1044,9 @@ app.post('/merch/delete/:id', async (req, res) => {
         user: req.session.user
       });
     }
-    
+
     await db.none('DELETE FROM merchandise WHERE id = $1', [merchandiseId]);
-    
+
     res.redirect('/merch');
   } catch (error) {
     console.error('Error deleting merchandise:', error);
@@ -949,10 +1061,256 @@ app.post('/merch/delete/:id', async (req, res) => {
   }
 });
 
+// ****************************************************
+// <!-- Section 4.8 : User Customization and Badges-->
+// ****************************************************
+
+/*app.get("/profile", auth, (req, res) => {
+  res.render("pages/profile");
+});*/
+
+app.get('/profile', auth, async (req, res) => {
+  try {
+    const badges = await db.query(
+        `SELECT badges.name AS badge_name, 
+        badges.description AS badge_description
+        FROM badges
+        LEFT JOIN users_to_badges ON badges.trophy_id = users_to_badges.trophy_id
+        WHERE users_to_badges.user_id = $1;`,
+        [req.session.user.id]
+    );
+
+    res.render('pages/profile', { badges });
+  } catch (err) {
+    console.error('Failed to load badges:', err.stack);
+    res.status(500).send('Error retrieving badges');
+  }
+});
+
+
+
+app.get("/settings", auth, (req, res) => {
+  let = isAdmin = false;
+     if (req.session.user) {
+       isAdmin = req.session.user.rank == 'admin';
+     }
+  res.render("pages/settings", {
+    isAdmin: isAdmin
+  });
+});
+
+app.post('/settings/update-profile', auth, async (req, res) => {
+  const { firstName, lastName, newEmail } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(400).json({ message: 'User is not logged in or session expired.' });
+  }
+
+  try {
+    const result = await db.task(async t => {
+      const updateResult = await t.none(
+        `UPDATE users
+         SET first_name = $1,
+             last_name = $2,
+             email = $3
+         WHERE username = $4`,
+        [firstName, lastName, newEmail, user.username]
+      );
+
+      const updatedUser = await t.one(
+        `SELECT * FROM users WHERE username = $1`,
+        [user.username]
+      );
+
+      req.session.user = updatedUser;
+
+      return updatedUser;
+    });
+
+    res.json({
+      message: 'Profile updated successfully!',
+      user: result
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/update-bio', auth, async (req, res) => {
+  const { bio } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(400).json({ message: 'User is not logged in or session expired.' });
+  }
+
+  try {
+    const result = await db.task(async t => {
+      const updateResult = await t.none(
+        `UPDATE users
+         SET bio = $1
+         WHERE username = $2`,
+        [bio, user.username]
+      );
+
+      const badge = await t.oneOrNone(
+        `SELECT trophy_id FROM badges WHERE name = 'Storyteller'`
+      );
+
+      if (badge) {
+        const alreadyHasBadge = await t.oneOrNone(
+          `SELECT 1 FROM users_to_badges 
+           WHERE user_id = (SELECT id FROM users WHERE username = $1)
+           AND trophy_id = $2`,
+          [user.username, badge.trophy_id]
+        );
+
+        if (!alreadyHasBadge) {
+          await t.none(
+            `INSERT INTO users_to_badges (user_id, trophy_id)
+             VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+            [user.username, badge.trophy_id]
+          );
+        }
+      }
+
+      const updatedUser = await t.one(
+        `SELECT * FROM users WHERE username = $1`,
+        [user.username]
+      );
+
+      req.session.user = updatedUser;
+
+      return updatedUser;
+    });
+
+    res.json({
+      message: 'Bio updated successfully!',
+      user: result
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/update-password', auth, async (req, res) => {
+  const { oldPassword, newPassword, reNewPassword } = req.body;
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(400).json({ message: 'User is not logged in or session expired.' });
+  }
+
+  if (!(user && (await bcrypt.compare(oldPassword, user.password)))){
+    return res.status(400).json({ message: 'Old password does not match current password' });
+  }
+
+  if (newPassword != reNewPassword) {
+    return res.status(400).json({ message: 'New passwords do not match' });
+  }
+
+  try {
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    await db.none(
+      `UPDATE users
+       SET password = $1
+       WHERE username = $2`,
+      [hash, user.username]
+    );
+
+    const badge = await db.oneOrNone(
+      `SELECT trophy_id FROM badges WHERE name = 'Security Expert'`
+    );
+
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
+         WHERE user_id = (SELECT id FROM users WHERE username = $1)
+         AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+           VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
+          [user.username, badge.trophy_id]
+        );
+      }
+    }
+
+    res.json({
+      message: 'Password updated successfully!'
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/delete-profile', auth, async (req, res) => {
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ message: 'You are not logged in.' });
+  }
+
+  try {
+    await db.none('DELETE FROM users WHERE id = $1', [user.id]);
+
+    req.session.destroy(err => {
+      if (err) {
+        console.error('Session destroy error:', err);
+        return res.status(500).json({ message: 'Account deleted, but logout failed.' });
+      }
+      return res.json({ message: 'Your account has been deleted successfully.' });
+    });
+
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    res.status(500).json({ message: 'Failed to delete account.' });
+  }
+});
+
+app.get("/adminSettings", auth, async (req, res) => {
+  const users = await db.any('SELECT * FROM users ORDER BY username ASC');
+  res.render("pages/adminSettings", {
+    users,
+  });
+});
+
+app.post("/settings/updateUserRank", auth, async (req, res) => {
+  const { username, rank } = req.body;
+  try {
+    await db.none("UPDATE users SET rank = $1 WHERE username = $2", [rank, username]);
+    res.redirect("/adminSettings");
+  } catch (err) {
+    console.error("Error updating user rank:", err);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post("/settings/deleteUser", auth, async (req, res) => {
+  const { username } = req.body;
+  try {
+    await db.none("DELETE FROM users WHERE username = $1", [username]);
+    res.redirect("/adminSettings");
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 // *****************************************************
 // <!-- Section 5 : Start Server-->
 // *****************************************************
 // starting the server and keeping the connection open to listen for more requests
 app.listen(3000);
 console.log('Server is listening on port 3000');
-

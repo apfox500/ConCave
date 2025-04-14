@@ -14,51 +14,40 @@
     </div>
     {{/if}}
     
-    <div class="list-group mt-4">
+    <div class="row mt-4">
         {{#each merchandise}}
-        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#merchModal{{id}}">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">{{name}}</h5>
-                <small>${{price}}</small>
-            </div>
-            <p class="mb-1">{{description}}</p>
-        </a>
-        {{/each}}
-    </div>
-
-    {{#each merchandise}}
-    <div class="modal fade" id="merchModal{{id}}">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{name}}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <img src="{{image_url}}" class="img-fluid mb-3" alt="{{name}}">
-                    <h6>Price: ${{price}}</h6>
-                    <p>{{description}}</p>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{image_url}}" class="card-img-top" alt="{{name}}">
+                <div class="card-body">
+                    <h5 class="card-title">{{name}}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Price: ${{price}}</h6>
+                    <p class="card-text">{{description}}</p>
                     <ul>
                         {{#each details}}
                         <li>{{this}}</li>
                         {{/each}}
                     </ul>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div class="card-footer">
                     {{#if ../user}}
                         {{#if is_creator}}
-                        <form action="/merch/delete/{{id}}" method="POST" style="display: inline;">
-                            <button type="submit" class="btn btn-danger">Delete Listing</button>
-                        </form>
+                            <form action="/merch/delete/{{id}}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-danger">Delete Listing</button>
+                            </form>
+                        {{else}}
+                            <form action="/im/create" method="POST" style="display: inline;">
+                                <input type="hidden" name="username" value="{{creator_username}}">
+                                <input type="hidden" name="message" value="Hey I want to buy {{name}}!">
+                                <button type="submit" class="btn btn-primary">Contact Seller</button>
+                            </form>
                         {{/if}}
-                        <button type="button" class="btn btn-primary">Purchase</button>
                     {{/if}}
                 </div>
             </div>
         </div>
+        {{/each}}
     </div>
-    {{/each}}
 
     <div class="modal fade" id="addMerchModal">
         <div class="modal-dialog">
