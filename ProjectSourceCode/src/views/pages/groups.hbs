@@ -58,11 +58,17 @@
             {{/if}}
           </div>
           <div class="mt-2">
-            <form action="/groups/{{this.id}}/join" method="POST">
-              <button type="submit" class="btn btn-sm btn-primary">
-                <i class="bi bi-person-plus"></i> Join
+            {{#if this.isMember}}
+              <button type="button" class="btn btn-sm btn-secondary" disabled>
+                Joined
               </button>
-            </form>
+            {{else}}
+              <form action="/groups/{{this.id}}/join" method="POST">
+                <button type="submit" class="btn btn-sm btn-primary">
+                  <i class="bi bi-person-plus"></i> Join
+                </button>
+              </form>
+            {{/if}}
           </div>
         </li>
         {{/each}}

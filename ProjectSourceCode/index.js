@@ -815,6 +815,12 @@ app.get('/conventions/:id/groups', async (req, res) => {
     `, [conventionId]);
     const enhancedGroups = groups.map(group => {
       group.ownedByUser = req.session.user && (group.created_by === req.session.user.id);
+
+      group.isMember = false; 
+      if (req.session.user && group.member_usernames) {
+        group.isMember = group.member_usernames.includes(req.session.user.username);
+      }
+      
       return group;
     });
     res.render('pages/groups', { convention, groups: enhancedGroups });
