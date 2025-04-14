@@ -7,6 +7,16 @@ INSERT INTO users (first_name, last_name, username, email, rank, password) VALUE
 ('Leon', 'Vayedjian', 'leva5149', 'leva5149@colorado.edu', 'user', '$2y$10$PruaOATtY/iuRCMZZufqz.2t18fZUtXYEMfXHzfsLCFZc9yjZj5HC'),
 ('Jane', 'Smith', 'jasm1234', 'jasm1234@colorado.edu', 'user', '$2y$10$OxqM94dcbuIcmrZDfcNuK.rqDzcY3/lp97lZLJvia3UWnooLNRhRa'),
 ('Alex', 'Taylor', 'alta5678', 'alta5678@colorado.edu', 'user', '$2y$10$dtUYrY/1eRBhJhzoymzfMuliTn8A4A94JzNRPbnER1.FWAB2AnCLi'),
+('Sophia', 'Davis', 'soda7632', 'soda7632@colorado.edu', 'user', '$2a$10$kF4Tb4AY5cZ6hIKy0LfOheJcrkt7GRQOGC.xn6Q3HXZfKg9jexSSy'),
+('Ethan', 'Wilson', 'ewil1987', 'ewil1987@colorado.edu', 'user', '$2a$10$RmlKnU/jExhHlbdOP3hFpef5JLRrw44RfFwt8vLPtXmfYbDQpqcs2'),
+('Olivia', 'Martinez', 'olma7845', 'olma7845@colorado.edu', 'user', '$2a$10$5VpgpxlrYXoyzDbZrmrYq.DTZja3xXkvl8wz/ZdQxtYXGB5ecgDWm'),
+('Liam', 'Moore', 'limo3651', 'limo3651@colorado.edu', 'user', '$2a$10$1WxxF8Pbo79doLzTPHstzOaKrK5g5Q0fRRE0dV3zT2uG8WgD/9PY6'),
+('Mason', 'Lee', 'male5379', 'male5379@colorado.edu', 'user', '$2a$10$0pQuPiKrZwaFc9erZYijYuOeU2dSTYax1d1VsBLqz6O0jdSNLKEX2'),
+('Ava', 'Williams', 'avwi9283', 'avwi9283@colorado.edu', 'user', '$2a$10$jeXkZ5CZQo4Vh0z4YntJBu9FgOY4MPHQLtI./uF7l1pV9cd0OXvfq'),
+('Mia', 'Taylor', 'mita3679', 'mita3679@colorado.edu', 'user', '$2a$10$FJno6NY/psjD8ah0TEXGoWi31sKj7lJ0ok2Af7xWMe8A8kffYjFzS'),
+('Noah', 'Anderson', 'noan2107', 'noan2107@colorado.edu', 'user', '$2a$10$ZQYoYDWJd9HpJxbXEdOF0nFOwEdbEDlK.CcNhXn4YrX0o18H55OS6'),
+('Isabella', 'Thomas', 'isth8504', 'isth8504@colorado.edu', 'user', '$2a$10$DeXA0/ys5z6.VvVbmZTjR.Cgvl48lqRG3QUCRL8J7GG78hbOay2oO'),
+('Lucas', 'Jackson', 'luja4128', 'luja4128@colorado.edu', 'user', '$2a$10$kh5H2fdAfq6oH07s4HzCkBhuYXQc.88K5V7Qg7s1ntOP6d3FyHG9C'),
 ('Admin', 'Role', 'admin', 'admin@concave.com', 'admin', '$2a$10$B9j4S5oYU5aLGgDodvYIVeS0SA49a9nAQLG018mOJ9avSpubmRhRC'),
 ('Convention', 'Host', 'convention_host', 'conventionhost@concave.com', 'convention_host', '$2a$10$B9j4S5oYU5aLGgDodvYIVeS0SA49a9nAQLG018mOJ9avSpubmRhRC');
 
