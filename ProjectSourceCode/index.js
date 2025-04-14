@@ -890,22 +890,22 @@ app.post('/submit_review', auth, async (req, res) => {
       `SELECT trophy_id FROM badges WHERE name = 'Critique'`
     );
 
-      if (badge) {
-        const alreadyHasBadge = await db.oneOrNone(
-          `SELECT 1 FROM users_to_badges 
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
           WHERE user_id = (SELECT id FROM users WHERE username = $1)
           AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+            VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
           [user.username, badge.trophy_id]
         );
-
-        if (!alreadyHasBadge) {
-          await db.none(
-            `INSERT INTO users_to_badges (user_id, trophy_id)
-            VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
-            [user.username, badge.trophy_id]
-          );
-        }
       }
+    }
 
     res.redirect(`/conventions/${convention_id}`);
   } catch (error) {
@@ -1060,19 +1060,16 @@ app.post('/merch/delete/:id', async (req, res) => {
 // <!-- Section 4.8 : User Customization and Badges-->
 // ****************************************************
 
-/*app.get("/profile", auth, (req, res) => {
-  res.render("pages/profile");
-});*/
 
 app.get('/profile', auth, async (req, res) => {
   try {
     const badges = await db.query(
-        `SELECT badges.name AS badge_name, 
+      `SELECT badges.name AS badge_name, 
         badges.description AS badge_description
         FROM badges
         LEFT JOIN users_to_badges ON badges.trophy_id = users_to_badges.trophy_id
         WHERE users_to_badges.user_id = $1;`,
-        [req.session.user.id]
+      [req.session.user.id]
     );
 
     res.render('pages/profile', { badges });
@@ -1082,13 +1079,49 @@ app.get('/profile', auth, async (req, res) => {
   }
 });
 
+app.post('/profile', auth, async (req, res) => {
+  const { username } = req.body;
 
+  try {
+    const user = await db.oneOrNone(
+      `SELECT id, first_name, last_name, username, email, rank, profile_picture, bio, created_at, last_login 
+       FROM users 
+       WHERE username = $1`,
+      [username]
+    );
+
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    try {
+      const badges = await db.query(
+        `SELECT badges.name AS badge_name, 
+          badges.description AS badge_description
+          FROM badges
+          LEFT JOIN users_to_badges ON badges.trophy_id = users_to_badges.trophy_id
+          WHERE users_to_badges.user_id = $1;`,
+        [user.id]
+      );
+
+      res.render('pages/profile', { user, badges });
+    } catch (err) {
+      console.error('Failed to load badges:', err.stack);
+      res.status(500).send('Error retrieving badges');
+    }
+
+  } catch (err) {
+    console.error('Error fetching user data:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 app.get("/settings", auth, (req, res) => {
   let = isAdmin = false;
-     if (req.session.user) {
-       isAdmin = req.session.user.rank == 'admin';
-     }
+  if (req.session.user) {
+    isAdmin = req.session.user.rank == 'admin';
+  }
   res.render("pages/settings", {
     isAdmin: isAdmin
   });
@@ -1201,7 +1234,7 @@ app.post('/settings/update-password', auth, async (req, res) => {
     return res.status(400).json({ message: 'User is not logged in or session expired.' });
   }
 
-  if (!(user && (await bcrypt.compare(oldPassword, user.password)))){
+  if (!(user && (await bcrypt.compare(oldPassword, user.password)))) {
     return res.status(400).json({ message: 'Old password does not match current password' });
   }
 

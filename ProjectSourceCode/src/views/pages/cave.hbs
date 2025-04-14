@@ -70,8 +70,11 @@
         {{#each tunnels}}
         <div class="mb-3 p-3 border-bottom">
             <h5> <a href="/cave/{{this.id}}" class="text-dark"> {{this.title}} </a> </h5>
-            <small class="text-muted">Dug by {{this.username}} on <span class="localized-date"
-                    data-date="{{this.created_at}}"></span> </small>
+            <small class="text-muted">Dug by <form action="/profile" method="POST" style="display:inline;"><input
+                        type="hidden" name="username" value="{{this.username}}"><button type="submit"
+                        class="btn btn-link p-0"
+                        style="text-decoration: underline; color: inherit; background: none; border: none; padding: 0; font: inherit; cursor: pointer; vertical-align: baseline;">{{this.username}}</button>
+                </form> on <span class="localized-date" data-date="{{this.created_at}}"></span></small>
             {{#if this.convention_name}}
             <p class="text-muted mb-1">
                 <i class="bi bi-calendar-event"></i> {{this.convention_name}}
