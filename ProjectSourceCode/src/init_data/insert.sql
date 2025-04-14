@@ -124,6 +124,26 @@ INSERT INTO replies (user_id, tunnel_id, parent_reply_id, message) VALUES
 (6, 5, NULL, 'Still stitching on my gloves and the con is *tomorrow*. Why am I like this?'),
 (2, 5, NULL, 'Hot gluing in the hotel room at 2am counts as tradition, right?');
 
+INSERT INTO groups (convention_id, name, description, created_by) VALUES 
+(1, 'Cosplay Crew 2025', 'A group for Comic-Con attendees who love cosplay, crafting costumes, and participating in the masquerade.', 1),
+(1, 'Hall H Hype', 'A group for those camping out overnight for Hall H panels. Coordinate, share tips, and fan out over the biggest reveals!', 3),
+(1, 'Cosplay Collective', 'Calling all cosplayers headed to Comic-Con! Share costume ideas, group meetups, and photos.', 10),
+(2, 'Tabletop Titans', 'Board game fanatics unite! Looking to schedule multiplayer sessions and demos at Gen Con.', 14),
+(2, 'Indie RPG Explorers', 'Discover and discuss the best indie RPGs showcased at Gen Con.', 5),
+(2, 'Dice Goblins', 'A place for dice collectors and enthusiasts to show off their sets and trade with others.', 8),
+(3, 'Boston Cosplay Meetup', 'Join this group for cosplay gatherings and photography plans during the expo.', 11),
+(3, 'Superhero Squad', 'Marvel, DC, and beyond! Meet other superhero fans and plan which panels to hit together.', 6),
+(4, 'Ecchi Workshop Crew', 'Want to hit every ecchi workshop? We’re planning which ones to attend and reviewing panels!', 1),
+(4, 'Voice Actor Stans', 'A fan group for tracking down and meeting the awesome voice talent at Anime Ultra.', 16),
+(5, 'Anime NYC After Dark', 'Join for info on late-night screenings, afterparties, and chill hangs.', 13),
+(5, 'J-Pop Fans NYC', 'A hangout for J-Pop and anisong fans attending the convention.', 9),
+(5, 'NYC Cosplay Kings & Queens', 'Cosplayers of all styles welcome—let’s plan group shoots in the Javits Center!', 4),
+(6, 'Genshin Mains Unite', 'Share builds, plan cosplay, and coordinate meetups for your favorite Genshin characters.', 2),
+(6, 'Hoyoverse Café Crew', 'Planning our group visit to the themed Maid Café—come hungry and in costume!', 7),
+(7, 'NYCC First-Timers', 'New to NYCC? Join us for guides, tips, and a buddy system to navigate the con chaos!', 12),
+(7, 'Panel Hoppers', 'Dedicated to hitting all the big panels—share lines, updates, and real-time tips.', 17),
+(7, 'East Coast Cosplay Collective', 'For veteran and rookie cosplayers alike. Let’s shine at NYCC together!', 15);
+
 INSERT INTO merchandise (name, price, description, details, image_url) VALUES
 ('Batman T-Shirt', 19.99, 'Comfortable Batman t-shirt', 
 ARRAY['100% Cotton', 'Available in S, M, L, XL', 'Machine washable', 'Unisex design'],
