@@ -36,9 +36,8 @@
                                 <button type="submit" class="btn btn-danger">Delete Listing</button>
                             </form>
                         {{else}}
-                            <form action="/im/create" method="POST" style="display: inline;">
+                            <form action="/im/create" method="POST">
                                 <input type="hidden" name="username" value="{{creator_username}}">
-                                <input type="hidden" name="message" value="Hey I want to buy {{name}}!">
                                 <button type="submit" class="btn btn-primary">Contact Seller</button>
                             </form>
                         {{/if}}
