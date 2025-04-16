@@ -22,10 +22,14 @@
     </div>
     <div class="ms-auto">
         {{#if user}}
-            <a href="/profile" class="btn btn-link text-dark text-decoration-none">
-                <i class="bi bi-person-circle fs-4"></i>
-                <span>{{ user.username }}</span>
-            </a>
+        <a href="/profile" class="btn btn-link text-dark text-decoration-none">
+            <i class="bi bi-person-circle fs-4"></i>
+            {{#if my_user}}
+            <span>{{my_user.username}}</span>
+            {{else}}
+            <span>{{user.username}}</span>
+            {{/if}}
+        </a>
         {{else}}
         <a href="/login" class="btn btn-link text-dark text-decoration-none">
             <i class="bi bi-person-circle fs-4"></i>
