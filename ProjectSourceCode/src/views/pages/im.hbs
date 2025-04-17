@@ -18,6 +18,16 @@
         <div class="message d-inline-block {{#if received}} received{{else}} sent{{/if}}">
             <p class="date">{{time}}</p>
             <p>{{message_text}}</p>
+
+            {{#if isJoinRequest}}
+                {{#if received}}
+                <form method="POST" action="/groups/accept-request" class="mt-2">
+                    <input type="hidden" name="message_text" value="{{message_text}}">
+                    <input type="hidden" name="requester_id" value="{{user_id}}">
+                    <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                </form>
+                {{/if}}
+            {{/if}}
         </div>
         {{/each}}
     </div>
