@@ -1,3 +1,4 @@
 .env
 ProjectSourceCode/node_modules/
 ProjectSourceCode/package-lock.json
+init_db.sh
