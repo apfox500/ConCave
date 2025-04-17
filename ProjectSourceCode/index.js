@@ -146,6 +146,24 @@ app.get('/', async (req, res) => {
 
 app.get('/conventions/:id', async (req, res) => {
   const conventionId = req.params.id;
+  const sort = req.query.sort || 'highest';
+
+  let orderBy;
+  switch (sort) {
+    case 'newest':
+      orderBy = 'r.time_sent DESC';
+      break;
+    case 'oldest':
+      orderBy = 'r.time_sent ASC';
+      break;
+    case 'lowest':
+      orderBy = 'r.rating ASC';
+      break;
+    case 'highest':
+    default:
+      orderBy = 'r.rating DESC';
+      break;
+  }
 
   try {
     const convention = await db.one(`
@@ -154,19 +172,24 @@ app.get('/conventions/:id', async (req, res) => {
       TO_CHAR(c.end_date, 'Mon DD YYYY') AS formatted_end_date 
       FROM conventions c 
       WHERE c.id = ${conventionId}`);
-    const reviews = await db.any(`
+      const reviews = await db.any(`
       SELECT r.*, u.username,
       TO_CHAR(r.time_sent, 'Mon DD YYYY HH24:MI') AS formatted_time
       FROM reviews r
       JOIN users u ON r.user_id = u.id
       WHERE r.convention_id = ${conventionId}
-      ORDER BY r.rating DESC
-      LIMIT 3`);
+      ORDER BY ${orderBy}
+      LIMIT 5`);
 
     res.render('pages/conventionDetails', {
       title: convention.name,
       convention,
       reviews,
+      sort,
+      isHighest: sort === 'highest',
+      isLowest: sort === 'lowest',
+      isNewest: sort === 'newest',
+      isOldest: sort === 'oldest',
     });
   } catch (error) {
     console.log('ERROR:', error.message || error);
