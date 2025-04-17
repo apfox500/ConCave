@@ -1,11 +1,15 @@
-<div class="container">
+<div class="container mb-5">
     {{> message}}
 
 
     {{#if conv_exists}}
-    <a href="/im" class="btn btn-primary">Back</a>
+    <a href="/im" class="btn btn-primary mb-5">Messages</a>
     {{!-- loading in a specific conversation --}}
-    <h4>Chat with {{other_user.first_name}} {{other_user.last_name}} ({{other_user.username}})</h4>
+    <h4>Chat with <form action="/profile" method="POST" style="display: inline;"><input type="hidden" name="username"
+                value="{{other_user.username}}"><button type="submit"
+                style="text-decoration: underline; border: none; background: none; padding: 0; cursor: pointer;">{{other_user.first_name}}
+                {{other_user.last_name}} ({{other_user.username}})</button></form>
+    </h4>
     <div class="container border" id="messages-container" style="height: 70vh; overflow-y: auto;">
         {{#each messages}}
         {{#if new_date}}
@@ -14,6 +18,16 @@
         <div class="message d-inline-block {{#if received}} received{{else}} sent{{/if}}">
             <p class="date">{{time}}</p>
             <p>{{message_text}}</p>
+
+            {{#if isJoinRequest}}
+                {{#if received}}
+                <form method="POST" action="/groups/accept-request" class="mt-2">
+                    <input type="hidden" name="message_text" value="{{message_text}}">
+                    <input type="hidden" name="requester_id" value="{{user_id}}">
+                    <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                </form>
+                {{/if}}
+            {{/if}}
         </div>
         {{/each}}
     </div>

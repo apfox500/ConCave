@@ -186,3 +186,8 @@ body {
     -webkit-line-clamp: 10;
     max-height: 15em;
 }
+/* Aligns elements to the right side of the screen */
+.right-align {
+    position: absolute;
+    right: 0;
+}

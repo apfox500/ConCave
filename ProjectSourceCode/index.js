@@ -664,6 +664,9 @@ async function fetchMessagesAndUserInfo(conv_id, user_id) {
       message.date = messageTime.toLocaleDateString("en-US", { timeZone: "America/Denver" });
       message.received = message.user_id == otherUser.id;
       message.new_date = index === 0 || message.date !== messages[index - 1].date;
+
+      message.received = message.user_id == otherUser.id;
+      message.isJoinRequest = message.message_text && message.message_text.includes('[group:') && message.received;
     });
 
     //update conversation and mark this user as read
@@ -885,6 +888,12 @@ app.get('/conventions/:id/groups', async (req, res) => {
     `, [conventionId]);
     const enhancedGroups = groups.map(group => {
       group.ownedByUser = req.session.user && (group.created_by === req.session.user.id);
+
+      group.isMember = false; 
+      if (req.session.user && group.member_usernames) {
+        group.isMember = group.member_usernames.includes(req.session.user.username);
+      }
+      
       return group;
     });
     res.render('pages/groups', { convention, groups: enhancedGroups });
@@ -911,22 +920,90 @@ app.post('/conventions/:id/groups/create', auth, async (req, res) => {
   }
 });
 
-app.post('/groups/:groupId/join', auth, async (req, res) => {
+app.post('/groups/:groupId/request-to-join', auth, async (req, res) => {
   try {
-    const { groupId } = req.params
-    const userId = req.session.user.id
-    const existingRow = await db.oneOrNone(
-      'SELECT * FROM group_members WHERE group_id = $1 AND user_id = $2',
-      [groupId, userId]
-    )
-    if (existingRow) return res.redirect('back')
-    await db.none('INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)', [groupId, userId])
-    const group = await db.oneOrNone('SELECT convention_id FROM groups WHERE id = $1', [groupId])
-    if (!group) return res.status(404).send('Group not found')
-    res.redirect(`/conventions/${group.convention_id}/groups`)
-  } catch (error) {
-    console.log(error)
-    res.status(500).send('Error joining group')
+    const { groupId } = req.params;
+    const requesterId = req.session.user.id;
+
+    const group = await db.oneOrNone(
+      'SELECT created_by FROM groups WHERE id = $1',
+      [groupId]
+    );
+    if (!group) return res.status(404).send('Group not found');
+
+    const ownerId = group.created_by;
+    console.log({ requesterId, ownerId });
+
+    let conv = await db.oneOrNone(`
+      SELECT id FROM conversations 
+      WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)`,
+      [requesterId, ownerId]
+    );
+
+    if (!conv) {
+      conv = await db.oneOrNone(`
+        INSERT INTO conversations (user1_id, user2_id, user1_unread, user2_unread)
+        VALUES ($1, $2, false, true)
+        RETURNING id`,
+        [requesterId, ownerId]
+      );
+    }
+
+    if (!conv || !conv.id) throw new Error("Conversation creation failed.");
+
+    const groupName = await db.one('SELECT name FROM groups WHERE id = $1', [groupId]);
+    const messageText = `Hi! I'd like to join your group "${groupName.name}". [group:${groupId}]`;
+
+    await db.none(`
+      INSERT INTO messages (conversation_id, user_id, message_text, time_sent)
+      VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
+      [conv.id, requesterId, messageText]
+    );
+
+    const isUser1Flag = await isUser1(requesterId, conv.id);
+    await db.none(
+      `UPDATE conversations SET ${isUser1Flag ? 'user2_unread' : 'user1_unread'} = true WHERE id = $1`,
+      [conv.id]
+    );
+
+    res.redirect(`/im?conv_id=${conv.id}`);
+  } catch (err) {
+    console.error("Join request error:", err);
+    res.status(500).send("Couldn't send join request.");
+  }
+});
+
+app.post('/groups/accept-request', auth, async (req, res) => {
+  try {
+    const { message_text, requester_id } = req.body;
+
+    const match = message_text.match(/\[group:(\d+)\]/);
+    if (!match) return res.status(400).send("Invalid request format");
+
+    const groupId = parseInt(match[1]);
+    const ownerId = req.session.user.id;
+
+    const group = await db.oneOrNone('SELECT * FROM groups WHERE id = $1', [groupId]);
+    if (!group || group.created_by !== ownerId) {
+      return res.status(403).send("You are not the owner of this group.");
+    }
+
+    const alreadyIn = await db.oneOrNone(
+      'SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2',
+      [groupId, requester_id]
+    );
+
+    if (!alreadyIn) {
+      await db.none(
+        'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)',
+        [groupId, requester_id]
+      );
+    }
+
+    res.redirect(`/conventions/${group.convention_id}/groups`);
+  } catch (err) {
+    console.error("Error adding user to group:", err);
+    res.status(500).send("Could not add user to group.");
   }
 });
 
@@ -960,22 +1037,22 @@ app.post('/submit_review', auth, async (req, res) => {
       `SELECT trophy_id FROM badges WHERE name = 'Critique'`
     );
 
-      if (badge) {
-        const alreadyHasBadge = await db.oneOrNone(
-          `SELECT 1 FROM users_to_badges 
+    if (badge) {
+      const alreadyHasBadge = await db.oneOrNone(
+        `SELECT 1 FROM users_to_badges 
           WHERE user_id = (SELECT id FROM users WHERE username = $1)
           AND trophy_id = $2`,
+        [user.username, badge.trophy_id]
+      );
+
+      if (!alreadyHasBadge) {
+        await db.none(
+          `INSERT INTO users_to_badges (user_id, trophy_id)
+            VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
           [user.username, badge.trophy_id]
         );
-
-        if (!alreadyHasBadge) {
-          await db.none(
-            `INSERT INTO users_to_badges (user_id, trophy_id)
-            VALUES ((SELECT id FROM users WHERE username = $1), $2)`,
-            [user.username, badge.trophy_id]
-          );
-        }
       }
+    }
 
     res.redirect(`/conventions/${convention_id}`);
   } catch (error) {
@@ -1130,19 +1207,16 @@ app.post('/merch/delete/:id', async (req, res) => {
 // <!-- Section 4.8 : User Customization and Badges-->
 // ****************************************************
 
-/*app.get("/profile", auth, (req, res) => {
-  res.render("pages/profile");
-});*/
 
 app.get('/profile', auth, async (req, res) => {
   try {
     const badges = await db.query(
-        `SELECT badges.name AS badge_name, 
+      `SELECT badges.name AS badge_name, 
         badges.description AS badge_description
         FROM badges
         LEFT JOIN users_to_badges ON badges.trophy_id = users_to_badges.trophy_id
         WHERE users_to_badges.user_id = $1;`,
-        [req.session.user.id]
+      [req.session.user.id]
     );
 
     res.render('pages/profile', { badges });
@@ -1152,13 +1226,49 @@ app.get('/profile', auth, async (req, res) => {
   }
 });
 
+app.post('/profile', auth, async (req, res) => {
+  const { username } = req.body;
 
+  try {
+    const user = await db.oneOrNone(
+      `SELECT id, first_name, last_name, username, email, rank, profile_picture, bio, created_at, last_login 
+       FROM users 
+       WHERE username = $1`,
+      [username]
+    );
+
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    try {
+      const badges = await db.query(
+        `SELECT badges.name AS badge_name, 
+          badges.description AS badge_description
+          FROM badges
+          LEFT JOIN users_to_badges ON badges.trophy_id = users_to_badges.trophy_id
+          WHERE users_to_badges.user_id = $1;`,
+        [user.id]
+      );
+
+      res.render('pages/profile', { user, badges, my_user: req.session.user });
+    } catch (err) {
+      console.error('Failed to load badges:', err.stack);
+      res.status(500).send('Error retrieving badges');
+    }
+
+  } catch (err) {
+    console.error('Error fetching user data:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 app.get("/settings", auth, (req, res) => {
   let = isAdmin = false;
-     if (req.session.user) {
-       isAdmin = req.session.user.rank == 'admin';
-     }
+  if (req.session.user) {
+    isAdmin = req.session.user.rank == 'admin';
+  }
   res.render("pages/settings", {
     isAdmin: isAdmin
   });
@@ -1271,7 +1381,7 @@ app.post('/settings/update-password', auth, async (req, res) => {
     return res.status(400).json({ message: 'User is not logged in or session expired.' });
   }
 
-  if (!(user && (await bcrypt.compare(oldPassword, user.password)))){
+  if (!(user && (await bcrypt.compare(oldPassword, user.password)))) {
     return res.status(400).json({ message: 'Old password does not match current password' });
   }
 

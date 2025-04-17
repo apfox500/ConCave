@@ -1,0 +1,12 @@
+4/14 TA Meeting Notes
+Tucker - Worked on fully finishing up the Cave, along with other things: bug fixes, things show up properly now, also added each associated convention now includes a link, added a character limit, added image upload
+Liam - Worked on groups, with bug fixes. Wants to start looking into a color scheme, making the website look good. Wants to make it so that you can view other people’s profiles. 
+Andrew - Helped with integrating things and bugs, you can now click a username and it'll go to their profile page, you can now click on their name and start a message with them, wants to look into maybe a group chat, and making sure the website fully works
+Daniel - Finished a profile page, it displays all information about the user, can also change information in the settings page, such as name, email, bio, and password, can also delete the account. If admin can manage users, such as give ranks, and delete the user, also implement badges that are dynamically added to the profile page. Next will refine the UI and any bug fixes.
+Make sure to discuss about UI and making sure all the color schemes look good
+Leon - Finished up reviews, implemented a sorting system, general fixes to the database as discussed last meeting, didn't have a lot of dummy data, so added a lot of dummy data in the insert.sql, next week we want to implement image uploads with profile pictures, working with Daniel to add more UI with more badges, maybe add an image that can be displayed on their profile, continue working on reviews page
+Everything is dynamically added, as far as we are concerned
+Michael - FInished up cave functionality, inputting the search in the cave, couple bug fixes with searching for conventions, upcoming week, help with any UI stuff to make website look good
+Make sure everything is divided enough so that everyone has something to work on
+Billy - Changed the merch items, not they are cards, rather than lists, now redirects you to the person selling it if you wanna message, still wants to do the upload image functionality, make the website look good as well. 
+Final notes: Make sure all the necessary functionalities are good (login page, register page, etc.), no bugs, could make us lose points for no reason, deployment is this week, hosting the website, we probably will deploy it this week, our website is in good shape. Likely better to do functionality first and then UI, so we will now work on UI, ensure it is consistent across all pages, start making a google slides now for our presentation

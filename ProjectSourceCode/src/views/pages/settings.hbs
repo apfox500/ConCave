@@ -1,61 +1,71 @@
-<!-- Settings for changing info -->
-{{#if message}}
+<div class="mb-4">
+    <!-- Settings for changing info -->
+    {{#if message}}
     <div class="alert alert-danger mt-3">{{message}}</div>
-{{/if}}
-<div class="card mb-4 shadow-sm">
-    <form id="changeProfileInformation">
-        <div class="card-body">
-            <h5 class="card-title mb-4 text-center">Update Profile Information</h5>
-            <div class="form-group">
-                <label for="firstName">First Name</label>
-                <input type="text" class="form-control" id="firstName" placeholder="Enter your first name">
-            </div>
-            <div class="form-group">
-                <label for="lastName">Last Name</label>
-                <input type="text" class="form-control" id="lastName" placeholder="Enter your last name">
-            </div>
-            <div class="form-group">
-                <label for="newEmail">Email</label>
-                <input type="email" class="form-control" id="newEmail" placeholder="Enter your new email">
-            </div>
-            <button type="submit" class="btn btn-primary btn-block mt-3">Update Profile</button>
-        </div>
-    </form>
-</div>
+    {{/if}}
+    <div class="mb-2 d-flex justify-content-between align-items-center">
+        <p></p>
+        <a href="/profile" class="btn btn-secondary">Back to Profile</a>
+    </div>
 
-<div class="card mb-4 shadow-sm">
-    <form id="changeBio">
-        <div class="card-body">
-            <h5 class="card-title mb-4 text-center">Update Bio</h5>
-            <div class="form-group">
-                <textarea class="form-control" id="bio" name="bio" rows="4" placeholder="Write a short bio" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block mt-3">Update Bio</button>
-        </div>
-    </form>
-</div>
+    <div class="card mb-4 shadow-sm">
+        <form id="changeProfileInformation">
+            <div class="card-body">
+                <h5 class="card-title mb-4 text-center">Update Profile Information</h5>
 
-<div class="card mb-4 shadow-sm">
-    <form id="changePassword">
-        <div class="card-body">
-            <h5 class="card-title mb-4 text-center">Change Password</h5>
-            <div class="form-group">
-                <label for="lastName">Old Password</label>
-                <input type="password" class="form-control" id="oldPassword">
-                <label for="lastName">New Password</label> 
-                <input type="password" class="form-control" id="newPassword">
-                <label for="lastName">Re-enter your new password</label>
-                <input type="password" class="form-control" id="reNewPassword">             
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" class="form-control" id="firstName" placeholder="Enter your first name">
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" class="form-control" id="lastName" placeholder="Enter your last name">
+                </div>
+                <div class="form-group">
+                    <label for="newEmail">Email</label>
+                    <input type="email" class="form-control" id="newEmail" placeholder="Enter your new email">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block mt-3">Update Profile</button>
             </div>
-            <button type="submit" class="btn btn-primary btn-block mt-3">Change Password</button>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 
-<button id="deleteAccountBtn" class="btn btn-danger">Delete My Account</button>
-{{#if isAdmin}}
+    <div class="card mb-4 shadow-sm">
+        <form id="changeBio">
+            <div class="card-body">
+                <h5 class="card-title mb-4 text-center">Update Bio</h5>
+                <div class="form-group">
+                    <textarea class="form-control" id="bio" name="bio" rows="4" placeholder="Write a short bio"
+                        required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block mt-3">Update Bio</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <form id="changePassword">
+            <div class="card-body">
+                <h5 class="card-title mb-4 text-center">Change Password</h5>
+                <div class="form-group">
+                    <label for="lastName">Old Password</label>
+                    <input type="password" class="form-control" id="oldPassword">
+                    <label for="lastName">New Password</label>
+                    <input type="password" class="form-control" id="newPassword">
+                    <label for="lastName">Re-enter your new password</label>
+                    <input type="password" class="form-control" id="reNewPassword">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block mt-3">Change Password</button>
+            </div>
+        </form>
+    </div>
+
+    <button id="deleteAccountBtn" class="btn btn-danger">Delete My Account</button>
+    {{#if isAdmin}}
     <a href="/adminSettings" class="btn btn-danger">Manage Other Accounts</a>
-{{/if}}
+    {{/if}}
+
+</div>
 
 <script>
     document.getElementById('changeProfileInformation').addEventListener('submit', async function (e) {
@@ -161,20 +171,20 @@
 
         if (confirm("Are you absolutely sure you want to delete your account? This action is irreversible.")) {
             try {
-            const response = await fetch('/settings/delete-profile', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json' 
+                const response = await fetch('/settings/delete-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
                     }
-            });
+                });
 
-            alert(response.ok);
-            if (response.ok) {
-                window.location.href = '/login';
-            }
+                alert(response.ok);
+                if (response.ok) {
+                    window.location.href = '/login';
+                }
             } catch (err) {
-            console.error(err);
-            alert("An error occurred while deleting your account.");
+                console.error(err);
+                alert("An error occurred while deleting your account.");
             }
         }
     });
