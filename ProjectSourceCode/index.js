@@ -56,8 +56,8 @@ const hbs = handlebars.create({
 
 // database configuration
 const dbConfig = {
-  host: 'db', // the database server
-  port: 5432, // the database port
+  host: process.env.POSTGRES_HOST, // the database server
+  port: process.env.POSTGRES_PORT, // the database port
   database: process.env.POSTGRES_DB, // the database name
   user: process.env.POSTGRES_USER, // the user account to connect with
   password: process.env.POSTGRES_PASSWORD, // the password of the user account
@@ -172,7 +172,7 @@ app.get('/conventions/:id', async (req, res) => {
       TO_CHAR(c.end_date, 'Mon DD YYYY') AS formatted_end_date 
       FROM conventions c 
       WHERE c.id = ${conventionId}`);
-      const reviews = await db.any(`
+    const reviews = await db.any(`
       SELECT r.*, u.username,
       TO_CHAR(r.time_sent, 'Mon DD YYYY HH24:MI') AS formatted_time
       FROM reviews r
@@ -273,7 +273,7 @@ app.get('/cave', async (req, res) => {
       GROUP BY tunnels.id, users.username, conventions.name
       ORDER BY ${orderBy}
     `, [userId]);
-      
+
     tunnels.forEach(tunnel => {
       tunnel.images = imageList[tunnel.id] || [];
     });
@@ -328,7 +328,7 @@ app.get('/cave/:id', async (req, res) => {
     userId = req.session.user.id;
   }
   const tunnelId = req.params.id;
-  
+
 
   try {
     const images = await db.any('SELECT image_path FROM tunnel_images WHERE tunnel_id = $1', [tunnelId]);
@@ -357,7 +357,7 @@ app.get('/cave/:id', async (req, res) => {
       ORDER BY replies.created_at ASC
     `, [userId, tunnelId]);
 
-      tunnel.images = images
+    tunnel.images = images
 
     res.render('pages/tunnel', {
       tunnel,
@@ -912,11 +912,11 @@ app.get('/conventions/:id/groups', async (req, res) => {
     const enhancedGroups = groups.map(group => {
       group.ownedByUser = req.session.user && (group.created_by === req.session.user.id);
 
-      group.isMember = false; 
+      group.isMember = false;
       if (req.session.user && group.member_usernames) {
         group.isMember = group.member_usernames.includes(req.session.user.username);
       }
-      
+
       return group;
     });
     res.render('pages/groups', { convention, groups: enhancedGroups });
