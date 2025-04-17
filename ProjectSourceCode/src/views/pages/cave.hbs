@@ -1,6 +1,4 @@
-<div>
-    <h1 class="mb-4" style="text-align: left;">The Cave</h1>
-</div>
+
 
 <div class="d-flex align-items-center flex-grow-1">
     <form id="search-form" class="d-flex w-100" style="max-width: 300px;">
@@ -19,7 +17,7 @@
     <!-- Create Tunnel Form -->
     <div id="tunnel-form" class="border rounded p-4 d-none">
         <h4>Dig your Tunnel</h4>
-        <form action="/cave" method="POST">
+        <form action="/cave" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="tunnel-title" class="form-label">Tunnel Name</label>
                 <input type="text" class="form-control" id="tunnel-title" name="title"
@@ -36,8 +34,14 @@
             </div>
             <div class="mb-3">
                 <label for="tunnel-message" class="form-label">Message</label>
-                <textarea class="form-control" id="tunnel-message" rows="5" name="message"
-                    placeholder="Write your message..."></textarea>
+                <textarea class="form-control" id="tunnel-message" rows="5" name="message" placeholder="Write your message..." maxlength="10000"></textarea>
+                <small id="char-count" class="form-text text-muted">0 / 10000 characters</small>
+
+            </div>
+            <div class="mb-3">
+                <label for="images" class="form-label">Upload Images (max 5)</label>
+                <input type="file" name="images" id="images" class="form-control" multiple accept="image/*" max="5">
+                <small class="text-muted">You can select up to 5 images.</small>
             </div>
             <button type="submit" class="btn btn-success me-2">Create</button>
             <button type="button" class="btn btn-secondary" id="cancel">Cancel</button>
@@ -75,10 +79,21 @@
                 </form> on <span class="localized-date" data-date="{{this.created_at}}"></span></small>
             {{#if this.convention_name}}
             <p class="text-muted mb-1">
-                <i class="bi bi-calendar-event"></i> {{this.convention_name}}
+                <i class="bi bi-calendar-event"></i> 
+                <a href="/conventions/{{this.convention_id}}" class="text-decoration-none text-muted"> {{this.convention_name}}</a>
             </p>
             {{/if}}
-            <p>{{this.message}}</p>
+            <div class="tunnel-message-container">
+                <p class="tunnel-message collapsed">{{this.message}}</p>
+                <button type="button" class="btn btn-sm btn-link p-0 show-more-toggle">Show more</button>
+            </div>
+            <div class="row g-2 mt-2">
+            {{#each this.images}}
+                <div class="col-auto">
+                <img src="{{this.image_path}}" alt="Tunnel image" class="img-thumbnail" style="max-width: 120px;">
+                </div>
+            {{/each}}
+            </div>
             <form action="/like/tunnel/{{this.id}}" method="POST" class="d-inline">
                 <input type="hidden" name="redirectTo" value="/cave">
                 <button class="btn btn-link p-0" type="submit">
@@ -118,8 +133,50 @@
     }
 </script>
 
-<!-- ChatGPT generated localized date display -->
+<!-- Dig Tunnel Char Count Script -->
 <script>
+  const textarea = document.getElementById('tunnel-message');
+  const counter = document.getElementById('char-count');
+
+  textarea.addEventListener('input', () => {
+    counter.textContent = `${textarea.value.length} / 10000 characters`;
+  });
+</script>
+
+<!-- Show More / Show Less Script -->
+<script>
+  document.querySelectorAll('.tunnel-message-container').forEach(container => {
+    const message = container.querySelector('.tunnel-message');
+    const button = container.querySelector('.show-more-toggle');
+
+    const charLimit = 500;
+    const actualLength = message.textContent.trim().length;
+
+    if (actualLength <= charLimit) {
+      button.style.display = 'none';
+    }
+
+    button.addEventListener('click', () => {
+      const isCollapsed = message.classList.contains('collapsed');
+      message.classList.toggle('collapsed');
+      button.textContent = isCollapsed ? 'Show less' : 'Show more';
+    });
+  });
+</script>
+
+<!-- Max Of 5 Images Script -->
+<script>
+  document.getElementById('images').addEventListener('change', function (event) {
+    if (this.files.length > 5) {
+      alert('You can only upload up to 5 images!');
+      this.value = '';
+    }
+  });
+</script>
+
+
+<script>
+    <!-- START OF ChatGPT generated localized date display -->
     document.querySelectorAll('.localized-date').forEach(el => {
         const rawDate = el.dataset.date;
         const local = new Date(rawDate);
@@ -136,6 +193,8 @@
 
         el.textContent = formatted;
     });
+    <!-- END OF ChatGPT generated localized date display -->
+
     document.addEventListener("DOMContentLoaded", () => {
         const searchForm = document.getElementById('search-form');
         const searchInput = document.getElementById('search-bar');
