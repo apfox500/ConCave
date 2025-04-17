@@ -279,7 +279,7 @@ app.get('/cave', async (req, res) => {
     });
 
     res.render('pages/cave', {
-      title: 'ConCave',
+      title: 'ConCave: The Cave',
       tunnels: tunnels,
       conventions: conventions,
       isUser: userId != -1,
@@ -360,6 +360,7 @@ app.get('/cave/:id', async (req, res) => {
     tunnel.images = images
 
     res.render('pages/tunnel', {
+      title: "ConCave: The Cave",
       tunnel,
       replies,
       isUser: userId != -1
@@ -374,13 +375,14 @@ app.get('/cave/:id', async (req, res) => {
 // <!-- Section 4.1 : Login/Register -->
 // *************************************
 app.get("/register", (req, res) => {
-  res.render("pages/register");
+  res.render("pages/register", { title: "ConCave: Register" });
 });
 
 app.post("/register", async (req, res) => {
   try {
     if (req.body.password !== req.body.confirmPassword) {
       return res.render("pages/register", {
+        title: "ConCave: Register",
         error: "Passwords do not match.",
         formData: req.body
       });
@@ -394,6 +396,7 @@ app.post("/register", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.render("pages/register", {
+      title: "ConCave: Register",
       error: "Could not create user. Maybe username or email is taken?",
       formData: req.body
     });
@@ -415,11 +418,11 @@ app.post("/login", async (req, res) => {
       await req.session.save();
       res.redirect("/");
     } else {
-      res.render("pages/login", { error: "Incorrect username or password." });
+      res.render("pages/login", { title: "ConCave: Login", error: "Incorrect username or password." });
     }
   } catch (error) {
     console.log(error);
-    res.render("pages/login", { error: "Error logging in." });
+    res.render("pages/login", { title: "ConCave: Login", error: "Error logging in." });
   }
 });
 
@@ -734,6 +737,7 @@ async function fetchConversations(req, res, message = null, error = null) {
     .then(conversations => {
       console.log("Conversations found");
       res.render('pages/im', {
+        title: "ConCave: Messages",
         conversations: conversations,
         message: message,
         error: error
@@ -742,6 +746,7 @@ async function fetchConversations(req, res, message = null, error = null) {
     .catch(error => {
       console.log("Error fetching conversations:", error);
       res.render('pages/im', {
+        title: "ConCave: Messages",
         message: "Could not load conversations.",
         error: true
       });
@@ -769,6 +774,7 @@ app.get('/im', async (req, res) => {
 
       //now we render the page
       res.render('pages/im', {
+        title: "ConCave: Messages",
         other_user: otherUser,
         messages: messages,
         conv_exists: true,
@@ -776,6 +782,7 @@ app.get('/im', async (req, res) => {
       });
     } catch (error) {
       res.render('pages/im', {
+        title: "ConCave: Messages",
         message: "Could not load messages or user info.",
         error: true
       });
@@ -824,6 +831,7 @@ app.post('/im', async (req, res) => {
 
     // Render the updated conversation
     res.render('pages/im', {
+      title: "ConCave: Messages",
       other_user: otherUser,
       messages: messages,
       conv_exists: true,
@@ -832,6 +840,7 @@ app.post('/im', async (req, res) => {
   } catch (error) {
     console.log("Error adding message:", error);
     res.render('pages/im', {
+      title: "ConCave: Messages",
       message: "Could not send message.",
       error: true
     });
@@ -878,6 +887,7 @@ app.post('/im/create', async (req, res) => {
   } catch (error) {
     console.log("Error creating conversation:", error);
     res.render('pages/im', {
+      title: "ConCave: Login",
       message: "Could not create conversation.",
       error: true
     });
@@ -919,7 +929,7 @@ app.get('/conventions/:id/groups', async (req, res) => {
 
       return group;
     });
-    res.render('pages/groups', { convention, groups: enhancedGroups });
+    res.render('pages/groups', { title: "ConCave", convention, groups: enhancedGroups });
   } catch (error) {
     console.log(error);
     res.status(500).send('Error fetching groups');
@@ -1242,7 +1252,7 @@ app.get('/profile', auth, async (req, res) => {
       [req.session.user.id]
     );
 
-    res.render('pages/profile', { badges });
+    res.render('pages/profile', { title: "Profile", badges });
   } catch (err) {
     console.error('Failed to load badges:', err.stack);
     res.status(500).send('Error retrieving badges');
@@ -1275,7 +1285,7 @@ app.post('/profile', auth, async (req, res) => {
         [user.id]
       );
 
-      res.render('pages/profile', { user, badges, my_user: req.session.user });
+      res.render('pages/profile', { title: "ConCave: Profile", user, badges, my_user: req.session.user });
     } catch (err) {
       console.error('Failed to load badges:', err.stack);
       res.status(500).send('Error retrieving badges');
@@ -1293,6 +1303,7 @@ app.get("/settings", auth, (req, res) => {
     isAdmin = req.session.user.rank == 'admin';
   }
   res.render("pages/settings", {
+    title: "ConCave: Settings",
     isAdmin: isAdmin
   });
 });
@@ -1480,6 +1491,7 @@ app.post('/settings/delete-profile', auth, async (req, res) => {
 app.get("/adminSettings", auth, async (req, res) => {
   const users = await db.any('SELECT * FROM users ORDER BY username ASC');
   res.render("pages/adminSettings", {
+    title: "ConCave: Settings",
     users,
   });
 });
