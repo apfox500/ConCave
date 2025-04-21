@@ -201,6 +201,27 @@ INSERT INTO merchandise (name, price, description, details, image_url) VALUES
     ARRAY['100% Cotton', 'Available in S, M, L, XL', 'Machine washable', 'Unisex design'],
     'https://www.midtowncomics.com/images/PRODUCT/XL/2353226_xl.jpg');
 
+   INSERT INTO merchandise (name, price, description, details, image_url) VALUES
+    ('Replica Captain America Shield', 49.99, 'Metal Replica Captain America Shield', 
+    ARRAY['Aluminum Alloy', '26 inch diameter'],
+    'https://i.ebayimg.com/images/g/LtEAAOSwQ6djmJxq/s-l1200.png'),
+
+    ('Bleach Ichigo Figure', 79.99, 'TYBW True Shikai Ichigo Figure', 
+        ARRAY['Plastic', 'Posable', '6.1 inches Tall', 'Comes with both swords'],
+        'https://m.media-amazon.com/images/I/71ggIzSvwDL.jpg'),
+
+    ('One Piece Luffytaro Figure', 39.99, 'Wano Luffytaro Figure', 
+        ARRAY['Plastic', 'Posable', '5.9 Inches Tall', 'Comes with sword'],
+        'https://m.media-amazon.com/images/I/617BLYwERHL.jpg'),
+
+    ('Future Gohan Figure', 39.99, 'Cell Saga Future Gohan Figure', 
+        ARRAY['Plastic', 'Posable', '6.1 Inches Tall'],
+        'https://m.media-amazon.com/images/I/518RaS2NSUL.jpg'),
+
+    ('Naruto Village Headband', 39.99, 'Naruto Hidden Leaf Village Ninja Headband', 
+        ARRAY['100% Cottan', 'Fits all', 'Machine Washable'],
+        'https://i.etsystatic.com/50669206/r/il/2c9aaf/6422235079/il_fullxfull.6422235079_aq4y.jpg');
+
 INSERT INTO user_merchandise (username, merchandise_id) VALUES
     ('aldo1344', 1),
     ('mita3679', 2),
@@ -208,4 +229,9 @@ INSERT INTO user_merchandise (username, merchandise_id) VALUES
     ('aldo1344', 4),
     ('isth8504', 5),
     ('luja4128', 6),
-    ('soda7632', 7);
+    ('soda7632', 7),
+    ('alta5678', 8),
+    ('ewil1987', 9),
+    ('olma7845', 10),
+    ('olma7845', 11),
+    ('ewil1987', 12);
