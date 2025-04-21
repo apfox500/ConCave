@@ -173,18 +173,39 @@ INSERT INTO groups (convention_id, name, description, created_by) VALUES
 (7, 'East Coast Cosplay Collective', 'For veteran and rookie cosplayers alike. Let’s shine at NYCC together!', 15);
 
 INSERT INTO merchandise (name, price, description, details, image_url) VALUES
-('Batman T-Shirt', 19.99, 'Comfortable Batman t-shirt', 
-ARRAY['100% Cotton', 'Available in S, M, L, XL', 'Machine washable', 'Unisex design'],
-'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcThYqWhMKBA-vsC8Zil0DMPHrLMk9nQQ7_ZLWBjcGmLLLa2zoY5BwBMYGMfBXy4Ws5oidB2Zh5in_ur9n6E1952HvadcQXTnLRYJuM9vsL9cUofXqQG5DCh'),
-('Superman Poster', 15.99, 'High-quality Superman movie poster', 
-ARRAY['18x24 inches', 'Glossy finish', 'Ships in protective tube', 'Limited edition'],
-'https://i.ebayimg.com/images/g/SHUAAOSwxb1nYF3J/s-l400.jpg'),
-('Spiderman T-Shirt', 19.99, 'Comfortable cotton spiderman t-shirt', 
-ARRAY['100% Cotton', 'Available in S, M, L, XL', 'Machine washable', 'Unisex design'],
-'https://m.media-amazon.com/images/I/B1pppR4gVKL._CLa%7C2140%2C2000%7C71Rm9Itk9rL.png%7C0%2C0%2C2140%2C2000%2B0.0%2C0.0%2C2140.0%2C2000.0_AC_UY1000_.png'),
-('Spiderman Poster', 15.99, 'High-quality Spiderman movie poster', 
-ARRAY['18x24 inches', 'Glossy finish', 'Ships in protective tube', 'Limited edition'],
-'https://filmartgallery.com/cdn/shop/products/Spider-Man-Vintage-Movie-Poster-Original_fc6bb063.jpg?v=1741737243');
+    ('Batman T-Shirt', 19.99, 'Comfortable Batman t-shirt', 
+    ARRAY['100% Cotton', 'Available in S, M, L, XL', 'Machine washable', 'Unisex design'],
+    'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcThYqWhMKBA-vsC8Zil0DMPHrLMk9nQQ7_ZLWBjcGmLLLa2zoY5BwBMYGMfBXy4Ws5oidB2Zh5in_ur9n6E1952HvadcQXTnLRYJuM9vsL9cUofXqQG5DCh'),
 
-INSERT INTO user_merchandise (user_id, merchandise_id) 
-SELECT 1, id FROM merchandise;
+    ('Superman Poster', 15.99, 'High-quality Superman movie poster', 
+    ARRAY['18x24 inches', 'Glossy finish', 'Ships in protective tube', 'Limited edition'],
+    'https://i.ebayimg.com/images/g/SHUAAOSwxb1nYF3J/s-l400.jpg'),
+
+    ('Spiderman T-Shirt', 19.99, 'Comfortable cotton spiderman t-shirt', 
+    ARRAY['100% Cotton', 'Available in S, M, L, XL', 'Machine washable', 'Unisex design'],
+    'https://m.media-amazon.com/images/I/B1pppR4gVKL._CLa%7C2140%2C2000%7C71Rm9Itk9rL.png%7C0%2C0%2C2140%2C2000%2B0.0%2C0.0%2C2140.0%2C2000.0_AC_UY1000_.png'),
+
+    ('Spiderman Poster', 15.99, 'High-quality Spiderman movie poster', 
+    ARRAY['18x24 inches', 'Glossy finish', 'Ships in protective tube', 'Limited edition'],
+    'https://filmartgallery.com/cdn/shop/products/Spider-Man-Vintage-Movie-Poster-Original_fc6bb063.jpg?v=1741737243'),
+
+    ('Marvel Avengers Hat', 25.00, 'Comfortable Avengers Logo Hat', 
+    ARRAY['100% Cotton', 'Available in S, M, L, XL', 'Machine washable', 'Unisex design'],
+    'https://m.media-amazon.com/images/I/817+FA-QZsL._AC_UY1000_.jpg'),
+    
+    ('Absolute Flash #1 Poster', 15.99, 'High-quality Flash comic poster', 
+    ARRAY['18x24 inches', 'Matte finish', 'Ships in protective tube', 'Limited edition'],
+    'https://bigtimecollectibles.com/cdn/shop/files/0125DC058.jpg?v=1740366731'),
+
+    ('Absolute Wonder Woman #1 Poster', 15.99, 'High-quality Wonder Woman poster', 
+    ARRAY['100% Cotton', 'Available in S, M, L, XL', 'Machine washable', 'Unisex design'],
+    'https://www.midtowncomics.com/images/PRODUCT/XL/2353226_xl.jpg');
+
+INSERT INTO user_merchandise (username, merchandise_id) VALUES
+    ('u1', 1),
+    ('u1', 2),
+    ('u1', 3),
+    ('u1', 4),
+    ('u2', 5),
+    ('u2', 6),
+    ('u2', 7);

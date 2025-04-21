@@ -1,105 +1,244 @@
-<div class="container mt-4">
-    <h2>Convention Merchandise</h2>
+<div class="mt-4">
+    <h2 class="text-center mb-4">Convention Merchandise</h2>
     
-    {{#if user}}
-    <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addMerchModal">
-        Add New Merchandise
-    </button>
-    {{/if}}
-
-    {{#if message}}
-    <div class="alert {{#if error}}alert-danger{{else}}alert-success{{/if}} alert-dismissible fade show" role="alert">
-        {{message}}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {{/if}}
-    
-    <div class="list-group mt-4">
-        {{#each merchandise}}
-        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#merchModal{{id}}">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">{{name}}</h5>
-                <small>${{price}}</small>
-            </div>
-            <p class="mb-1">{{description}}</p>
-        </a>
-        {{/each}}
-    </div>
-
-    {{#each merchandise}}
-    <div class="modal fade" id="merchModal{{id}}">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{name}}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="container-fluid" style="max-width: 1200px;">
+        <div class="row mb-4">
+            <div class="d-flex justify-content-center align-items-center">
+                {{#if user}}
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMerchModal">
+                        Post Item
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <img src="{{image_url}}" class="img-fluid mb-3" alt="{{name}}">
-                    <h6>Price: ${{price}}</h6>
-                    <p>{{description}}</p>
-                    <ul>
-                        {{#each details}}
-                        <li>{{this}}</li>
-                        {{/each}}
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    {{#if ../user}}
-                        {{#if is_creator}}
-                        <form action="/merch/delete/{{id}}" method="POST" style="display: inline;">
-                            <button type="submit" class="btn btn-danger">Delete Listing</button>
-                        </form>
-                        {{/if}}
-                        <button type="button" class="btn btn-primary">Purchase</button>
-                    {{/if}}
-                </div>
+                {{/if}}
             </div>
         </div>
-    </div>
-    {{/each}}
 
-    <div class="modal fade" id="addMerchModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Merchandise</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        {{#if message}}
+        <div class="alert {{#if error}}alert-danger{{else}}alert-success{{/if}} alert-dismissible fade show" role="alert">
+            {{message}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {{/if}}
+        
+        <div class="merch-grid" id="merchContainer">
+            {{#each merchandise}}
+            <div class="merch-card" data-name="{{name}}">
+                <div class="merch-image-container">
+                    <img src="{{image_url}}" class="merch-image" alt="{{name}}">
+                    <div class="merch-price-overlay">Price: ${{price}}</div>
                 </div>
-                <form action="/merch" method="POST">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Item Name</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="price" class="form-label">Price ($)</label>
-                            <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="image_url" class="form-label">Image URL</label>
-                            <input type="url" class="form-control" id="image_url" name="image_url" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="details" class="form-label">Details (comma-separated)</label>
-                            <textarea class="form-control" id="details" name="details" rows="3" required></textarea>
-                        </div>
+                <div class="merch-card-body">
+                    <div class="merch-button-container">
+                        <button class="btn btn-secondary merch-button more-info" data-name="{{name}}" data-description="{{description}}" data-price="{{price}}" data-details="{{details}}">More Info</button>
+                        {{#if ../user}}
+                            {{#if is_creator}}
+                                <form action="/merch/delete/{{id}}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger merch-button">Delete Listing</button>
+                                </form>
+                            {{else}}
+                                <form action="/im/create" method="POST" style="display: inline;">
+                                    <input type="hidden" name="username" value="{{creator_username}}">
+                                    <button type="submit" class="btn btn-primary merch-button">Contact Seller</button>
+                                </form>
+                            {{/if}}
+                        {{/if}}
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Add Merchandise</button>
-                    </div>
-                </form>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="infoModalLabel">Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 id="modalItemName"></h6>
+                <p id="modalItemDescription"></p>
+                <p><strong>Price:</strong> $<span id="modalItemPrice"></span></p>
+                <p><strong>Details:</strong> <span id="modalItemDetails"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="addMerchModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Merchandise</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/merch" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Item Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price ($)</label>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Image</label>
+                        <div class="d-flex gap-2 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="imageType" id="urlType" value="url" checked>
+                                <label class="form-check-label" for="urlType">
+                                    Use URL
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="imageType" id="uploadType" value="upload">
+                                <label class="form-check-label" for="uploadType">
+                                    Upload File
+                                </label>
+                            </div>
+                        </div>
+                        <div id="urlInput">
+                            <input type="url" class="form-control" id="image_url" name="image_url" placeholder="Enter image URL">
+                        </div>
+                        <div id="fileInput" style="display: none;">
+                            <input type="file" class="form-control" id="image_upload" name="image_upload" accept="image/*">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="details" class="form-label">Details (comma-separated)</label>
+                        <textarea class="form-control" id="details" name="details" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Add Merchandise</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.merch-grid {
+    columns: 4;
+    column-gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+    column-fill: balance;
+}
+
+.merch-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    background-color: white;
+    margin-bottom: 16px;
+    display: inline-block;
+    width: 100%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.merch-image-container {
+    position: relative;
+    width: 100%;
+}
+
+.merch-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.merch-price-overlay {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.merch-card-body {
+    padding: 10px;
+}
+
+.merch-button-container {
+    display: flex;
+    gap: 10px;
+    padding: 0 5px 5px 5px;
+}
+
+.merch-button {
+    flex: 1;
+}
+
+@media screen and (max-width: 1200px) {
+    .merch-grid {
+        columns: 3;
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .merch-grid {
+        columns: 2;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .merch-grid {
+        columns: 1;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.more-info').forEach(btn => 
+        btn.addEventListener('click', () => {
+            const modal = new bootstrap.Modal(document.getElementById('infoModal'));
+            ['name', 'description', 'price', 'details'].forEach(attr => 
+                document.getElementById(`modalItem${attr.charAt(0).toUpperCase() + attr.slice(1)}`).innerText = 
+                    btn.getAttribute(`data-${attr}`)
+            );
+            modal.show();
+        })
+    );
+    if (document.getElementById('urlType')) {
+        const inputs = {
+            url: document.getElementById('urlInput'),
+            file: document.getElementById('fileInput'),
+            urlField: document.getElementById('image_url'),
+            fileField: document.getElementById('image_upload')
+        };
+
+        ['urlType', 'uploadType'].forEach(type => 
+            document.getElementById(type).addEventListener('change', () => {
+                const isUrl = document.getElementById('urlType').checked;
+                inputs.url.style.display = isUrl ? 'block' : 'none';
+                inputs.file.style.display = isUrl ? 'none' : 'block';
+                inputs.urlField.required = isUrl;
+                inputs.fileField.required = !isUrl;
+                inputs[isUrl ? 'fileField' : 'urlField'].value = '';
+            })
+        );
+    }
+});
+</script>

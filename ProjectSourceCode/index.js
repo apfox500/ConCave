@@ -1127,112 +1127,66 @@ app.post('/submit_review', auth, async (req, res) => {
 
 app.get('/merch', async (req, res) => {
   try {
-    let merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+      let merchandise = await db.any(`
+          SELECT m.*, um.username as creator_username 
+          FROM merchandise m 
+          LEFT JOIN user_merchandise um ON m.id = um.merchandise_id 
+          ORDER BY m.id
+      `);
 
+      if (req.session.user) {
+          merchandise = merchandise.map(item => ({
+              ...item,
+              is_creator: item.creator_username === req.session.user.username
+          }));
+      }
 
-    if (req.session.user) {
-      const userMerchandise = await db.any(
-        'SELECT merchandise_id FROM user_merchandise WHERE user_id = $1',
-        [req.session.user.id]
-      );
-
-      merchandise = merchandise.map(item => {
-        return {
-          ...item,
-          is_creator: userMerchandise.some(um => um.merchandise_id === item.id)
-        };
-      });
-    }
-
-    res.render('pages/merch', {
-      title: 'Merchandise',
-      message: '',
-      merchandise: merchandise,
-      user: req.session.user
-    });
+      res.render('pages/merch', { title: 'Merchandise', merchandise, user: req.session.user });
   } catch (error) {
-    console.error(error);
-    res.render('pages/merch', {
-      title: 'Merchandise',
-      message: 'Error loading merchandise',
-      merchandise: [],
-      user: req.session.user
-    });
+      res.render('pages/merch', { title: 'Merchandise', message: 'Error loading merchandise', error: true });
   }
 });
 
-app.post('/merch', async (req, res) => {
+app.post('/merch', upload.single('image_upload'), async (req, res) => {
   try {
-    if (!req.session.user) {
-      return res.redirect('/login');
-    }
+      if (!req.session.user) return res.redirect('/login');
 
-    console.log('Received form data:', req.body);
-    const { name, price, description, image_url, details } = req.body;
-    const detailsArray = details.split(',').map(item => item.trim());
+      const { name, price, description, details, imageType, image_url } = req.body;
+      const finalImagePath = imageType === 'url' ? image_url : '/uploads/' + req.file.filename;
+      const detailsArray = details.split(',').map(item => item.trim());
 
-    await db.tx(async t => {
-      const result = await t.one(
-        'INSERT INTO merchandise (name, price, description, image_url, details) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-        [name, price, description, image_url, detailsArray]
-      );
+      await db.tx(async t => {
+          const result = await t.one(
+              'INSERT INTO merchandise (name, price, description, image_url, details) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+              [name, price, description, finalImagePath, detailsArray]
+          );
+          await t.none(
+              'INSERT INTO user_merchandise (username, merchandise_id) VALUES ($1, $2)',
+              [req.session.user.username, result.id]
+          );
+      });
 
-      await t.none(
-        'INSERT INTO user_merchandise (user_id, merchandise_id) VALUES ($1, $2)',
-        [req.session.user.id, result.id]
-      );
-    });
-
-    res.redirect('/merch');
+      res.redirect('/merch');
   } catch (error) {
-    console.error('Error adding merchandise:', error);
-    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
-    res.render('pages/merch', {
-      title: 'Merchandise',
-      message: 'Error adding merchandise: ' + error.message,
-      merchandise: merchandise,
-      error: true,
-      user: req.session.user
-    });
+      res.render('pages/merch', { title: 'Merchandise', message: 'Error adding merchandise', error: true });
   }
 });
 
 app.post('/merch/delete/:id', async (req, res) => {
   try {
-    if (!req.session.user) {
-      return res.redirect('/login');
-    }
-
-    const merchandiseId = req.params.id;
-
-    const isCreator = await db.oneOrNone(
-      'SELECT * FROM user_merchandise WHERE user_id = $1 AND merchandise_id = $2',
-      [req.session.user.id, merchandiseId]
-    );
-
-    if (!isCreator) {
-      return res.render('pages/merch', {
-        title: 'Merchandise',
-        message: 'You do not have permission to delete this merchandise',
-        merchandise: await db.any('SELECT * FROM merchandise ORDER BY id'),
-        error: true,
-        user: req.session.user
-      });
-    }
-
-    await db.none('DELETE FROM merchandise WHERE id = $1', [merchandiseId]);
-
-    res.redirect('/merch');
+      if (!req.session.user) return res.redirect('/login');
+      
+      const isCreator = await db.oneOrNone(
+          'SELECT * FROM user_merchandise WHERE username = $1 AND merchandise_id = $2',
+          [req.session.user.username, req.params.id]
+      );
+ 
+      if (!isCreator) throw new Error('Unauthorized');
+      
+      await db.none('DELETE FROM merchandise WHERE id = $1', [req.params.id]);
+      res.redirect('/merch');
   } catch (error) {
-    console.error('Error deleting merchandise:', error);
-    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
-    res.render('pages/merch', {
-      title: 'Merchandise',
-      message: 'Error deleting merchandise: ' + error.message,
-      merchandise: merchandise,
-      error: true,
-      user: req.session.user
-    });
+      res.redirect('/merch');
   }
 });
 
@@ -1525,4 +1479,3 @@ app.post("/settings/deleteUser", auth, async (req, res) => {
 // starting the server and keeping the connection open to listen for more requests
 app.listen(3000);
 console.log('Server is listening on port 3000');
-
