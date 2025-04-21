@@ -623,11 +623,21 @@ const authorizeConventionHost = (req, res, next) => {
   next();
 };
 
-app.post("/conventions/add", authorizeConventionHost, async (req, res) => {
+app.post("/conventions/add", authorizeConventionHost, upload.single("image_upload"), async (req, res) => {
   try {
-    const { name, location, convention_center, convention_bio, convention_image, start_date, end_date } = req.body;
+    const { name, location, convention_center, convention_bio, image_url, start_date, end_date } = req.body;
+    const uploadedFile = req.file;
 
-    if (!name || !location || !convention_center || !convention_bio || !convention_image || !start_date || !end_date) {
+    let convention_image = "";
+    if (image_url && image_url.trim() !== "") {
+      convention_image = image_url.trim();
+    } else if (uploadedFile) {
+      convention_image = `/uploads/${uploadedFile.filename}`; // This path will be accessible if you serve /uploads
+    } else {
+      return res.status(400).json({ message: "An image is required (via URL or upload)" });
+    }
+
+    if (!name || !location || !convention_center || !convention_bio || !start_date || !end_date) {
       return res.status(400).json({ message: "All fields are required" });
     }
 

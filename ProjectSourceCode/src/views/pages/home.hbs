@@ -45,26 +45,25 @@
                                 <label class="form-label">Convention Image</label>
                                 <div class="d-flex gap-2 mb-2">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="imageType" id="imageUrlType" value="url" checked>
-                                        <label class="form-check-label" for="imageUrlType">
+                                        <input class="form-check-input" type="radio" name="imageType" id="urlType" value="url" checked>
+                                        <label class="form-check-label" for="urlType">
                                             Use URL
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="imageType" id="imageUploadType" value="upload">
-                                        <label class="form-check-label" for="imageUploadType">
+                                        <input class="form-check-input" type="radio" name="imageType" id="uploadType" value="upload">
+                                        <label class="form-check-label" for="uploadType">
                                             Upload File
                                         </label>
                                     </div>
                                 </div>
-                                <div id="conventionUrlInput">
-                                    <input type="url" class="form-control" id="conventionImageUrl" name="convention_image" placeholder="Enter image URL">
+                                <div id="urlInput">
+                                    <input type="url" class="form-control" id="image_url" name="image_url" placeholder="Enter image URL">
                                 </div>
-                                <div id="conventionFileInput" style="display: none;">
-                                    <input type="file" class="form-control" id="conventionImageUpload" name="convention_image_upload" accept="image/*">
+                                <div id="fileInput" style="display: none;">
+                                    <input type="file" class="form-control" id="image_upload" name="image_upload" accept="image/*">
                                 </div>
                             </div>
-                            <div class="mb-3">
                             <div class="mb-3">
                                 <label for="conventionStart" class="form-label">Start Date</label>
                                 <input type="date" class="form-control" id="conventionStart" required>
@@ -147,7 +146,22 @@
             const location = document.getElementById('conventionLocation').value;
             const convention_center = document.getElementById('conventionCenter').value;
             const convention_bio = document.getElementById('conventionBio').value;
-            const convention_image = document.getElementById('conventionImage').value;
+            let convention_image = '';
+            const useUrl = document.getElementById('urlType').checked;
+
+            if (useUrl) {
+                convention_image = document.getElementById('image_url').value;
+            } else {
+                const fileInput = document.getElementById('image_upload');
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    alert('File uploads are not currently supported directly in this code.');
+                    return;
+                } else {
+                    alert('Please select a file to upload.');
+                    return;
+                }
+            }
             const startDate = document.getElementById('conventionStart').value;
             const endDate = document.getElementById('conventionEnd').value;
 
@@ -230,27 +244,27 @@
                 }
             });
 
-            const urlType = document.getElementById('imageUrlType');
-            const uploadType = document.getElementById('imageUploadType');
-            const urlInputDiv = document.getElementById('conventionUrlInput');
-            const fileInputDiv = document.getElementById('conventionFileInput');
-            const urlField = document.getElementById('conventionImageUrl');
-            const fileField = document.getElementById('conventionImageUpload');
+            const urlRadio = document.getElementById('urlType');
+            const uploadRadio = document.getElementById('uploadType');
+            const urlInput = document.getElementById('urlInput');
+            const fileInput = document.getElementById('fileInput');
+            const imageUrlInput = document.getElementById('image_url');
+            const imageUploadInput = document.getElementById('image_upload');
 
-            if (urlType && uploadType) {
-                const toggleInputs = () => {
-                    const isUrl = urlType.checked;
-                    urlInputDiv.style.display = isUrl ? 'block' : 'none';
-                    fileInputDiv.style.display = isUrl ? 'none' : 'block';
-                    urlField.required = isUrl;
-                    fileField.required = !isUrl;
-                    (isUrl ? fileField : urlField).value = '';
-                };
-
-                urlType.addEventListener('change', toggleInputs);
-                uploadType.addEventListener('change', toggleInputs);
-
-                toggleInputs();
+            function toggleImageInputs() {
+                if (urlRadio.checked) {
+                urlInput.style.display = 'block';
+                fileInput.style.display = 'none';
+                imageUploadInput.value = '';
+                } else {
+                urlInput.style.display = 'none';
+                fileInput.style.display = 'block';
+                imageUrlInput.value = '';
+                }
             }
-        });
+
+            urlRadio.addEventListener('change', toggleImageInputs);
+            uploadRadio.addEventListener('change', toggleImageInputs);
+            toggleImageInputs();
+    });
 </script>
