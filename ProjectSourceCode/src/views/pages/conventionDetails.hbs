@@ -18,7 +18,7 @@
           Leave a Review on this Convention
         </button>
       </div>
-      <div class="card-header text-center">
+      <div class="card-header text-center text-dark">
         {{convention.name}}
       </div>
       <div class="card-body">
@@ -37,7 +37,17 @@
             <p><strong>End Date:</strong> {{convention.formatted_end_date}}</p>
           </div>
         </div>
-        <h4 class="mt-5">Reviews</h4>
+        <div class="d-flex justify-content-between align-items-center mt-5 mb-3">
+        <h4 class="mb-0">Reviews</h4>
+          <form method="GET" action="/conventions/{{convention.id}}" class="form-inline">
+            <select id="review-sort" class="form-control" name="sort" onchange="this.form.submit()">
+              <option value="highest" {{#if isHighest}}selected{{/if}}>Highest Rated</option>
+              <option value="lowest" {{#if isLowest}}selected{{/if}}>Lowest Rated</option>
+              <option value="newest" {{#if isNewest}}selected{{/if}}>Newest</option>
+              <option value="oldest" {{#if isOldest}}selected{{/if}}>Oldest</option>
+            </select>
+          </form>
+        </div>
         {{#if reviews.length}}
         {{#each reviews}}
         <div class="border rounded p-3 my-3 bg-white shadow-sm position-relative">

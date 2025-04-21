@@ -56,8 +56,8 @@ const hbs = handlebars.create({
 
 // database configuration
 const dbConfig = {
-  host: 'db', // the database server
-  port: 5432, // the database port
+  host: process.env.POSTGRES_HOST, // the database server
+  port: process.env.POSTGRES_PORT, // the database port
   database: process.env.POSTGRES_DB, // the database name
   user: process.env.POSTGRES_USER, // the user account to connect with
   password: process.env.POSTGRES_PASSWORD, // the password of the user account
@@ -146,6 +146,24 @@ app.get('/', async (req, res) => {
 
 app.get('/conventions/:id', async (req, res) => {
   const conventionId = req.params.id;
+  const sort = req.query.sort || 'highest';
+
+  let orderBy;
+  switch (sort) {
+    case 'newest':
+      orderBy = 'r.time_sent DESC';
+      break;
+    case 'oldest':
+      orderBy = 'r.time_sent ASC';
+      break;
+    case 'lowest':
+      orderBy = 'r.rating ASC';
+      break;
+    case 'highest':
+    default:
+      orderBy = 'r.rating DESC';
+      break;
+  }
 
   try {
     const convention = await db.one(`
@@ -160,13 +178,18 @@ app.get('/conventions/:id', async (req, res) => {
       FROM reviews r
       JOIN users u ON r.user_id = u.id
       WHERE r.convention_id = ${conventionId}
-      ORDER BY r.rating DESC
-      LIMIT 3`);
+      ORDER BY ${orderBy}
+      LIMIT 5`);
 
     res.render('pages/conventionDetails', {
       title: convention.name,
       convention,
       reviews,
+      sort,
+      isHighest: sort === 'highest',
+      isLowest: sort === 'lowest',
+      isNewest: sort === 'newest',
+      isOldest: sort === 'oldest',
     });
   } catch (error) {
     console.log('ERROR:', error.message || error);
@@ -250,13 +273,13 @@ app.get('/cave', async (req, res) => {
       GROUP BY tunnels.id, users.username, conventions.name
       ORDER BY ${orderBy}
     `, [userId]);
-      
+
     tunnels.forEach(tunnel => {
       tunnel.images = imageList[tunnel.id] || [];
     });
 
     res.render('pages/cave', {
-      title: 'ConCave',
+      title: 'ConCave: The Cave',
       tunnels: tunnels,
       conventions: conventions,
       isUser: userId != -1,
@@ -305,7 +328,7 @@ app.get('/cave/:id', async (req, res) => {
     userId = req.session.user.id;
   }
   const tunnelId = req.params.id;
-  
+
 
   try {
     const images = await db.any('SELECT image_path FROM tunnel_images WHERE tunnel_id = $1', [tunnelId]);
@@ -334,9 +357,10 @@ app.get('/cave/:id', async (req, res) => {
       ORDER BY replies.created_at ASC
     `, [userId, tunnelId]);
 
-      tunnel.images = images
+    tunnel.images = images
 
     res.render('pages/tunnel', {
+      title: "ConCave: The Cave",
       tunnel,
       replies,
       isUser: userId != -1
@@ -351,13 +375,14 @@ app.get('/cave/:id', async (req, res) => {
 // <!-- Section 4.1 : Login/Register -->
 // *************************************
 app.get("/register", (req, res) => {
-  res.render("pages/register");
+  res.render("pages/register", { title: "ConCave: Register" });
 });
 
 app.post("/register", async (req, res) => {
   try {
     if (req.body.password !== req.body.confirmPassword) {
       return res.render("pages/register", {
+        title: "ConCave: Register",
         error: "Passwords do not match.",
         formData: req.body
       });
@@ -371,6 +396,7 @@ app.post("/register", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.render("pages/register", {
+      title: "ConCave: Register",
       error: "Could not create user. Maybe username or email is taken?",
       formData: req.body
     });
@@ -392,11 +418,11 @@ app.post("/login", async (req, res) => {
       await req.session.save();
       res.redirect("/");
     } else {
-      res.render("pages/login", { error: "Incorrect username or password." });
+      res.render("pages/login", { title: "ConCave: Login", error: "Incorrect username or password." });
     }
   } catch (error) {
     console.log(error);
-    res.render("pages/login", { error: "Error logging in." });
+    res.render("pages/login", { title: "ConCave: Login", error: "Error logging in." });
   }
 });
 
@@ -711,6 +737,7 @@ async function fetchConversations(req, res, message = null, error = null) {
     .then(conversations => {
       console.log("Conversations found");
       res.render('pages/im', {
+        title: "ConCave: Messages",
         conversations: conversations,
         message: message,
         error: error
@@ -719,6 +746,7 @@ async function fetchConversations(req, res, message = null, error = null) {
     .catch(error => {
       console.log("Error fetching conversations:", error);
       res.render('pages/im', {
+        title: "ConCave: Messages",
         message: "Could not load conversations.",
         error: true
       });
@@ -746,6 +774,7 @@ app.get('/im', async (req, res) => {
 
       //now we render the page
       res.render('pages/im', {
+        title: "ConCave: Messages",
         other_user: otherUser,
         messages: messages,
         conv_exists: true,
@@ -753,6 +782,7 @@ app.get('/im', async (req, res) => {
       });
     } catch (error) {
       res.render('pages/im', {
+        title: "ConCave: Messages",
         message: "Could not load messages or user info.",
         error: true
       });
@@ -801,6 +831,7 @@ app.post('/im', async (req, res) => {
 
     // Render the updated conversation
     res.render('pages/im', {
+      title: "ConCave: Messages",
       other_user: otherUser,
       messages: messages,
       conv_exists: true,
@@ -809,6 +840,7 @@ app.post('/im', async (req, res) => {
   } catch (error) {
     console.log("Error adding message:", error);
     res.render('pages/im', {
+      title: "ConCave: Messages",
       message: "Could not send message.",
       error: true
     });
@@ -855,6 +887,7 @@ app.post('/im/create', async (req, res) => {
   } catch (error) {
     console.log("Error creating conversation:", error);
     res.render('pages/im', {
+      title: "ConCave: Login",
       message: "Could not create conversation.",
       error: true
     });
@@ -889,14 +922,14 @@ app.get('/conventions/:id/groups', async (req, res) => {
     const enhancedGroups = groups.map(group => {
       group.ownedByUser = req.session.user && (group.created_by === req.session.user.id);
 
-      group.isMember = false; 
+      group.isMember = false;
       if (req.session.user && group.member_usernames) {
         group.isMember = group.member_usernames.includes(req.session.user.username);
       }
-      
+
       return group;
     });
-    res.render('pages/groups', { convention, groups: enhancedGroups });
+    res.render('pages/groups', { title: "ConCave", convention, groups: enhancedGroups });
   } catch (error) {
     console.log(error);
     res.status(500).send('Error fetching groups');
@@ -1094,112 +1127,66 @@ app.post('/submit_review', auth, async (req, res) => {
 
 app.get('/merch', async (req, res) => {
   try {
-    let merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
+      let merchandise = await db.any(`
+          SELECT m.*, um.username as creator_username 
+          FROM merchandise m 
+          LEFT JOIN user_merchandise um ON m.id = um.merchandise_id 
+          ORDER BY m.id
+      `);
 
+      if (req.session.user) {
+          merchandise = merchandise.map(item => ({
+              ...item,
+              is_creator: item.creator_username === req.session.user.username
+          }));
+      }
 
-    if (req.session.user) {
-      const userMerchandise = await db.any(
-        'SELECT merchandise_id FROM user_merchandise WHERE user_id = $1',
-        [req.session.user.id]
-      );
-
-      merchandise = merchandise.map(item => {
-        return {
-          ...item,
-          is_creator: userMerchandise.some(um => um.merchandise_id === item.id)
-        };
-      });
-    }
-
-    res.render('pages/merch', {
-      title: 'Merchandise',
-      message: '',
-      merchandise: merchandise,
-      user: req.session.user
-    });
+      res.render('pages/merch', { title: 'Merchandise', merchandise, user: req.session.user });
   } catch (error) {
-    console.error(error);
-    res.render('pages/merch', {
-      title: 'Merchandise',
-      message: 'Error loading merchandise',
-      merchandise: [],
-      user: req.session.user
-    });
+      res.render('pages/merch', { title: 'Merchandise', message: 'Error loading merchandise', error: true });
   }
 });
 
-app.post('/merch', async (req, res) => {
+app.post('/merch', upload.single('image_upload'), async (req, res) => {
   try {
-    if (!req.session.user) {
-      return res.redirect('/login');
-    }
+      if (!req.session.user) return res.redirect('/login');
 
-    console.log('Received form data:', req.body);
-    const { name, price, description, image_url, details } = req.body;
-    const detailsArray = details.split(',').map(item => item.trim());
+      const { name, price, description, details, imageType, image_url } = req.body;
+      const finalImagePath = imageType === 'url' ? image_url : '/uploads/' + req.file.filename;
+      const detailsArray = details.split(',').map(item => item.trim());
 
-    await db.tx(async t => {
-      const result = await t.one(
-        'INSERT INTO merchandise (name, price, description, image_url, details) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-        [name, price, description, image_url, detailsArray]
-      );
+      await db.tx(async t => {
+          const result = await t.one(
+              'INSERT INTO merchandise (name, price, description, image_url, details) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+              [name, price, description, finalImagePath, detailsArray]
+          );
+          await t.none(
+              'INSERT INTO user_merchandise (username, merchandise_id) VALUES ($1, $2)',
+              [req.session.user.username, result.id]
+          );
+      });
 
-      await t.none(
-        'INSERT INTO user_merchandise (user_id, merchandise_id) VALUES ($1, $2)',
-        [req.session.user.id, result.id]
-      );
-    });
-
-    res.redirect('/merch');
+      res.redirect('/merch');
   } catch (error) {
-    console.error('Error adding merchandise:', error);
-    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
-    res.render('pages/merch', {
-      title: 'Merchandise',
-      message: 'Error adding merchandise: ' + error.message,
-      merchandise: merchandise,
-      error: true,
-      user: req.session.user
-    });
+      res.render('pages/merch', { title: 'Merchandise', message: 'Error adding merchandise', error: true });
   }
 });
 
 app.post('/merch/delete/:id', async (req, res) => {
   try {
-    if (!req.session.user) {
-      return res.redirect('/login');
-    }
-
-    const merchandiseId = req.params.id;
-
-    const isCreator = await db.oneOrNone(
-      'SELECT * FROM user_merchandise WHERE user_id = $1 AND merchandise_id = $2',
-      [req.session.user.id, merchandiseId]
-    );
-
-    if (!isCreator) {
-      return res.render('pages/merch', {
-        title: 'Merchandise',
-        message: 'You do not have permission to delete this merchandise',
-        merchandise: await db.any('SELECT * FROM merchandise ORDER BY id'),
-        error: true,
-        user: req.session.user
-      });
-    }
-
-    await db.none('DELETE FROM merchandise WHERE id = $1', [merchandiseId]);
-
-    res.redirect('/merch');
+      if (!req.session.user) return res.redirect('/login');
+      
+      const isCreator = await db.oneOrNone(
+          'SELECT * FROM user_merchandise WHERE username = $1 AND merchandise_id = $2',
+          [req.session.user.username, req.params.id]
+      );
+ 
+      if (!isCreator) throw new Error('Unauthorized');
+      
+      await db.none('DELETE FROM merchandise WHERE id = $1', [req.params.id]);
+      res.redirect('/merch');
   } catch (error) {
-    console.error('Error deleting merchandise:', error);
-    const merchandise = await db.any('SELECT * FROM merchandise ORDER BY id');
-    res.render('pages/merch', {
-      title: 'Merchandise',
-      message: 'Error deleting merchandise: ' + error.message,
-      merchandise: merchandise,
-      error: true,
-      user: req.session.user
-    });
+      res.redirect('/merch');
   }
 });
 
@@ -1219,7 +1206,7 @@ app.get('/profile', auth, async (req, res) => {
       [req.session.user.id]
     );
 
-    res.render('pages/profile', { badges });
+    res.render('pages/profile', { title: "Profile", badges });
   } catch (err) {
     console.error('Failed to load badges:', err.stack);
     res.status(500).send('Error retrieving badges');
@@ -1252,7 +1239,7 @@ app.post('/profile', auth, async (req, res) => {
         [user.id]
       );
 
-      res.render('pages/profile', { user, badges, my_user: req.session.user });
+      res.render('pages/profile', { title: "ConCave: Profile", user, badges, my_user: req.session.user });
     } catch (err) {
       console.error('Failed to load badges:', err.stack);
       res.status(500).send('Error retrieving badges');
@@ -1270,6 +1257,7 @@ app.get("/settings", auth, (req, res) => {
     isAdmin = req.session.user.rank == 'admin';
   }
   res.render("pages/settings", {
+    title: "ConCave: Settings",
     isAdmin: isAdmin
   });
 });
@@ -1457,6 +1445,7 @@ app.post('/settings/delete-profile', auth, async (req, res) => {
 app.get("/adminSettings", auth, async (req, res) => {
   const users = await db.any('SELECT * FROM users ORDER BY username ASC');
   res.render("pages/adminSettings", {
+    title: "ConCave: Settings",
     users,
   });
 });
@@ -1490,4 +1479,3 @@ app.post("/settings/deleteUser", auth, async (req, res) => {
 // starting the server and keeping the connection open to listen for more requests
 app.listen(3000);
 console.log('Server is listening on port 3000');
-

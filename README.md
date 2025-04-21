@@ -13,6 +13,10 @@ Welcome to **ConCave**, a convention-centric web platform developed by **Team 3 
 - **Daniel Park** (GitHub: dapa9788)
 - **Liam Ford** (GitHub: liamford1)
 
+## Where to Find ConCave
+
+You can find Concave anytime anywhere at this link: https://concave-daz3.onrender.com/
+
 ## How to Run ConCave
 
 1. **Navigate to the Project Source Code:**
@@ -51,14 +55,14 @@ Each feature is developed in a dedicated branch of the repository:
 
 ### 5. Registration & Status System
    - Users can sign up and log in to the platform.
-   - Includes a ranking system to showcase user engagement within the community.
+   - Includes a badging system to showcase user engagement within the community.
    - Includes types of users to accomoadte regular users, convention hosts, and admins.
 
 ## Development & Communication
 - **Version Control:** GitHub repository with feature-based branching.
 - **Project Management:** GitHub Projects.
 - **Communication:** Discord and GitHub discussions.
-- **Meeting Schedule:** Fridays at 2 PM.
+- **Meeting Schedule:** Thursdays at 2 PM.
 
 ## Other Tools Used
 - JavaScript
@@ -67,3 +71,4 @@ Each feature is developed in a dedicated branch of the repository:
 - HTML
 - CSS
 - Bootstrap
+- Render
