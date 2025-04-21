@@ -1,34 +1,28 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-light" style = "background-color: #6c63ff;">
     <div class="container-fluid">
         <a href="/" class="navbar-brand text-dark text-decoration-none">
             <img src="../../uploads/logo.png" alt="ConCave Logo" width="200" height="60" class="d-inline-block align-text-top">
         </a>
     </div>
     <div class="container-fluid">
-        <!-- Link to the cave page-->
-        <a href="/" class="btn btn-link text-dark text-decoration-none">
-            <span>Conventions</span>
-        </a>
-    </div>
-    <div class="container-fluid">
-        <a href="/cave" class="btn btn-link text-dark text-decoration-none">
+        <a href="/cave" class="btn btn-link  text-decoration-none" style = "color: #f0f0f0">
             <span>The Cave</span>
         </a>
     </div>
     <div class="container-fluid">
-        <a href="/merch" class="btn btn-link text-dark text-decoration-none">
+        <a href="/merch" class="btn btn-link   text-decoration-none" style = "color:#f0f0f0">
             <span>Merch Store</span>
         </a>
     </div>
     <div class="container-fluid">
-        <a href="/im" class="btn btn-link text-dark text-decoration-none">
+        <a href="/im" class="btn btn-link  text-decoration-none" style = "color:#f0f0f0">
             <span>Messages</span>
         </a>
     </div>
     <div class="ms-auto">
         {{#if user}}
-        <a href="/profile" class="btn btn-link text-dark text-decoration-none">
-            <i class="bi bi-person-circle fs-4"></i>
+        <a href="/profile" class="btn btn-link  text-decoration-none" style = "color:#f0f0f0">
+            <i class="bi bi-person-circle fs-4" style = "color: #f0f0f0;"></i>
             {{#if my_user}}
             <span>{{my_user.username}}</span>
             {{else}}
@@ -36,8 +30,8 @@
             {{/if}}
         </a>
         {{else}}
-        <a href="/login" class="btn btn-link text-dark text-decoration-none">
-            <i class="bi bi-person-circle fs-4"></i>
+        <a href="/login" class="btn btn-link  text-decoration-none" style ="color:#f0f0f0">
+            <i class="bi bi-person-circle fs-4" style = "color: #f0f0f0"></i>
             <span>Login</span>
         </a>
         {{/if}}
