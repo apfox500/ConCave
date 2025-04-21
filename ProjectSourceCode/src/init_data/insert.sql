@@ -202,10 +202,10 @@ INSERT INTO merchandise (name, price, description, details, image_url) VALUES
     'https://www.midtowncomics.com/images/PRODUCT/XL/2353226_xl.jpg');
 
 INSERT INTO user_merchandise (username, merchandise_id) VALUES
-    ('u1', 1),
-    ('u1', 2),
-    ('u1', 3),
-    ('u1', 4),
-    ('u2', 5),
-    ('u2', 6),
-    ('u2', 7);
+    ('aldo1344', 1),
+    ('mita3679', 2),
+    ('soda7632', 3),
+    ('aldo1344', 4),
+    ('isth8504', 5),
+    ('luja4128', 6),
+    ('soda7632', 7);
