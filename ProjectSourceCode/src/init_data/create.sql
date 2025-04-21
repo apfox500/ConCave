@@ -1,3 +1,20 @@
+DROP TABLE IF EXISTS user_merchandise;
+DROP TABLE IF EXISTS merchandise;
+DROP TABLE IF EXISTS likes;
+DROP TABLE IF EXISTS group_members;
+DROP TABLE IF EXISTS groups;
+DROP TABLE IF EXISTS replies;
+DROP TABLE IF EXISTS tunnel_images;
+DROP TABLE IF EXISTS tunnels;
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS conversations;
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS users_to_conventions;
+DROP TABLE IF EXISTS conventions;
+DROP TABLE IF EXISTS users_to_badges;
+DROP TABLE IF EXISTS badges;
+DROP TABLE IF EXISTS users;
+
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
