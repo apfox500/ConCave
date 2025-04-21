@@ -6,18 +6,12 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(100) NOT NULL UNIQUE,
     rank VARCHAR(20) NOT NULL, -- currently planned: admin, user, convention_host
     password VARCHAR(60) NOT NULL,
+    profile_picture TEXT,
+    bio TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS profiles (
-    user_id INT PRIMARY KEY,
-    profile_picture TEXT,
-    bio TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-/*
 CREATE TABLE IF NOT EXISTS badges (
     trophy_id SERIAL PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
@@ -26,11 +20,10 @@ CREATE TABLE IF NOT EXISTS badges (
 
 CREATE TABLE IF NOT EXISTS users_to_badges (
     user_badge_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    trophy_id INT REFERENCES trophies(trophy_id) ON DELETE CASCADE,
-    awarded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    trophy_id INT REFERENCES badges(trophy_id) ON DELETE CASCADE
 );
-*/
+
 -- Potentially only for Dummy Data if we use an API
 CREATE TABLE IF NOT EXISTS conventions (
     id SERIAL PRIMARY KEY,
@@ -93,6 +86,12 @@ CREATE TABLE IF NOT EXISTS tunnels (
     title TEXT NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS tunnel_images (
+  id SERIAL PRIMARY KEY,
+  tunnel_id INT REFERENCES tunnels(id) ON DELETE CASCADE,
+  image_path TEXT NOT NULL
 );
 
 

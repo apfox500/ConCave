@@ -1,0 +1,40 @@
+<h3 class="mb-4 text-center">Manage Users</h3>
+
+<table class="table table-bordered table-hover shadow-sm">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col">Username</th>
+      <th scope="col">Name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Current Rank</th>
+      <th scope="col">Change Rank</th>
+      <th scope="col">Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each users}}
+    <tr>
+      <td>{{this.username}}</td>
+      <td>{{this.first_name}} {{this.last_name}}</td>
+      <td>{{this.email}}</td>
+      <td><strong>{{this.rank}}</strong></td>
+      <td>
+        <form method="POST" action="/settings/updateUserRank" class="d-flex gap-1 flex-wrap">
+          <input type="hidden" name="username" value="{{this.username}}">
+          <button type="submit" name="rank" value="user" class="btn btn-sm btn-outline-secondary">User</button>
+          <button type="submit" name="rank" value="convention_host" class="btn btn-sm btn-outline-warning">Convention Host</button>
+          <button type="submit" name="rank" value="admin" class="btn btn-sm btn-outline-danger">Admin</button>
+        </form>
+      </td>
+      <td>
+        <form method="POST" action="/settings/deleteUser">
+          <input type="hidden" name="username" value="{{this.username}}">
+          <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<a href="/settings" class="btn btn-primary">Back to Settings</a>

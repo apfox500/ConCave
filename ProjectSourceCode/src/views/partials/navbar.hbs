@@ -1,5 +1,10 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
+        <a href="/" class="navbar-brand text-dark text-decoration-none">
+            <img src="../../uploads/logo.png" alt="ConCave Logo" width="200" height="60" class="d-inline-block align-text-top">
+        </a>
+    </div>
+    <div class="container-fluid">
         <!-- Link to the cave page-->
         <a href="/" class="btn btn-link text-dark text-decoration-none">
             <span>Conventions</span>
@@ -22,12 +27,14 @@
     </div>
     <div class="ms-auto">
         {{#if user}}
-        <form action="/logout" method="POST" class="d-inline">
-            <button type="submit" class="btn btn-link text-dark text-decoration-none">
-                <i class="bi bi-box-arrow-right fs-4"></i>
-                <span>Logout</span>
-            </button>
-        </form>
+        <a href="/profile" class="btn btn-link text-dark text-decoration-none">
+            <i class="bi bi-person-circle fs-4"></i>
+            {{#if my_user}}
+            <span>{{my_user.username}}</span>
+            {{else}}
+            <span>{{user.username}}</span>
+            {{/if}}
+        </a>
         {{else}}
         <a href="/login" class="btn btn-link text-dark text-decoration-none">
             <i class="bi bi-person-circle fs-4"></i>

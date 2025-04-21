@@ -1125,7 +1125,6 @@ app.post('/submit_review', auth, async (req, res) => {
 // <!-- Section 4.7: Merch -->
 // ********************************
 
-// GET /merch
 app.get('/merch', async (req, res) => {
   try {
       let merchandise = await db.any(`
@@ -1148,7 +1147,6 @@ app.get('/merch', async (req, res) => {
   }
 });
 
-// POST /merch
 app.post('/merch', upload.single('image_upload'), async (req, res) => {
   try {
       if (!req.session.user) return res.redirect('/login');
@@ -1174,7 +1172,6 @@ app.post('/merch', upload.single('image_upload'), async (req, res) => {
   }
 });
 
-// POST /merch/delete/:id
 app.post('/merch/delete/:id', async (req, res) => {
   try {
       if (!req.session.user) return res.redirect('/login');
@@ -1183,7 +1180,7 @@ app.post('/merch/delete/:id', async (req, res) => {
           'SELECT * FROM user_merchandise WHERE username = $1 AND merchandise_id = $2',
           [req.session.user.username, req.params.id]
       );
-      
+ 
       if (!isCreator) throw new Error('Unauthorized');
       
       await db.none('DELETE FROM merchandise WHERE id = $1', [req.params.id]);
