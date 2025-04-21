@@ -388,9 +388,13 @@ app.post("/register", async (req, res) => {
       });
     }
     const hash = await bcrypt.hash(req.body.password, 10);
+    let profilePicturePath = null;
+    if (req.file) {
+      profilePicturePath = `/uploads/profile_pictures/${req.file.filename}`;  // Store relative file path
+    }
     await db.none(
-      "INSERT INTO users (first_name, last_name, username, email, rank, password) VALUES ($1, $2, $3, $4, $5, $6)",
-      [req.body.firstName, req.body.lastName, req.body.username, req.body.email, "user", hash]
+      "INSERT INTO users (first_name, last_name, username, email, rank, password, profile_picture) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [req.body.firstName, req.body.lastName, req.body.username, req.body.email, "user", hash, profilePicturePath]
     );
     res.redirect("/login");
   } catch (error) {
