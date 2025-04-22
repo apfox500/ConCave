@@ -25,7 +25,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Add a New Convention</h5>
-                        <form id="addConventionForm">
+                        <form id="addConventionForm" enctype="multipart/form-data" method="POST">
                             <div class="mb-3">
                                 <label for="conventionName" class="form-label">Convention Name</label>
                                 <input type="text" class="form-control" id="conventionName" required>
@@ -43,8 +43,19 @@
                                 <input type="text" class="form-control" id="conventionBio" required>
                             </div>
                             <div class="mb-3">
-                                <label for="conventionImage" class="form-label">Convention Image</label>
-                                <input type="text" class="form-control" id="conventionImage" required>
+                                <label class="form-label d-block text-center">Convention Image</label>
+                                <div class="d-flex justify-content-center gap-4 mb-2">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="imageInputType" id="imageUrlOption" value="url" checked>
+                                        <label class="form-check-label" for="imageUrlOption">Image URL</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="imageInputType" id="imageFileOption" value="upload">
+                                        <label class="form-check-label" for="imageFileOption">Upload Image File</label>
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" id="conventionImageURL" placeholder="Image URL">
+                                <input type="file" class="form-control mt-2 d-none" id="conventionImageFile" accept="image/*">
                             </div>
                             <div class="mb-3">
                                 <label for="conventionStart" class="form-label">Start Date</label>
@@ -124,70 +135,66 @@
 
         document.getElementById('addConventionForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            const name = document.getElementById('conventionName').value;
-            const location = document.getElementById('conventionLocation').value;
-            const convention_center = document.getElementById('conventionCenter').value;
-            const convention_bio = document.getElementById('conventionBio').value;
-            const convention_image = document.getElementById('conventionImage').value;
-            const startDate = document.getElementById('conventionStart').value;
-            const endDate = document.getElementById('conventionEnd').value;
+
+            const form = e.target;
+            const formData = new FormData();
+
+            formData.append("name", document.getElementById("conventionName").value);
+            formData.append("location", document.getElementById("conventionLocation").value);
+            formData.append("convention_center", document.getElementById("conventionCenter").value);
+            formData.append("convention_bio", document.getElementById("conventionBio").value);
+            formData.append("start_date", document.getElementById("conventionStart").value);
+            formData.append("end_date", document.getElementById("conventionEnd").value);
+
+            const isUsingUrl = document.getElementById("imageUrlOption").checked;
+            if (isUsingUrl) {
+                formData.append("convention_image_url", document.getElementById("conventionImageURL").value);
+            } else {
+                const fileInput = document.getElementById("conventionImageFile");
+                if (fileInput.files.length > 0) {
+                    formData.append("convention_image_file", fileInput.files[0]);
+                }
+            }
 
             try {
-                const response = await fetch('/conventions/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        name,
-                        location,
-                        convention_center,
-                        convention_bio,
-                        convention_image,
-                        start_date: startDate,
-                        end_date: endDate
-                    })
+                const response = await fetch("/conventions/add", {
+                    method: "POST",
+                    body: formData
                 });
-                //console.log('Response:', response);
-                //console.log('Response Status:', response.status);
-                //const responseData = await response.json().catch(() => null);
-                //console.log('Response Data:', responseData);
-                //alert(response.ok)
+
                 if (response.ok) {
-                    alert('Convention added successfully!');
-                    document.getElementById('addConventionFormCard').style.display = 'none';
-                }
-                else {
-                    alert('Forbidden: Only Convention Hosts can add conventions.');
+                    alert("Convention added successfully!");
+                    document.getElementById("addConventionFormCard").style.display = "none";
+                } else {
+                    const data = await response.json();
+                    alert(data.message || "Something went wrong.");
                 }
             } catch (error) {
-                alert('There was an error adding the convention.');
+                alert("There was an error adding the convention.");
             }
         });
 </script>
 <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const searchForm = document.getElementById('search-form');
-            const searchInput = document.getElementById('search-bar');
-            const resultsContainer = document.getElementById('search-results');
+    document.addEventListener("DOMContentLoaded", () => {
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-bar');
+        const resultsContainer = document.getElementById('search-results');
 
-            searchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-            });
-            resultsContainer.style.display = 'none';
+        searchForm.addEventListener('submit', (e) => e.preventDefault());
+        resultsContainer.style.display = 'none';
 
-            searchInput.addEventListener('input', async (event) => {
-                const query = event.target.value;
-                resultsContainer.innerHTML = '';
+        searchInput.addEventListener('input', async (event) => {
+            const query = event.target.value;
+            resultsContainer.innerHTML = '';
 
-                if (query.length > 0) {
-                    resultsContainer.style.display = 'block';
-                    const newUrl = `/search?q=${encodeURIComponent(query)}`;
-                    history.pushState({ path: newUrl }, '', newUrl);
+            if (query.length > 0) {
+                resultsContainer.style.display = 'block';
+                const newUrl = `/search?q=${encodeURIComponent(query)}`;
+                history.pushState({ path: newUrl }, '', newUrl);
 
-                    try {
-                        const response = await fetch(newUrl);
-                        const results = await response.json();
+                try {
+                    const response = await fetch(newUrl);
+                    const results = await response.json();
 
                         if (results.length > 0) {
                             results.forEach(convention => {

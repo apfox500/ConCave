@@ -59,6 +59,29 @@
         </form>
     </div>
 
+    <div class="card mb-4 shadow-sm">
+        <form action="/settings/update-picture" method="POST" enctype="multipart/form-data">
+            <div class="card-body">
+                <h5 class="card-title mb-4 text-center">Change Profile Picture</h5>
+                
+                <!-- Display current profile picture -->
+                <div class="text-center mb-3">
+                    {{#if user.profile_picture}}
+                    <img src="{{user.profile_picture}}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    {{else}}
+                    <img src="/uploads/default-avatar.png" alt="Default Profile Picture" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    {{/if}}
+                </div>
+
+                <!-- File upload for new profile picture -->
+                <div class="form-group">
+                    <input type="file" class="form-control" name="profile_picture" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block mt-3">Update Profile Picture</button>
+            </div>
+        </form>
+    </div>
+
     <button id="deleteAccountBtn" class="btn btn-danger">Delete My Account</button>
     {{#if isAdmin}}
     <a href="/adminSettings" class="btn btn-danger">Manage Other Accounts</a>
