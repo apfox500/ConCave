@@ -378,7 +378,7 @@ app.get("/register", (req, res) => {
   res.render("pages/register", { title: "ConCave: Register" });
 });
 
-app.post("/register", async (req, res) => {
+app.post("/register", upload.single('profile_picture'), async (req, res) => {
   try {
     if (req.body.password !== req.body.confirmPassword) {
       return res.render("pages/register", {
@@ -388,9 +388,13 @@ app.post("/register", async (req, res) => {
       });
     }
     const hash = await bcrypt.hash(req.body.password, 10);
+    let profilePicturePath = null;
+    if (req.file) {
+      profilePicturePath = `/uploads/${req.file.filename}`;
+    }
     await db.none(
-      "INSERT INTO users (first_name, last_name, username, email, rank, password) VALUES ($1, $2, $3, $4, $5, $6)",
-      [req.body.firstName, req.body.lastName, req.body.username, req.body.email, "user", hash]
+      "INSERT INTO users (first_name, last_name, username, email, rank, password, profile_picture) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [req.body.firstName, req.body.lastName, req.body.username, req.body.email, "user", hash, profilePicturePath]
     );
     res.redirect("/login");
   } catch (error) {
@@ -623,31 +627,39 @@ const authorizeConventionHost = (req, res, next) => {
   next();
 };
 
-app.post("/conventions/add", authorizeConventionHost, async (req, res) => {
+app.post("/conventions/add", authorizeConventionHost, upload.single("convention_image_file"), async (req, res) => {
   try {
-    const { name, location, convention_center, convention_bio, convention_image, start_date, end_date } = req.body;
+    const { name, location, convention_center, convention_bio, convention_image_url, start_date, end_date } = req.body;
+    const convention_image = req.file
+      ? `/uploads/${req.file.filename}`
+      : convention_image_url;
 
     if (!name || !location || !convention_center || !convention_bio || !convention_image || !start_date || !end_date) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const result = await db.task(async t => {
-      const conventionQuery = `
-              INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date)
-              VALUES ($1, $2, $3, $4, $5, $6, $7)
-              RETURNING id;`;
-      const conventionResult = await t.one(conventionQuery, [name, location, convention_center, convention_bio, convention_image, start_date, end_date]);
+      const conventionQuery = `INSERT INTO conventions (name, location, convention_center, convention_bio, convention_image, start_date, end_date)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id;`;
+      const conventionResult = await t.one(conventionQuery, [
+        name,
+        location,
+        convention_center,
+        convention_bio,
+        convention_image,
+        start_date,
+        end_date
+      ]);
       return conventionResult;
     });
 
     res.status(201).json({ message: "Convention added successfully!", convention: result });
+
   } catch (error) {
     res.status(500).json({ message: "An error occurred", error: error.message });
   }
 });
-
-
-
 
 // ******************************************************************
 // <!-- Section 4.5 : Instant Messaging Routes + Helper functions -->
@@ -1218,7 +1230,7 @@ app.post('/profile', auth, async (req, res) => {
 
   try {
     const user = await db.oneOrNone(
-      `SELECT id, first_name, last_name, username, email, rank, profile_picture, bio, created_at, last_login 
+      `SELECT id, first_name, last_name, username, email, rank, profile_picture, bio, created_at
        FROM users 
        WHERE username = $1`,
       [username]
@@ -1415,6 +1427,25 @@ app.post('/settings/update-password', auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/update-picture', auth, upload.single('profile_picture'), async (req, res) => {
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ message: 'You are not logged in.' });
+  }
+
+  const filePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+  try {
+    await db.none("UPDATE users SET profile_picture = $1 WHERE id = $2", [filePath, user.id]);
+    req.session.user.profile_picture = filePath;
+    res.redirect('/profile');
+  } catch (err) {
+    console.error("Error updating profile picture:", err);
+    res.status(500).send("Internal Server Error");
   }
 });
 

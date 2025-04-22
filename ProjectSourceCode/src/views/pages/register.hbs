@@ -2,7 +2,7 @@
     <div class="col-md-6">
         <div class="card shadow-lg p-4">
             <h2 class="text-center mb-4">Create an Account</h2>
-            <form action="/register" method="POST">
+            <form action="/register" method="POST" enctype="multipart/form-data">
                 <div class="row mb-3">
                     <div class="col">
                         <label for="firstName" class="form-label">First Name</label>
@@ -18,6 +18,13 @@
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person"></i></span>
                         <input type="text" class="form-control" id="username" name="username" placeholder="Choose a username" required value="{{formData.username}}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="profile_picture" class="form-label">Profile Picture</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-image"></i></span>
+                        <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
                     </div>
                 </div>
                 <div class="mb-3">
