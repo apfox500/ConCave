@@ -231,6 +231,8 @@ app.get('/cave', async (req, res) => {
 
   const sort = req.query.sort || 'newest';
 
+  const convention = req.query.convention || '';
+
   let orderBy;
   switch (sort) {
     case 'oldest':
@@ -260,7 +262,7 @@ app.get('/cave', async (req, res) => {
 
     const conventions = await db.any('SELECT id, name FROM conventions ORDER BY start_date ASC');
 
-    const tunnels = await db.any(`
+    let tunnelQuery = `
       SELECT tunnels.*, users.username, conventions.name AS convention_name,
         COUNT(DISTINCT replies.id) AS reply_count, 
         COUNT(DISTINCT likes.id) AS like_count, 
@@ -270,9 +272,21 @@ app.get('/cave', async (req, res) => {
       LEFT JOIN conventions ON tunnels.convention_id = conventions.id
       LEFT JOIN replies ON replies.tunnel_id = tunnels.id
       LEFT JOIN likes ON likes.tunnel_id = tunnels.id
+    `;
+    
+    const queryParams = [userId];
+
+    if (convention) {
+      tunnelQuery += ` WHERE tunnels.convention_id = $2 `;
+      queryParams.push(convention);
+    }
+
+    tunnelQuery += `
       GROUP BY tunnels.id, users.username, conventions.name
       ORDER BY ${orderBy}
-    `, [userId]);
+    `;
+
+    const tunnels = await db.any(tunnelQuery, queryParams);
 
     tunnels.forEach(tunnel => {
       tunnel.images = imageList[tunnel.id] || [];
@@ -283,7 +297,8 @@ app.get('/cave', async (req, res) => {
       tunnels: tunnels,
       conventions: conventions,
       isUser: userId != -1,
-      sort: sort
+      sort: sort,
+      selectedConvention: convention
     });
   } catch (error) {
     console.error(error);

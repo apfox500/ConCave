@@ -48,15 +48,23 @@
         </form>
     </div>
 
-<div id="search-results" class="container mt-3 p-2  border rounded shadow-sm" style= "background-color: #2a2a2a; margin-bottom:16px;"></div>
+    <div id="search-results" class="container mt-3 p-2  border rounded shadow-sm" style= "background-color: #2a2a2a; margin-bottom:16px;"></div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Dig a Tunnel Button -->
 
-        <button class="btn btn-primary" id="create-tunnel" {{#if isUser}}{{else}} disabled {{/if}}>Dig a Tunnel</button>
+        <button class="btn btn-primary" id="create-tunnel" {{#if isUser}}{{else}} disabled {{/if}}>Dig a Tunnel</button>\
 
-        <!-- Sort Tunnels Dropdown -->
-        <form method="GET" action="/cave">
+        <form method="GET" action="/cave" class="d-flex gap-2">
+            <!-- Convention Dropdown -->
+            <select id="convention-list" class="form-select" name="convention" onchange="this.form.submit()">
+                <option value="">All Conventions</option>
+                    {{#each conventions}}
+                        <option value="{{this.id}}">{{this.name}}</option>
+                    {{/each}}
+                </select>
+
+            <!-- Sort Dropdown -->
             <select id="tunnel-sort" class="form-select" name="sort" onchange="this.form.submit()">
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
@@ -131,6 +139,18 @@
     if (tunnelSort && currentSort) {
         tunnelSort.value = currentSort;
     }
+</script>
+
+<!-- Convention Sort Script -->
+<script>
+
+  const selectedConvention = "{{selectedConvention}}";
+  const conventionSelect = document.getElementById("convention-list");
+
+  if (conventionSelect && selectedConvention) {
+    conventionSelect.value = selectedConvention;
+
+  }
 </script>
 
 <!-- Dig Tunnel Char Count Script -->
