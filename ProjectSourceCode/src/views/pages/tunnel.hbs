@@ -45,13 +45,24 @@
 {{/each}}
 
 <!-- Tunnel Reply Form -->
-<form action="/cave/{{tunnel.id}}/reply" method="POST">
+<button class="btn btn-primary mb-3" id="reply-button">Leave a Note</button>
+
+<form action="/cave/{{tunnel.id}}/reply" method="POST" id="reply-form" style="display: none;">
   <div class="mb-3">
     <textarea class="form-control" name="message" rows="3" placeholder="Write your note here." required></textarea>
   </div>
-  <button type="submit" class="btn btn-primary">Leave a Note</button>
+  <button type="submit" class="btn btn-success">Submit Note</button>
 </form>
-</body>
+
+<!-- Tunnel Reply Script -->
+<script>
+
+  document.getElementById('reply-button').addEventListener('click', function () {
+    const replyForm = document.getElementById('reply-form');
+    replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+    this.textContent = replyForm.style.display === 'block' ? 'Cancel' : 'Leave a Note';
+  });
+</script>
 
 <!-- Show More / Show Less Script -->
 <script>
