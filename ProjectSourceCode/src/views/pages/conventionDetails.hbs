@@ -9,16 +9,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
 </head>
 
-<body>
+<body style = "background-color: #1a1a1a;">
   <div class="container my-5">
-    <div class="card p-4">
+    <div class="card p-4" style = "background-color: #2a2a2a;">
       <div class="d-flex justify-content-end mb-3">
-        <a href="/conventions/{{convention.id}}/groups" class="btn btn-outline-primary">View Groups</a>
-        <button class="btn btn-outline-primary" data-toggle="modal" data-target="#reviewModal">
+        <a href="/conventions/{{convention.id}}/groups" class="btn btn-primary" style = "margin-right: 16px;">View Groups</a>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#reviewModal">
           Leave a Review on this Convention
         </button>
       </div>
-      <div class="card-header text-center text-dark">
+      <div class="card-header text-center" style = "color: #f0f0f0;">
         {{convention.name}}
       </div>
       <div class="card-body">
@@ -27,18 +27,18 @@
             <img src="{{convention.convention_image}}" alt="{{convention.name}} Logo" class="convention-logo img-fluid">
           </div>
           <div class="col-md-8">
-            <p><strong>Location:</strong> {{convention.location}}</p>
-            <p><strong>Convention Center:</strong> {{convention.convention_center}}</p>
-            <h5 class="mt-4">Convention Bio:</h5>
-            <p>{{convention.convention_bio}}</p>
-            <h5 class="mt-4">Event Dates:</h5>
+            <p style = "color:#f0f0f0"><strong>Location:</strong> {{convention.location}}</p>
+            <p style = "color:#f0f0f0"><strong>Convention Center:</strong> {{convention.convention_center}}</p>
+            <h5 class="mt-4" style = "color:#f0f0f0">Convention Bio:</h5>
+            <p style = "color:#f0f0f0">{{convention.convention_bio}}</p>
+            <h5 class="mt-4" style = "color:#f0f0f0">Event Dates:</h5>
 
-            <p><strong>Start Date:</strong> {{convention.formatted_start_date}}</p>
-            <p><strong>End Date:</strong> {{convention.formatted_end_date}}</p>
+            <p style = "color:#f0f0f0"><strong>Start Date:</strong> {{convention.formatted_start_date}}</p>
+            <p style = "color:#f0f0f0"><strong>End Date:</strong> {{convention.formatted_end_date}}</p>
           </div>
         </div>
         <div class="d-flex justify-content-between align-items-center mt-5 mb-3">
-        <h4 class="mb-0">Reviews</h4>
+        <h4 class="mb-0" style = "color:#f0f0f0">Reviews</h4>
           <form method="GET" action="/conventions/{{convention.id}}" class="form-inline">
             <select id="review-sort" class="form-control" name="sort" onchange="this.form.submit()">
               <option value="highest" {{#if isHighest}}selected{{/if}}>Highest Rated</option>
@@ -50,24 +50,24 @@
         </div>
         {{#if reviews.length}}
         {{#each reviews}}
-        <div class="border rounded p-3 my-3 bg-white shadow-sm position-relative">
+        <div class="border rounded p-3 my-3 shadow-sm position-relative" style = "background-color: #2a2a2a;">
           <div class="d-flex justify-content-between">
             <div>
-              <p class="mb-1"><strong>
+              <p class="mb-1"><strong style = "color: #f0f0f0">
                   <form action="/profile" method="POST" style="display:inline;">
                     <input type="hidden" name="username" value="{{username}}">
                     <button type="submit" class="btn btn-link p-0"
                       style="text-decoration: underline; color: inherit; background: none; border: none; padding: 0; font: inherit; cursor: pointer; vertical-align: baseline;">{{username}}</button>
                   </form>
-                </strong> rated it {{rating}}/5 stars</p>
+                 rated it {{rating}}/5 stars</strong></p>
             </div>
-            <small class="text-muted">{{formatted_time}}</small>
+            <small class="text-muted" style = "color:#f0f0f0">{{formatted_time}}</small>
           </div>
-          <p class="mb-1">{{review}}</p>
+          <p class="mb-1" style = "color:#f0f0f0">{{review}}</p>
         </div>
         {{/each}}
         {{else}}
-        <p class="text-muted">No reviews yet. Be the first to leave one!</p>
+        <p class="text-muted" style = "color:#f0f0f0">No reviews yet. Be the first to leave one!</p>
         {{/if}}
       </div>
       <div class="text-center mt-4">
