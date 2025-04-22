@@ -1,19 +1,18 @@
-<body style = "background-color: #1a1a1a;">
 <h5 class="mb-4">
-  <a href="/cave" style = "color:#f0f0f0">
-    <i class="bi bi-arrow-left" style = "color:#f0f0f0"></i>Back to Cave
+  <a href="/cave" class="text-decoration-none text-dark">
+    <i class="bi bi-arrow-left"></i> Back to Cave
   </a>
 </h5>
 
-<h2 style = "color:#f0f0f0">{{tunnel.title}}</h2>
-<small style = "color:#f0f0f0">By {{tunnel.username}} on <span class="localized-date" data-date="{{tunnel.created_at}}"></span> </small>
-<p style = "color:#f0f0f0"> 
+<h2>{{tunnel.title}}</h2>
+<small>By {{tunnel.username}} on <span class="localized-date" data-date="{{tunnel.created_at}}"></span> </small>
+<p class="text-muted mb-1"> 
   <i class="bi bi-calendar-event"></i> 
   <a href="/conventions/{{tunnel.convention_id}}" class="text-decoration-none text-muted"> {{tunnel.convention_name}}</a> 
 </p>
 
 <div class="tunnel-message-container">
-  <p class="tunnel-message collapsed" style = "color:#f0f0f0">{{tunnel.message}}</p>
+  <p class="tunnel-message collapsed">{{tunnel.message}}</p>
   <button type="button" class="btn btn-sm btn-link p-0 show-more-toggle">Show more</button>
 </div>
 <div class="row g-2 mt-2">
@@ -30,11 +29,11 @@
 </form>
 <hr>
 
-<h4 style = "color:#f0f0f0">Tunnel Notes</h4>
+<h4>Tunnel Notes</h4>
 {{#each replies}}
   <div class="mb-3 ps-3 border-start border-secondary">
-    <small style = "color:#f0f0f0">By {{this.username}} on <span class="localized-date" data-date="{{this.created_at}}"></span> </small>
-    <p style = "color:#f0f0f0">{{this.message}}</p>
+    <small>By {{this.username}} on <span class="localized-date" data-date="{{this.created_at}}"></span> </small>
+    <p>{{this.message}}</p>
     <form action="/like/reply/{{this.id}}" method="POST" class="d-inline">
       <button class="btn btn-link p-0" type="submit">
         <i class="bi {{#if this.liked_by_user}}bi-heart-fill{{else}}bi-heart{{/if}}"></i>
@@ -51,7 +50,7 @@
   </div>
   <button type="submit" class="btn btn-primary">Leave a Note</button>
 </form>
-</body>
+
 <!-- Show More / Show Less Script -->
 <script>
   document.querySelectorAll('.tunnel-message-container').forEach(container => {
