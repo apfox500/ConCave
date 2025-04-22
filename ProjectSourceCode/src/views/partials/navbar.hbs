@@ -1,45 +1,70 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a href="/" class="navbar-brand text-dark text-decoration-none">
-            <img src="../../uploads/logo.png" alt="ConCave Logo" width="200" height="60" class="d-inline-block align-text-top">
-        </a>
-    </div>
-    <div class="container-fluid">
-        <!-- Link to the cave page-->
-        <a href="/" class="btn btn-link text-dark text-decoration-none">
-            <span>Conventions</span>
-        </a>
-    </div>
-    <div class="container-fluid">
-        <a href="/cave" class="btn btn-link text-dark text-decoration-none">
-            <span>The Cave</span>
-        </a>
-    </div>
-    <div class="container-fluid">
-        <a href="/merch" class="btn btn-link text-dark text-decoration-none">
-            <span>Merch Store</span>
-        </a>
-    </div>
-    <div class="container-fluid">
-        <a href="/im" class="btn btn-link text-dark text-decoration-none">
-            <span>Messages</span>
-        </a>
-    </div>
-    <div class="ms-auto">
-        {{#if user}}
-        <a href="/profile" class="btn btn-link text-dark text-decoration-none">
+  <div class="container-fluid">
+    <a href="/" class="navbar-brand text-dark text-decoration-none">
+      <img src="../../uploads/logo.png" alt="ConCave Logo" width="200" height="60" class="d-inline-block align-text-top">
+    </a>
+  </div>
+
+  <div class="container-fluid">
+    <a href="/" class="btn btn-link text-dark text-decoration-none">
+      <span>Conventions</span>
+    </a>
+  </div>
+
+  <div class="container-fluid">
+    <a href="/cave" class="btn btn-link text-dark text-decoration-none">
+      <span>The Cave</span>
+    </a>
+  </div>
+
+  <div class="container-fluid">
+    <a href="/merch" class="btn btn-link text-dark text-decoration-none">
+      <span>Merch Store</span>
+    </a>
+  </div>
+
+  <div class="container-fluid">
+    <a href="/im" class="btn btn-link text-dark text-decoration-none">
+      <span>Messages</span>
+    </a>
+  </div>
+
+  <div class="ms-auto">
+    {{#if user}}
+      <a href="/profile" class="btn btn-link text-dark text-decoration-none">
+        {{#if my_user}}
+          {{#if my_user.profile_picture}}
+            <img 
+              src="{{my_user.profile_picture}}" 
+              alt="Profile Picture" 
+              class="rounded-circle" 
+              width="35" 
+              height="35"
+            >
+          {{else}}
             <i class="bi bi-person-circle fs-4"></i>
-            {{#if my_user}}
-            <span>{{my_user.username}}</span>
-            {{else}}
-            <span>{{user.username}}</span>
-            {{/if}}
-        </a>
-        {{else}}
-        <a href="/login" class="btn btn-link text-dark text-decoration-none">
+          {{/if}}
+          <span>{{my_user.username}}</span>
+        {{else if user}}
+          {{#if user.profile_picture}}
+            <img 
+              src="{{user.profile_picture}}" 
+              alt="Profile Picture" 
+              class="rounded-circle" 
+              width="35" 
+              height="35"
+            >
+          {{else}}
             <i class="bi bi-person-circle fs-4"></i>
-            <span>Login</span>
-        </a>
+          {{/if}}
+          <span>{{user.username}}</span>
         {{/if}}
-    </div>
+      </a>
+    {{else}}
+      <a href="/login" class="btn btn-link text-dark text-decoration-none">
+        <i class="bi bi-person-circle fs-4"></i>
+        <span>Login</span>
+      </a>
+    {{/if}}
+  </div>
 </nav>

@@ -378,7 +378,7 @@ app.get("/register", (req, res) => {
   res.render("pages/register", { title: "ConCave: Register" });
 });
 
-app.post("/register", async (req, res) => {
+app.post("/register", upload.single('profile_picture'), async (req, res) => {
   try {
     if (req.body.password !== req.body.confirmPassword) {
       return res.render("pages/register", {
@@ -390,7 +390,7 @@ app.post("/register", async (req, res) => {
     const hash = await bcrypt.hash(req.body.password, 10);
     let profilePicturePath = null;
     if (req.file) {
-      profilePicturePath = `/uploads/profile_pictures/${req.file.filename}`;  // Store relative file path
+      profilePicturePath = `/uploads/${req.file.filename}`;
     }
     await db.none(
       "INSERT INTO users (first_name, last_name, username, email, rank, password, profile_picture) VALUES ($1, $2, $3, $4, $5, $6, $7)",
@@ -1232,7 +1232,7 @@ app.post('/profile', auth, async (req, res) => {
 
   try {
     const user = await db.oneOrNone(
-      `SELECT id, first_name, last_name, username, email, rank, profile_picture, bio, created_at, last_login 
+      `SELECT id, first_name, last_name, username, email, rank, profile_picture, bio, created_at
        FROM users 
        WHERE username = $1`,
       [username]
@@ -1429,6 +1429,25 @@ app.post('/settings/update-password', auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: err.message || 'Server error.' });
+  }
+});
+
+app.post('/settings/update-picture', auth, upload.single('profile_picture'), async (req, res) => {
+  const user = req.session.user;
+
+  if (!user) {
+    return res.status(401).json({ message: 'You are not logged in.' });
+  }
+
+  const filePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+  try {
+    await db.none("UPDATE users SET profile_picture = $1 WHERE id = $2", [filePath, user.id]);
+    req.session.user.profile_picture = filePath;
+    res.redirect('/profile');
+  } catch (err) {
+    console.error("Error updating profile picture:", err);
+    res.status(500).send("Internal Server Error");
   }
 });
 
