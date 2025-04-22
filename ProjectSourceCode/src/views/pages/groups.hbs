@@ -9,15 +9,15 @@
   <style>
     body { background-color: #f8f9fa; }
     .card { border-radius: 1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
-    .card-header { background-color: #007bff; color: white; font-size: 1.5rem;
+    .card-header { background-color: #4944b4; color: white; font-size: 1.5rem;
       border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
     .btn-primary { border-radius: 50px; }
   </style>
 </head>
-<body>
+<body style = "background-color: #1a1a1a;">
 <div class="container my-5">
-  <div class="card p-4">
-    <div class="card-header text-center">
+  <div class="card p-4" style = "background-color: #2a2a2a;">
+    <div class="card-header text-center" style = "color:#f0f0f0">
       Groups for {{convention.name}}
     </div>
     <div class="card-body">
@@ -30,12 +30,12 @@
       {{/if}}
       <ul class="list-group">
         {{#each groups}}
-        <li class="list-group-item my-2">
+        <li class="list-group-item my-2 border rounded p-3 my-3 shadow-sm position-relative" style="background-color:#2a2a2a">
           <div class="row">
             <div class="col-md-8">
-              <h5 class="mb-1">{{this.name}}</h5>
-              <p class="mb-1">{{this.description}}</p>
-              <small class="text-muted">Created by: {{this.created_by_username}}</small>
+              <h5 class="mb-1" style = "color:#f0f0f0">{{this.name}}</h5>
+              <p class="mb-1" style = "color:#f0f0f0">{{this.description}}</p>
+              <small class="text-muted" style = "color:#f0f0f0">Created by: {{this.created_by_username}}</small>
             </div>
             <div class="col-md-4 text-right">
               {{#if this.ownedByUser}}
@@ -47,8 +47,8 @@
           </div>
           <div class="mt-2">
             {{#if this.member_usernames}}
-            <p>
-              <strong>Members:</strong>
+            <p style = "color:#f0f0f0">
+              <strong style = "color:#f0f0f0">Members:</strong>
               {{#each this.member_usernames}}
               {{this}}{{#unless @last}}, {{/unless}}
               {{/each}}
