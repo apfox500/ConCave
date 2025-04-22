@@ -1,5 +1,6 @@
+<body style = "background-color: #1a1a1a;">
 <div class="mt-4">
-    <h2 class="text-center mb-4">Convention Merchandise</h2>
+    <h2 class="text-center mb-4" style = "color: #f0f0f0">Convention Merchandise</h2>
     
     <div class="container-fluid" style="max-width: 1200px;">
         <div class="row mb-4">
@@ -28,7 +29,7 @@
                     <img src="{{image_url}}" class="merch-image" alt="{{name}}">
                     <div class="merch-price-overlay">Price: ${{price}}</div>
                 </div>
-                <div class="merch-card-body">
+                <div class="merch-card-body" style = "background-color: #2a2a2a;">
                     <div class="merch-button-container">
                         <button class="btn btn-secondary merch-button more-info" data-name="{{name}}" data-description="{{description}}" data-price="{{price}}" data-details="{{details}}">More Info</button>
                         {{#if ../user}}
@@ -132,7 +133,7 @@
         </div>
     </div>
 </div>
-
+</body>
 
 <style>
 .merch-grid {

@@ -1,5 +1,5 @@
 
-
+<body style = "background-color: #1a1a1a;">
 <div class="d-flex align-items-center flex-grow-1">
     <form id="search-form" class="d-flex w-100" style="max-width: 300px;">
         <div class="input-group">
@@ -16,15 +16,15 @@
 
     <!-- Create Tunnel Form -->
     <div id="tunnel-form" class="border rounded p-4 d-none">
-        <h4>Dig your Tunnel</h4>
+        <h4 style = "color: #f0f0f0">Dig your Tunnel</h4>
         <form action="/cave" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
-                <label for="tunnel-title" class="form-label">Tunnel Name</label>
+                <label for="tunnel-title" class="form-label" style = "color:#f0f0f0">Tunnel Name</label>
                 <input type="text" class="form-control" id="tunnel-title" name="title"
                     placeholder="Enter a tunnel name">
             </div>
             <div class="mb-3">
-                <label for="convention-id" class="form-label">Associated Convention</label>
+                <label for="convention-id" class="form-label" style = "color:#f0f0f0">Associated Convention</label>
                 <select class="form-select" id="convention-id" name="convention_id">
                     <option value="" selected>None</option>
                     {{#each conventions}}
@@ -33,22 +33,22 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="tunnel-message" class="form-label">Message</label>
+                <label for="tunnel-message" class="form-label" style = "color:#f0f0f0">Message</label>
                 <textarea class="form-control" id="tunnel-message" rows="5" name="message" placeholder="Write your message..." maxlength="10000"></textarea>
-                <small id="char-count" class="form-text text-muted">0 / 10000 characters</small>
+                <small id="char-count" class="form-text text-muted" style = "color:#f0f0f0">0 / 10000 characters</small>
 
             </div>
             <div class="mb-3">
-                <label for="images" class="form-label">Upload Images (max 5)</label>
+                <label for="images" class="form-label" style = "color:#f0f0f0">Upload Images (max 5)</label>
                 <input type="file" name="images" id="images" class="form-control" multiple accept="image/*" max="5">
-                <small class="text-muted">You can select up to 5 images.</small>
+                <small class="text-muted" style = "color:#f0f0f0">You can select up to 5 images.</small>
             </div>
             <button type="submit" class="btn btn-success me-2">Create</button>
             <button type="button" class="btn btn-secondary" id="cancel">Cancel</button>
         </form>
     </div>
 
-    <div id="search-results" class="container mt-3 p-2 bg-light border rounded shadow-sm"></div>
+<div id="search-results" class="container mt-3 p-2  border rounded shadow-sm" style= "background-color: #2a2a2a;"></div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Dig a Tunnel Button -->
@@ -67,23 +67,23 @@
     </div>
     <!-- Tunnel Board -->
 
-    <div id="tunnel-board" class="border rounded p-3" style="height: 70vh; overflow-y: auto;">
+    <div id="tunnel-board" class="border rounded p-3" style="height: 70vh; overflow-y: auto; background-color:#2a2a2a">
 
         {{#each tunnels}}
-        <div class="mb-3 p-3 border-bottom">
-            <h5> <a href="/cave/{{this.id}}" class="text-dark"> {{this.title}} </a> </h5>
-            <small class="text-muted">Dug by <form action="/profile" method="POST" style="display:inline;"><input
+        <div class="mb-3 p-3 border-bottom" >
+            <h5> <a href="/cave/{{this.id}}" style = "color:#f0f0f0"> {{this.title}} </a> </h5>
+            <small style = "color:#f0f0f0">Dug by <form action="/profile" method="POST" style="display:inline;"><input
                         type="hidden" name="username" value="{{this.username}}"><button type="submit"
                         class="btn btn-link p-0"
                         style="text-decoration: underline; color: inherit; background: none; border: none; padding: 0; font: inherit; cursor: pointer; vertical-align: baseline;">{{this.username}}</button>
                 </form> on <span class="localized-date" data-date="{{this.created_at}}"></span></small>
             {{#if this.convention_name}}
-            <p class="text-muted mb-1">
+            <p style = "color:#f0f0f0">
                 <i class="bi bi-calendar-event"></i> 
                 <a href="/conventions/{{this.convention_id}}" class="text-decoration-none text-muted"> {{this.convention_name}}</a>
             </p>
             {{/if}}
-            <div class="tunnel-message-container">
+            <div class="tunnel-message-container" style = "color:#f0f0f0">
                 <p class="tunnel-message collapsed">{{this.message}}</p>
                 <button type="button" class="btn btn-sm btn-link p-0 show-more-toggle">Show more</button>
             </div>
@@ -101,14 +101,14 @@
                     {{this.like_count}} likes
                 </button>
             </form>
-            <p class="text-muted">{{this.reply_count}} replies</p>
+            <p style = "color:#f0f0f0">{{this.reply_count}} replies</p>
         </div>
         {{/each}}
 
     </div>
 
 </div>
-
+</body>
 
 <!-- Dig Tunnel Form/Button Script -->
 <script>
