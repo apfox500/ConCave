@@ -16,7 +16,7 @@
                     <p><strong>Rank:</strong> {{user.rank}}</p>
                     <p><strong>Account Created At:</strong> <span id="createdAt" data-date="{{user.created_at}}"></span>
 
-                    {{#if my_user}}
+                        {{#if my_user}}
                     <form action="/im/create" method="POST" class="d-inline">
                         <input type="hidden" name="username" value="{{user.username}}">
                         <button type="submit" class="btn btn-success">Message</button>
@@ -26,18 +26,23 @@
                 <div class="ms-4 d-flex flex-column align-items-center">
                     <h5 class="card-title text-center">Profile Picture</h5>
                     {{#if user.profile_picture}}
-                    <img src="{{user.profile_picture}}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 200px; height: 200px; object-fit: cover;">
+                    <img src="{{user.profile_picture}}" alt="Profile Picture" class="img-fluid rounded-circle"
+                        style="width: 200px; height: 200px; object-fit: cover;">
                     {{else}}
-                    <img src="/uploads/default-avatar.png" alt="Default Profile Picture" class="img-fluid rounded-circle" style="width: 200px; height: 200px; object-fit: cover;">
+                    <img src="/uploads/default-avatar.png" alt="Default Profile Picture"
+                        class="img-fluid rounded-circle" style="width: 200px; height: 200px; object-fit: cover;">
                     {{/if}}
                 </div>
             </div>
+            {{#if my_user}}
+            {{else}}
             <div class="d-flex justify-content-between mt-auto">
                 <a href="/settings" class="btn btn-primary">Settings</a>
                 <form action="/logout" method="POST">
                     <button type="submit" class="btn btn-danger">Logout</button>
                 </form>
             </div>
+            {{/if}}
         </div>
     </div>
 
