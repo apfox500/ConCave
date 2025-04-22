@@ -1,3 +1,4 @@
+<body style = "background-color: #1a1a1a;">
 <div class="container mb-5">
     {{> message}}
 
@@ -71,9 +72,9 @@
 
     {{else}}
     {{!-- they have no conversations --}}
-    <p>No conversations, Go make some!</p>
+    <p style = "color: #f0f0f0">No conversations, Go make some!</p>
     {{/if}}
-    <button id="start-new-conversation" class="btn btn-secondary mt-3"
+    <button id="start-new-conversation" class="btn btn-primary mt-3"
         onclick='document.getElementById("new-conversation-modal").style.display = "block";'>Start new
         conversation</button>
 
@@ -102,3 +103,4 @@
 
     {{/if}}
 </div>
+</body>
