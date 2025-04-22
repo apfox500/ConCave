@@ -1,20 +1,21 @@
+<body style = "background-color: #1a1a1a;">
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center">
-        <h2>User Profile</h2>
+        <h2 style = "color:#f0f0f0">User Profile</h2>
         <a href="/" class="btn btn-secondary">Back to Home</a>
     </div>
-    <div class="card">
+    <div class="card" style = "background-color:#2a2a2a;">
         <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between">
                 <div class="flex-grow-1">
                     <h5 class="card-title">Profile Information</h5>
-                    <p><strong>First Name:</strong> {{user.first_name}}</p>
-                    <p><strong>Last Name:</strong> {{user.last_name}}</p>
-                    <p><strong>Username:</strong> {{user.username}}</p>
-                    <p><strong>Email:</strong> {{user.email}}</p>
-                    <p><strong>Bio:</strong> {{user.bio}}</p>
-                    <p><strong>Rank:</strong> {{user.rank}}</p>
-                    <p><strong>Account Created At:</strong> <span id="createdAt" data-date="{{user.created_at}}"></span>
+                    <p style = "color:#f0f0f0"><strong>First Name:</strong> {{user.first_name}}</p>
+                    <p style = "color:#f0f0f0"><strong>Last Name:</strong> {{user.last_name}}</p>
+                    <p style = "color:#f0f0f0"><strong>Username:</strong> {{user.username}}</p>
+                    <p style = "color:#f0f0f0"><strong>Email:</strong> {{user.email}}</p>
+                    <p style = "color:#f0f0f0"><strong>Bio:</strong> {{user.bio}}</p>
+                    <p style = "color:#f0f0f0"><strong>Rank:</strong> {{user.rank}}</p>
+                    <p style = "color:#f0f0f0"><strong>Account Created At:</strong> <span id="createdAt" data-date="{{user.created_at}}"></span>
 
                         {{#if my_user}}
                     <form action="/im/create" method="POST" class="d-inline">
@@ -47,22 +48,22 @@
     </div>
 
     <!-- Badges Section -->
-    <div class="card mt-4">
+    <div class="card mt-4" style = "background-color: #2a2a2a;">
         <div class="card-body">
-            <h5 class="card-title">{{#if my_user}} {{else}}Your{{/if}} Badges</h5>
+            <h5 class="card-title" style = "color:#f0f0f0">{{#if my_user}} {{else}}Your{{/if}} Badges</h5>
             {{#if badges}}
             <ul>
                 {{#each badges}}
-                <li><strong>{{this.badge_name}}</strong>: {{this.badge_description}}</li>
+                <li style = "color:#f0f0f0"><strong>{{this.badge_name}}</strong>: {{this.badge_description}}</li>
                 {{/each}}
             </ul>
             {{else}}
-            <p>No badges earned yet.</p>
+            <p style = "color:#f0f0f0">No badges earned yet.</p>
             {{/if}}
         </div>
     </div>
 </div>
-
+</body>
 <script>
     function formatReadableDate(isoString) {
         const date = new Date(isoString);

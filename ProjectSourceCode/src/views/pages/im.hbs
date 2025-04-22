@@ -1,3 +1,4 @@
+<body style = "background-color: #1a1a1a;">
 <div class="container mb-5">
     {{> message}}
 
@@ -5,9 +6,9 @@
     {{#if conv_exists}}
     <a href="/im" class="btn btn-primary mb-5">Messages</a>
     {{!-- loading in a specific conversation --}}
-    <h4>Chat with <form action="/profile" method="POST" style="display: inline;"><input type="hidden" name="username"
+    <h4 style = "color:#f0f0f0">Chat with <form action="/profile" method="POST" style="display: inline;"><input type="hidden" name="username"
                 value="{{other_user.username}}"><button type="submit"
-                style="text-decoration: underline; border: none; background: none; padding: 0; cursor: pointer;">{{other_user.first_name}}
+                style="text-decoration: underline; color:#f0f0f0; border: none; background: none; padding: 0; cursor: pointer;">{{other_user.first_name}}
                 {{other_user.last_name}} ({{other_user.username}})</button></form>
     </h4>
     <div class="container border" id="messages-container" style="height: 70vh; overflow-y: auto;">
@@ -49,19 +50,19 @@
     {{else}}
     {{#if conversations}}
     {{!-- we load in conversations for them to select --}}
-    <h4>Select a Conversation</h4>
+    <h4 style = "color:#f0f0f0">Select a Conversation</h4>
     <table class="table">
         <tbody>
             {{#each conversations}}
             <tr>
-                <td>
+                <td style = "color:#f0f0f0; background-color: #2a2a2a;">
                     {{first_name}} {{last_name}} ({{username}})
                     {{#if current_unread}}
                     <span class="notification-symbol"></span>
                     {{/if}}
                 </td>
 
-                <td>
+                <td style = "background-color: #2a2a2a;">
                     <a href="/im?conv_id={{conversation_id}}" class="btn btn-primary">Chat</a>
                 </td>
             </tr>
@@ -71,9 +72,9 @@
 
     {{else}}
     {{!-- they have no conversations --}}
-    <p>No conversations, Go make some!</p>
+    <p style = "color: #f0f0f0">No conversations, Go make some!</p>
     {{/if}}
-    <button id="start-new-conversation" class="btn btn-secondary mt-3"
+    <button id="start-new-conversation" class="btn btn-primary mt-3"
         onclick='document.getElementById("new-conversation-modal").style.display = "block";'>Start new
         conversation</button>
 
@@ -102,3 +103,4 @@
 
     {{/if}}
 </div>
+</body>

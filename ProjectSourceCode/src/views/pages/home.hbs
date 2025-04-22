@@ -1,3 +1,4 @@
+<body style = "background-color: #1a1a1a;">
 <div class="d-flex align-items-center flex-grow-1">
     <form id="search-form" class="d-flex w-100 position-relative" style="max-width: 300px;">
         <div class="input-group">
@@ -10,7 +11,7 @@
     </form>
 </div>
 
-<div id="search-results" class="container mt-3 p-2 bg-light border rounded shadow-sm"></div>
+<div id="search-results" class="container mt-3 p-2  border rounded shadow-sm" style= "background-color: #2a2a2a;"></div>
 
 <div class="container mt-4 text-center">
     <div class="container mt-4">
@@ -71,20 +72,21 @@
                 </div>
             </div>
         </div>
-        <h2>Upcoming Conventions</h2>
+        <h2 style = "color: #f0f0f0;">Upcoming Conventions</h2>
         <div class="d-flex justify-content-center">
             <div id="eventsCarousel" class="carousel slide" data-bs-ride="carousel" style="width: 900px;">
                 <div class="carousel-inner">
                     {{#each conventions}}
                     <div class="carousel-item {{#if @first}}active{{/if}}">
                         <div class="d-flex justify-content-center align-items-center"
-                            style="height: 300px; background-color: #ddd; border-radius: 10px;">
+                            style="height: 300px; background-color: #2a2a2a; border-radius: 10px;">
+                            <!-- Use 'object-fit: contain' to prevent the image from filling the container entirely -->
                             <img src="{{this.convention_image}}" class="d-block w-100" alt="{{this.name}}"
                                 style="object-fit: contain; height: 100%; border-radius: 10px;">
                         </div>
                         <div class="text-center mt-3">
-                            <h5>{{this.name}}</h5>
-                            <a href="/conventions/{{this.id}}" class="btn btn-dark">Learn More</a>
+                            <h5 style="color:#f0f0f0">{{this.name}}</h5>
+                            <a href="/conventions/{{this.id}}" class="btn btn-primary">Learn More</a>
                         </div>
                     </div>
                     {{/each}}
@@ -104,18 +106,18 @@
     </div>
 
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Other Events</h2>
+        <h2 class="text-center mb-4" style = "color:#f0f0f0">Other Events</h2>
         <div class="row">
             {{#each conventions}}
             <div class="col-md-4 mb-3">
                 <div class="card" style="aspect-ratio: 1/1; overflow: hidden;">
                     <div
-                        style="height: 66%; background-image: url('{{this.convention_image}}'); background-size: contain; background-position: center; background-repeat: no-repeat;">
+                        style="height: 66%; background-image: url('{{this.convention_image}}'); background-size: contain; background-position: center; background-repeat: no-repeat; background-color: #2a2a2a">
                     </div>
-                    <div style="height: 34%; background-color: #eaeaea;"
+                    <div style="height: 34%; background-color: #2a2a2a;"
                         class="d-flex flex-column justify-content-center align-items-center p-2">
-                        <h5 class="card-title mb-4">{{this.name}}</h5>
-                        <a href="/conventions/{{this.id}}" class="btn btn-dark">Learn More</a>
+                        <h5 class="card-title mb-4" style = "color :#f0f0f0">{{this.name}}</h5>
+                        <a href="/conventions/{{this.id}}" class="btn btn-primary">Learn More</a>
                     </div>
                 </div>
             </div>
@@ -194,44 +196,27 @@
                     const response = await fetch(newUrl);
                     const results = await response.json();
 
-                    if (results.length > 0) {
-                        results.forEach(convention => {
-                            const resultItem = document.createElement('div');
-                            resultItem.className = 'result-item';
-                            resultItem.innerHTML = `<strong>${convention.name}</strong>
-                                <a href="/conventions/${convention.id}" class="btn btn-dark">Learn More</a>`;
-                            resultsContainer.appendChild(resultItem);
-                        });
-                    } else {
-                        resultsContainer.innerHTML = '<p class="p-2">No conventions found</p>';
+                        if (results.length > 0) {
+                            results.forEach(convention => {
+                                const resultItem = document.createElement('div');
+                                resultItem.className = 'result-item';
+                                resultItem.innerHTML = `<strong style = "color: #f0f0f0;">${convention.name}</strong>
+                                <a href="/conventions/${convention.id}" class="btn btn-primary">Learn More</a>`;
+                                resultsContainer.appendChild(resultItem);
+                            });
+                        } else {
+                            resultsContainer.innerHTML = '<p class="p-2">No conventions found</p>';
+                        }
+                    } catch (error) {
+                        console.error('Error fetching search results:', error);
+                        resultsContainer.innerHTML = '<p class="p-2">Error loading search results</p>';
                     }
-                } catch (error) {
-                    console.error('Error fetching search results:', error);
-                    resultsContainer.innerHTML = '<p class="p-2">Error loading search results</p>';
+                } else {
+                    resultsContainer.style.display = 'none';
+                    history.pushState({ path: '/' }, '', '/');
+                    resultsContainer.innerHTML = '';
                 }
-            } else {
-                resultsContainer.style.display = 'none';
-                history.pushState({ path: '/' }, '', '/');
-                resultsContainer.innerHTML = '';
-            }
+            });
         });
-
-        const urlOption = document.getElementById('imageUrlOption');
-        const fileOption = document.getElementById('imageFileOption');
-        const urlInput = document.getElementById('conventionImageURL');
-        const fileInput = document.getElementById('conventionImageFile');
-
-        function toggleImageInput() {
-            if (urlOption.checked) {
-                urlInput.classList.remove('d-none');
-                fileInput.classList.add('d-none');
-            } else {
-                urlInput.classList.add('d-none');
-                fileInput.classList.remove('d-none');
-            }
-        }
-        toggleImageInput();
-        urlOption.addEventListener('change', toggleImageInput);
-        fileOption.addEventListener('change', toggleImageInput);
-    });
-</script>
+    </script>
+</body>
